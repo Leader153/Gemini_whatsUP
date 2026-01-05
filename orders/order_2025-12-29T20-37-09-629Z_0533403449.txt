@@ -1,0 +1,10 @@
+ORDER DETAILS
+-------------
+Date: 29.12.2025, 22:37:09
+Client Name: יוסי
+Client Phone: 0533403449
+Requested Date: 2026-01-15 (2026 год)
+Requested Time: 09:00
+Duration: 1 hours
+
+Status: Pending Operator Confirmation

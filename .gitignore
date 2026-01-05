@@ -1,0 +1,8 @@
+# Dependencies
+/node_modules
+
+# Environment variables
+.env
+
+# Google Calendar Service Account Key
+calendar/service-account-key.json

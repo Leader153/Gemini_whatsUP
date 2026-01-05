@@ -1,0 +1,10 @@
+ORDER DETAILS
+-------------
+Date: 4.1.2026, 21:29:57
+Client Name: יוסי
+Client Phone: 0537756672
+Requested Date: 2026-01-09 (2026 год)
+Requested Time: 15:00
+Duration: 1 hours
+
+Status: Pending Operator Confirmation

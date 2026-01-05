@@ -1,0 +1,113 @@
+const sessions = {};
+
+/**
+ * Инициализирует или сбрасывает сессию для указанного CallSid.
+ * @param {string} callSid - ID звонка от Twilio
+ */
+function initSession(callSid) {
+    if (!sessions[callSid]) {
+        sessions[callSid] = {
+            history: [], // Массив объектов { role: 'user'|'model', parts: [{ text: '...' }] }
+            pendingFunctionCalls: null, // Для хранения вызовов функций между этапами Redirect
+            gender: null // Пол собеседника: 'male', 'female' или null
+        };
+        console.log(`🆕 Новая сессия создана для: ${callSid}`);
+    }
+}
+
+/**
+ * Добавляет сообщение в историю сессии.
+ * @param {string} callSid
+ * @param {string} role - 'user' или 'model'
+ * @param {string} text - Текст сообщения
+ */
+function addToHistory(callSid, role, text) {
+    if (!sessions[callSid]) {
+        initSession(callSid);
+    }
+    sessions[callSid].history.push({
+        role: role,
+        parts: [{ text: text }]
+    });
+}
+
+/**
+ * Добавляет функциональный ответ в историю.
+ * @param {string} callSid 
+ * @param {Object} functionCall - Объект вызова функции от модели
+ * @param {Object} functionResponse - Результат выполнения функции
+ */
+function addFunctionInteractionToHistory(callSid, functionCall, functionResponse) {
+    if (!sessions[callSid]) initSession(callSid);
+
+    // Добавляем вызов функции (role: model)
+    sessions[callSid].history.push({
+        role: 'model',
+        parts: [{ functionCall: functionCall }]
+    });
+
+    // Добавляем ответ функции (role: function)
+    sessions[callSid].history.push({
+        role: 'function',
+        parts: [{ functionResponse: { name: functionCall.name, response: functionResponse } }]
+    });
+}
+
+
+/**
+ * Возвращает полную историю для CallSid.
+ * @param {string} callSid
+ * @returns {Array}
+ */
+function getHistory(callSid) {
+    return sessions[callSid] ? sessions[callSid].history : [];
+}
+
+/**
+ * Сохраняет вызовы функций для последующей обработки.
+ * @param {string} callSid 
+ * @param {Array} functionCalls 
+ */
+function setPendingFunctionCalls(callSid, functionCalls) {
+    if (!sessions[callSid]) initSession(callSid);
+    sessions[callSid].pendingFunctionCalls = functionCalls;
+}
+
+/**
+ * Получает и очищает сохраненные вызовы функций.
+ * @param {string} callSid 
+ * @returns {Array|null}
+ */
+function getAndClearPendingFunctionCalls(callSid) {
+    if (!sessions[callSid] || !sessions[callSid].pendingFunctionCalls) return null;
+    const calls = sessions[callSid].pendingFunctionCalls;
+    sessions[callSid].pendingFunctionCalls = null;
+    return calls;
+}
+/**
+ * Устанавливает пол для текущей сессии.
+ */
+function setGender(callSid, gender) {
+    if (!sessions[callSid]) initSession(callSid);
+    sessions[callSid].gender = gender;
+    console.log(`👤 Пол для ${callSid} установлен: ${gender}`);
+}
+
+/**
+ * Получает пол из текущей сессии.
+ */
+function getGender(callSid) {
+    return sessions[callSid] ? sessions[callSid].gender : null;
+}
+
+module.exports = {
+    initSession,
+    addToHistory,
+    addFunctionInteractionToHistory,
+    addFunctionInteractionToHistory,
+    getHistory,
+    setPendingFunctionCalls,
+    getAndClearPendingFunctionCalls,
+    setGender,
+    getGender
+};
