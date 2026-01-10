@@ -2,11 +2,18 @@ const express = require('express');
 const VoiceResponse = require('twilio').twiml.VoiceResponse;
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { getContextForPrompt } = require('./rag/retriever');
-const { calendarTools, handleFunctionCall, formatFunctionResult } = require('./calendar/calendarTools');
+const { calendarTools, handleFunctionCall } = require('./calendar/calendarTools');
+const { whatsAppTools, handleWhatsAppCall } = require('./whatsapp/whatsappTools');
 const sessionManager = require('./memory/sessionManager');
 const botBehavior = require('./data/botBehavior');
 const crmService = require('./utils/crmService');
 const messagingRoutes = require('./messaging_handler'); // Роуты для WhatsApp и SMS
+
+// Объединяем все инструменты в один массив для Gemini
+const allTools = [
+    ...calendarTools,
+    ...whatsAppTools,
+];
 
 require('dotenv').config();
 
@@ -58,6 +65,7 @@ app.post('/respond', async (request, response) => {
             const callSid = request.body.CallSid || 'default';
             const clientPhone = request.body.From || 'unknown';
             sessionManager.initSession(callSid);
+            sessionManager.setClientPhone(callSid, clientPhone); // Сохраняем номер телефона в сессию
 
             // ПАРАЛЛЕЛИЗАЦИЯ: Запускаем RAG и CRM одновременно
             console.log('🚀 Запуск параллельных задач (RAG + CRM)...');
@@ -110,7 +118,7 @@ app.post('/respond', async (request, response) => {
                 model: botBehavior.geminiSettings.model,
                 systemInstruction: systemPrompt, // Используем нативный systemInstruction
                 tools: [{
-                    functionDeclarations: calendarTools.map(tool => ({
+                    functionDeclarations: allTools.map(tool => ({
                         name: tool.name,
                         description: tool.description,
                         parameters: tool.parameters,
@@ -272,16 +280,29 @@ app.post('/process_tool', async (request, response) => {
             model: botBehavior.geminiSettings.model,
             systemInstruction: botBehavior.getSystemPrompt(context, currentGender, currentDateFix),
             tools: [{
-                functionDeclarations: calendarTools.map(tool => ({
+                functionDeclarations: allTools.map(tool => ({
                     name: tool.name, description: tool.description, parameters: tool.parameters,
                 })),
             }],
         });
 
+        // Получаем номер телефона из сессии
+        const clientPhone = sessionManager.getClientPhone(callSid);
+
         // Обрабатываем каждый вызов функции (обычно один)
         for (const functionCall of functionCalls) {
             console.log('🔧 Выполнение функции:', functionCall.name);
-            const functionResult = await handleFunctionCall(functionCall.name, functionCall.args);
+            
+            let functionResult;
+            
+            // Проверяем, является ли инструмент инструментом WhatsApp
+            if (whatsAppTools.some(tool => tool.name === functionCall.name)) {
+                functionResult = await handleWhatsAppCall(functionCall.name, functionCall.args, clientPhone);
+            } else {
+                // В противном случае, предполагаем, что это инструмент календаря
+                functionResult = await handleFunctionCall(functionCall.name, functionCall.args);
+            }
+
             console.log('✅ Результат:', functionResult);
 
             // Добавляем в историю

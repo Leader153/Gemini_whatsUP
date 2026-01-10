@@ -12,10 +12,30 @@ function initSession(sessionId, channel = 'voice') {
             history: [], // Массив объектов { role: 'user'|'model', parts: [{ text: '...' }] }
             pendingFunctionCalls: null, // Для хранения вызовов функций между этапами Redirect
             gender: null, // Пол собеседника: 'male', 'female' или null
+            clientPhone: null, // Номер телефона клиента
             createdAt: Date.now() // Время создания сессии
         };
         console.log(`🆕 Новая сессия создана для: ${sessionId} (канал: ${channel})`);
     }
+}
+
+/**
+ * Сохраняет номер телефона клиента в сессии.
+ * @param {string} sessionId 
+ * @param {string} phone 
+ */
+function setClientPhone(sessionId, phone) {
+    if (!sessions[sessionId]) initSession(sessionId);
+    sessions[sessionId].clientPhone = phone;
+}
+
+/**
+ * Получает номер телефона клиента из сессии.
+ * @param {string} sessionId 
+ * @returns {string|null}
+ */
+function getClientPhone(sessionId) {
+    return sessions[sessionId] ? sessions[sessionId].clientPhone : null;
 }
 
 /**
@@ -121,5 +141,7 @@ module.exports = {
     getAndClearPendingFunctionCalls,
     setGender,
     getGender,
-    getChannel
+    getChannel,
+    setClientPhone,
+    getClientPhone
 };
