@@ -1,12 +1,12 @@
 const express = require('express');
 const VoiceResponse = require('twilio').twiml.VoiceResponse;
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { getContextForPrompt } = require('./rag/retriever');
-const { calendarTools, handleFunctionCall } = require('./calendar/calendarTools');
-const { whatsAppTools, handleWhatsAppCall } = require('./whatsapp/whatsappTools');
-const sessionManager = require('./memory/sessionManager');
-const botBehavior = require('./data/botBehavior');
-const crmService = require('./utils/crmService');
+const { getContextForPrompt } = require('../rag/retriever');
+const { calendarTools, handleFunctionCall } = require('../calendar/calendarTools');
+const { whatsAppTools, handleWhatsAppCall } = require('../whatsapp/whatsappTools');
+const sessionManager = require('../memory/sessionManager');
+const botBehavior = require('../data/botBehavior');
+const crmService = require('../utils/crmService');
 const messagingRoutes = require('./messaging_handler'); // Роуты для WhatsApp и SMS
 
 // Объединяем все инструменты в один массив для Gemini

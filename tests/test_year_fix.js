@@ -1,4 +1,4 @@
-const { handleFunctionCall } = require('./calendar/calendarTools');
+const { handleFunctionCall } = require('../calendar/calendarTools');
 
 async function test() {
     console.log('🧪 Тест 1: Проверка доступности (передаем 2025)');

@@ -2,7 +2,7 @@
  * Тестовый скрипт для проверки обновленных данных в ChromaDB
  */
 
-const { getContextForPrompt } = require('./rag/retriever');
+const { getContextForPrompt } = require('../rag/retriever');
 
 async function testUpdate() {
     console.log('🧪 Тестирование обновленных данных в ChromaDB...\n');

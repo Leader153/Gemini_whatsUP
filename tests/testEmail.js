@@ -1,4 +1,4 @@
-const { sendOrderEmail } = require('./utils/emailService');
+const { sendOrderEmail } = require('../utils/emailService');
 require('dotenv').config();
 
 async function test() {

@@ -1,5 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const botBehavior = require('./data/botBehavior');
+const botBehavior = require('../data/botBehavior');
 require('dotenv').config();
 
 async function testRussianFix() {

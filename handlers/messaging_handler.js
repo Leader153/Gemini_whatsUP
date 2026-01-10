@@ -1,8 +1,8 @@
 const express = require('express');
 const VoiceResponse = require('twilio').twiml.VoiceResponse;
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
-const conversationEngine = require('./utils/conversationEngine');
-const messageFormatter = require('./utils/messageFormatter');
+const conversationEngine = require('../utils/conversationEngine');
+const messageFormatter = require('../utils/messageFormatter');
 
 const router = express.Router();
 

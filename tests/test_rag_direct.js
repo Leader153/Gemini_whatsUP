@@ -1,4 +1,4 @@
-const { getVectorStore } = require('./rag/vectorStore');
+const { getVectorStore } = require('../rag/vectorStore');
 require('dotenv').config();
 
 async function testDirect() {

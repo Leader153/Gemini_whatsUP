@@ -35,7 +35,7 @@ echo ✅ ChromaDB работает на порту 8000
 REM Запуск Cloudflare Tunnel
 echo.
 echo [3/3] Запуск Cloudflare Tunnel...
-pm2 start ecosystem.config.js
+pm2 start config/ecosystem.config.js
 if %errorlevel% neq 0 (
     echo ⚠️ Ошибка запуска туннеля
 )
@@ -46,7 +46,7 @@ echo   ✅ Всё готово!
 echo ========================================
 echo.
 echo Теперь запустите в ОТДЕЛЬНОМ терминале:
-echo   node answer_phone.js
+echo   node handlers/answer_phone.js
 echo.
 echo Для остановки туннеля:
 echo   pm2 stop leader-tunnel

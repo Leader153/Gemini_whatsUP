@@ -3,8 +3,8 @@
  * Симулирует входящее SMS и проверяет форматирование ответа
  */
 
-const conversationEngine = require('./utils/conversationEngine');
-const messageFormatter = require('./utils/messageFormatter');
+const conversationEngine = require('../utils/conversationEngine');
+const messageFormatter = require('../utils/messageFormatter');
 
 async function testSMSMessage() {
     console.log('🧪 Тестирование обработки SMS сообщений\n');

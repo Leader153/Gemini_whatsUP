@@ -3,7 +3,7 @@
  * Симулирует входящее сообщение и проверяет ответ бота
  */
 
-const conversationEngine = require('./utils/conversationEngine');
+const conversationEngine = require('../utils/conversationEngine');
 
 async function testWhatsAppMessage() {
     console.log('🧪 Тестирование обработки WhatsApp сообщений\n');
