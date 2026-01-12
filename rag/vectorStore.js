@@ -7,7 +7,7 @@ const { Chroma } = require('@langchain/community/vectorstores/chroma');
 const { embeddings } = require('./embeddings');
 
 // Настройки подключения к ChromaDB
-const CHROMA_URL = 'http://localhost:8000';
+const CHROMA_URL = process.env.CHROMA_SERVER_URL || 'http://localhost:8000'; // Используем переменную окружения, с запасным вариантом
 const COLLECTION_NAME = 'rag_documents';
 
 let cachedVectorStore = null;
