@@ -63,12 +63,22 @@
     sudo apt-get install -y nodejs
     # Устанавливаем PM2
     sudo npm install -g pm2
+
+удалить всю папку:
+rm -rf /docker/Gemini_whatsUP
+
+сделать новую пaпку 
+mkdir /docker/Gemini_whatsUP
+
+вернуться в root - cd
     ```
 
 3.  **Клонируйте ваш проект из GitHub:**
     ```bash
-    git clone https://github.com/Leader153/Gemini_whatsUP.git /docker/Gemini_whatsUP
+    git clone -b SMS-во-время-разговора-CLI https://github.com/Leader153/Gemini_whatsUP.git /docker/Gemini_whatsUP
     ```
+    ``
+
 
 4.  **Сгенерируйте SSL-сертификат с помощью Certbot:**
     *   **Важно:** Убедитесь, что порт `80` свободен на время выполнения этой команды.
@@ -104,6 +114,15 @@
     GEMINI_API_KEY=your_gemini_api_key
     # Добавьте любые другие переменные, которые нужны вашему приложению
     ```
+# если .env уже есть и корректный
+cp /docker/Gemini_whatsUP/.env /root/gemini.env.backup
+
+rm -rf /docker/Gemini_whatsUP
+git clone https://github.com/Leader153/Gemini_whatsUP.git /docker/Gemini_whatsUP
+
+cp /root/gemini.env.backup /docker/Gemini_whatsUP/.env  -
+-------------
+
     *   **После того как вы вставили все переменные:**
         *   **Сохранить:** Нажмите `Ctrl+O` (Ctrl и латинская O одновременно).
         *   **Подтвердить имя файла:** Нажмите `Enter`.
@@ -151,7 +170,7 @@
 
 3.  **Заново клонировать репозиторий:**
     ```bash
-    git clone https://github.com/Leader153/Gemini_whatsUP.git /docker/Gemini_whatsUP
+    git clone -b SMS-во-время-разговора-CLI https://github.com/Leader153/Gemini_whatsUP.git /docker/Gemini_whatsUP
     ```
 
 4.  **Зайти в проект, создать .env, поставить зависимости и запустить:**
