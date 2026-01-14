@@ -77,8 +77,16 @@ mkdir /docker/Gemini_whatsUP
     ```bash
     git clone -b SMS-во-время-разговора-CLI https://github.com/Leader153/Gemini_whatsUP.git /docker/Gemini_whatsUP
     ```
-    ``
-
+    Клонируем весь репозиторий в нужную папку
+git clone https://github.com/Leader153/Gemini_whatsUP /docker/Gemini_whatsUP
+Переходим в папку проекта
+cd /docker/Gemini_whatsUP
+Переключаемся на нужную ветку (ты хотел SMS-во-время-разговора-CLI):
+git fetch --all
+git branch -a
+git checkout -- SMS-во-время-разговора-CLI
+Проверь, что файлы на месте
+ls
 
 4.  **Сгенерируйте SSL-сертификат с помощью Certbot:**
     *   **Важно:** Убедитесь, что порт `80` свободен на время выполнения этой команды.

@@ -1,13 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const { Chroma } = require('@langchain/community/vectorstores/chroma');
-const { embeddings } = require('./rag/embeddings');
-const { COLLECTION_NAME } = require('./rag/vectorStore');
+const { embeddings } = require('../rag/embeddings');
+const { COLLECTION_NAME } = require('../rag/vectorStore');
 const { ChromaClient } = require('chromadb');
 const { Document } = require("@langchain/core/documents");
 
 // Путь к файлу базы знаний
-const CSV_PATH = path.join(__dirname, 'data', 'products_knowledge_base.csv');
+const CSV_PATH = path.join(__dirname, '..', 'data', 'products_knowledge_base.csv');
 const CHROMA_URL = 'http://localhost:8000';
 
 // Простая функция для парсинга CSV, устойчивая к запятым в кавычках и пустым полям
