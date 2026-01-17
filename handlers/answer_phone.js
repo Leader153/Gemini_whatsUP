@@ -176,18 +176,31 @@ app.post('/handle-dial-status', (request, response) => {
 const https = require('https');
 const fs = require('fs');
 
-try {
-    const privateKey = fs.readFileSync('/etc/letsencrypt/live/assistantbot.online/privkey.pem', 'utf8');
-    const certificate = fs.readFileSync('/etc/letsencrypt/live/assistantbot.online/fullchain.pem', 'utf8');
-    const credentials = { key: privateKey, cert: certificate };
+const domain = process.env.DOMAIN_NAME;
+const port = process.env.PORT || 1337;
 
-    const server = https.createServer(credentials, app);
-    server.listen(1337, () => {
-        console.log('TwiML HTTPS server running at https://assistantbot.online:1337/');
-    });
-} catch (error) {
-    console.warn("SSL certificate not found, starting in HTTP mode on port 1337. This is suitable for local testing with ngrok, but not for production.");
-    app.listen(1337, () => {
-        console.log('TwiML HTTP server running at http://localhost:1337/');
+if (domain) {
+    try {
+        const privateKey = fs.readFileSync(`/etc/letsencrypt/live/${domain}/privkey.pem`, 'utf8');
+        const certificate = fs.readFileSync(`/etc/letsencrypt/live/${domain}/fullchain.pem`, 'utf8');
+        const credentials = { key: privateKey, cert: certificate };
+
+        const server = https.createServer(credentials, app);
+        server.listen(port, () => {
+            console.log(`✅ TwiML HTTPS server running for domain ${domain} on port ${port}`);
+        });
+    } catch (error) {
+        console.error(`❌ Could not start HTTPS server for domain ${domain}.`);
+        console.error('Error:', error.message);
+        console.warn("Falling back to HTTP mode. This is not suitable for production.");
+        app.listen(port, () => {
+            console.log(`⚠️ TwiML HTTP server running at http://localhost:${port}/`);
+        });
+    }
+} else {
+    console.warn("⚠️ DOMAIN_NAME environment variable not set.");
+    console.warn("Starting in HTTP mode. This is suitable for local testing with ngrok, but not for production.");
+    app.listen(port, () => {
+        console.log(`🚀 TwiML HTTP server running at http://localhost:${port}/`);
     });
 }
