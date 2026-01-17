@@ -12,7 +12,6 @@ function initSession(sessionId, channel = 'voice') {
             history: [], // Массив объектов { role: 'user'|'model', parts: [{ text: '...' }] }
             pendingFunctionCalls: null, // Для хранения вызовов функций между этапами Redirect
             gender: null, // Пол собеседника: 'male', 'female' или null
-            clientPhone: null, // Номер телефона клиента
             createdAt: Date.now() // Время создания сессии
         };
         console.log(`🆕 Новая сессия создана для: ${sessionId} (канал: ${channel})`);
@@ -20,35 +19,16 @@ function initSession(sessionId, channel = 'voice') {
 }
 
 /**
- * Сохраняет номер телефона клиента в сессии.
- * @param {string} sessionId 
- * @param {string} phone 
- */
-function setClientPhone(sessionId, phone) {
-    if (!sessions[sessionId]) initSession(sessionId);
-    sessions[sessionId].clientPhone = phone;
-}
-
-/**
- * Получает номер телефона клиента из сессии.
- * @param {string} sessionId 
- * @returns {string|null}
- */
-function getClientPhone(sessionId) {
-    return sessions[sessionId] ? sessions[sessionId].clientPhone : null;
-}
-
-/**
  * Добавляет сообщение в историю сессии.
- * @param {string} callSid
+ * @param {string} sessionId
  * @param {string} role - 'user' или 'model'
  * @param {string} text - Текст сообщения
  */
-function addToHistory(callSid, role, text) {
-    if (!sessions[callSid]) {
-        initSession(callSid);
+function addToHistory(sessionId, role, text) {
+    if (!sessions[sessionId]) {
+        initSession(sessionId);
     }
-    sessions[callSid].history.push({
+    sessions[sessionId].history.push({
         role: role,
         parts: [{ text: text }]
     });
@@ -56,21 +36,21 @@ function addToHistory(callSid, role, text) {
 
 /**
  * Добавляет функциональный ответ в историю.
- * @param {string} callSid 
+ * @param {string} sessionId 
  * @param {Object} functionCall - Объект вызова функции от модели
  * @param {Object} functionResponse - Результат выполнения функции
  */
-function addFunctionInteractionToHistory(callSid, functionCall, functionResponse) {
-    if (!sessions[callSid]) initSession(callSid);
+function addFunctionInteractionToHistory(sessionId, functionCall, functionResponse) {
+    if (!sessions[sessionId]) initSession(sessionId);
 
     // Добавляем вызов функции (role: model)
-    sessions[callSid].history.push({
+    sessions[sessionId].history.push({
         role: 'model',
         parts: [{ functionCall: functionCall }]
     });
 
     // Добавляем ответ функции (role: function)
-    sessions[callSid].history.push({
+    sessions[sessionId].history.push({
         role: 'function',
         parts: [{ functionResponse: { name: functionCall.name, response: functionResponse } }]
     });
@@ -78,49 +58,49 @@ function addFunctionInteractionToHistory(callSid, functionCall, functionResponse
 
 
 /**
- * Возвращает полную историю для CallSid.
- * @param {string} callSid
+ * Возвращает полную историю для sessionId.
+ * @param {string} sessionId
  * @returns {Array}
  */
-function getHistory(callSid) {
-    return sessions[callSid] ? sessions[callSid].history : [];
+function getHistory(sessionId) {
+    return sessions[sessionId] ? sessions[sessionId].history : [];
 }
 
 /**
  * Сохраняет вызовы функций для последующей обработки.
- * @param {string} callSid 
+ * @param {string} sessionId 
  * @param {Array} functionCalls 
  */
-function setPendingFunctionCalls(callSid, functionCalls) {
-    if (!sessions[callSid]) initSession(callSid);
-    sessions[callSid].pendingFunctionCalls = functionCalls;
+function setPendingFunctionCalls(sessionId, functionCalls) {
+    if (!sessions[sessionId]) initSession(sessionId);
+    sessions[sessionId].pendingFunctionCalls = functionCalls;
 }
 
 /**
  * Получает и очищает сохраненные вызовы функций.
- * @param {string} callSid 
+ * @param {string} sessionId 
  * @returns {Array|null}
  */
-function getAndClearPendingFunctionCalls(callSid) {
-    if (!sessions[callSid] || !sessions[callSid].pendingFunctionCalls) return null;
-    const calls = sessions[callSid].pendingFunctionCalls;
-    sessions[callSid].pendingFunctionCalls = null;
+function getAndClearPendingFunctionCalls(sessionId) {
+    if (!sessions[sessionId] || !sessions[sessionId].pendingFunctionCalls) return null;
+    const calls = sessions[sessionId].pendingFunctionCalls;
+    sessions[sessionId].pendingFunctionCalls = null;
     return calls;
 }
 /**
  * Устанавливает пол для текущей сессии.
  */
-function setGender(callSid, gender) {
-    if (!sessions[callSid]) initSession(callSid);
-    sessions[callSid].gender = gender;
-    console.log(`👤 Пол для ${callSid} установлен: ${gender}`);
+function setGender(sessionId, gender) {
+    if (!sessions[sessionId]) initSession(sessionId);
+    sessions[sessionId].gender = gender;
+    console.log(`👤 Пол для ${sessionId} установлен: ${gender}`);
 }
 
 /**
  * Получает пол из текущей сессии.
  */
-function getGender(callSid) {
-    return sessions[callSid] ? sessions[callSid].gender : null;
+function getGender(sessionId) {
+    return sessions[sessionId] ? sessions[sessionId].gender : null;
 }
 
 /**
@@ -142,6 +122,4 @@ module.exports = {
     setGender,
     getGender,
     getChannel,
-    setClientPhone,
-    getClientPhone
 };
