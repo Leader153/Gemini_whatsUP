@@ -2,6 +2,7 @@ const { checkAvailability, createBooking } = require('./calendarService');
 const { saveOrderToFile } = require('../utils/fileUtils');
 const { sendOrderEmail } = require('../utils/emailService');
 const { saveClientData } = require('../utils/crmService');
+const { sendWhatsAppMessage } = require('../utils/messagingService');
 
 
 /**
@@ -201,6 +202,24 @@ const calendarTools = [
             },
             required: ['name', 'phone'],
         },
+    },
+    {
+        name: 'send_whatsapp_message',
+        description: 'Отправляет сообщение WhatsApp клиенту. Использовать, когда нужно отправить клиенту информацию в текстовом виде.',
+        parameters: {
+            type: 'object',
+            properties: {
+                clientPhone: {
+                    type: 'string',
+                    description: 'Номер телефона клиента в формате E.164 (например, +972533403449).',
+                },
+                messageBody: {
+                    type: 'string',
+                    description: 'Текст сообщения для отправки.',
+                },
+            },
+            required: ['clientPhone', 'messageBody'],
+        },
     }
 ];
 
@@ -356,6 +375,11 @@ async function handleFunctionCall(functionName, args) {
 
             case 'save_client_data': {
                 return await saveClientData(args);
+            }
+
+            case 'send_whatsapp_message': {
+                const { clientPhone, messageBody } = args;
+                return await sendWhatsAppMessage(clientPhone, messageBody);
             }
 
             default:
