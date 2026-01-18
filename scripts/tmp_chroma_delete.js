@@ -1,5 +1,5 @@
 const { ChromaClient } = require('chromadb');
-const { COLLECTION_NAME } = require('./rag/vectorStore');
+const { COLLECTION_NAME } = require('../rag/vectorStore');
 
 const CHROMA_URL = 'http://localhost:8000';
 
@@ -15,7 +15,7 @@ async function deleteDocuments() {
         ];
 
         console.log(`\nУдаляем документы с ID: ${idsToDelete.join(', ')} из коллекции "${COLLECTION_NAME}"...`);
-        
+
         await collection.delete({ ids: idsToDelete });
 
         console.log(`\n✅ Документы успешно удалены.`);
