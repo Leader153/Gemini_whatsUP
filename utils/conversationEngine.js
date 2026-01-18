@@ -52,7 +52,8 @@ const conversationEngine = {
             // DEBUG: Проверяем контекст
             console.log('📚 RAG Context length:', context.length, 'chars');
 
-            const systemPrompt = botBehavior.getSystemPrompt(context, currentGender, currentDate);
+            // Pass userPhone to getSystemPrompt so it's injected into the prompt
+            const systemPrompt = botBehavior.getSystemPrompt(context, currentGender, currentDate, userPhone);
 
             // Инициализация модели Gemini
             const model = genAI.getGenerativeModel({
@@ -91,7 +92,8 @@ const conversationEngine = {
 
                 // Для текстовых каналов (WhatsApp/SMS) обрабатываем функции сразу
                 if (channel === 'whatsapp' || channel === 'sms') {
-                    return await this.handleToolCalls(functionCalls, sessionId, channel);
+                    // Pass userPhone here
+                    return await this.handleToolCalls(functionCalls, sessionId, channel, userPhone);
                 }
 
                 // Для голоса возвращаем промежуточное сообщение
@@ -145,9 +147,10 @@ const conversationEngine = {
      * @param {Array} functionCalls - Массив вызовов функций от Gemini
      * @param {string} sessionId - ID сессии
      * @param {string} channel - Канал связи
+     * @param {string} userPhone - Номер телефона пользователя (Optional, but recommended)
      * @returns {Object} { text: string, requiresToolCall: false }
      */
-    async handleToolCalls(functionCalls, sessionId, channel) {
+    async handleToolCalls(functionCalls, sessionId, channel, userPhone = null) {
         console.log(`⚙️ Обработка инструментов для ${sessionId} [${channel}]`);
 
         try {
@@ -183,9 +186,12 @@ const conversationEngine = {
             const currentGender = sessionManager.getGender(sessionId);
             const currentDate = new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' });
 
+            // Pass userPhone here as well
+            const systemPrompt = botBehavior.getSystemPrompt(context, currentGender, currentDate, userPhone);
+
             const model = genAI.getGenerativeModel({
                 model: botBehavior.geminiSettings.model,
-                systemInstruction: botBehavior.getSystemPrompt(context, currentGender, currentDate),
+                systemInstruction: systemPrompt,
                 tools: [{
                     functionDeclarations: calendarTools.map(tool => ({
                         name: tool.name, description: tool.description, parameters: tool.parameters,

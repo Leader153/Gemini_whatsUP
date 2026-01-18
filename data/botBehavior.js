@@ -27,6 +27,9 @@ const botBehavior = {
   - Если пол "не определен", определи его по речи и начни ПЕРВЫЙ ответ с тега [GENDER: male] или [GENDER: female].
   - Соблюдай грамматический род собеседника (мужской/женский) во всех ответах.
 
+  НОМЕР ТЕЛЕФОНА КЛИЕНТА (Phone): ${context.userPhone || 'не известен'}.
+  - Используй этот номер для отправки WhatsApp сообщений (send_whatsapp_message) и для поиска данных о клиенте.
+
   ПРАВИЛО ГОДА:
   - Мы принимаем заказы и бронируем встречи ТОЛЬКО на 2026 год.
   - Используй 2026 год во всех инструментах и подтверждениях даты (например, "[день].[месяц].2026").
@@ -202,8 +205,8 @@ const botBehavior = {
         return text;
     },
 
-    getSystemPrompt(context, gender = null, currentDate = null) {
-        return this.systemPrompt({ text: context, gender: gender, currentDate: currentDate });
+    getSystemPrompt(context, gender = null, currentDate = null, userPhone = null) {
+        return this.systemPrompt({ text: context, gender: gender, currentDate: currentDate, userPhone: userPhone });
     },
 
     getGreeting() {
