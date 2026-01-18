@@ -9,7 +9,7 @@ module.exports = {
     exec_mode: "fork"
   }, {
     name: "gemini-bot",
-    script: "answer_phone.js",
+    script: "index.js",
     watch: true,
     cwd: "./",
     ignore_watch: ["node_modules", "orders", "data", "logs", ".git"],
