@@ -14,7 +14,8 @@
 - **Действие:** Убедитесь, что веб-хуки в Twilio указывают на этот домен:
     - **Голос:** `https://api.leadertechnology.shop/voice`
     - **WhatsApp:** `https://api.leadertechnology.shop/whatsapp`
-    - **SMS:** `https://api.leadertechnology.shop/sms`
+    - **SMS (входящие):** `https://api.leadertechnology.shop/sms`
+    - **SMS (статус доставки):** `https://api.leadertechnology.shop/sms/status`
 
 #### 2. При развертывании на VPS (ветка `to-VPC`)
 - **Цель:** Twilio должен отправлять запросы на ваш публичный сервер.
@@ -22,7 +23,8 @@
 - **Действие:** Убедитесь, что веб-хуки в Twilio указывают на домен вашего VPS:
     - **Голос:** `https://assistantbot.online/voice`
     - **WhatsApp:** `https://assistantbot.online/whatsapp`
-    - **SMS:** `https://assistantbot.online/sms`
+    - **SMS (входящие):** `https://assistantbot.online/sms`
+    - **SMS (статус доставки):** `https://assistantbot.online/sms/status`
 
 ---
 
