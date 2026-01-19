@@ -14,9 +14,11 @@
    - **Configure with:** Webhooks, TwiML Bins, Functions, Studio, or Proxy
    - **A message comes in:** 
      - Webhook URL: `https://api.leadertechnology.shop/sms`
+     https://api.assistantbot.online:1337/sms
      - HTTP Method: `POST`
    - **A message status changes (опционально):**
      - Webhook URL: `https://api.leadertechnology.shop/sms/status`
+     https://api.assistantbot.online:1337/sms/status
      - HTTP Method: `POST`
 
 5. Нажми **Save** внизу страницы
@@ -48,9 +50,12 @@
 2. Настрой:
    - **When a message comes in:**
      - Webhook URL: `https://api.leadertechnology.shop/whatsapp`
+https://api.assistantbot.online:1337/whatsapp
+
      - HTTP Method: `POST`
    - **Status callback URL (опционально):**
      - Webhook URL: `https://api.leadertechnology.shop/whatsapp/status`
+     https://api.assistantbot.online:1337/whatsapp/status
      - HTTP Method: `POST`
 
 3. Нажми **Save**
@@ -77,6 +82,7 @@
 
 1. Настрой webhook для production номера WhatsApp:
    - **When a message comes in:** `https://api.leadertechnology.shop/whatsapp`
+   https://api.assistantbot.online:1337/whatsapp
    - **HTTP Method:** `POST`
 
 2. Протестируй отправку сообщения на production номер
@@ -90,21 +96,23 @@
 2. Проверь, что настроено:
    - **A call comes in:**
      - Webhook URL: `https://api.leadertechnology.shop/voice`
+     https://api.assistantbot.online:1337/voice
      - HTTP Method: `POST`
 
 3. Если не настроено - настрой и сохрани
 
-## Шаг 5: Запуск сервера
-
+## Шаг 5: Запуск сервера VPS 
+CMD: taskkill /F /IM node.exe /T
 1. Убедись, что сервер запущен:
    ```bash
    pm2 restart all
-   ```
+   pm2 restart gemini-bot
+база знаний, надо загружать -- node scripts/loadDocuments.js
 
 2. Проверь логи:
    ```bash
    pm2 logs
-   ```
+   pm2 logs gemini-bot
 
 ## Шаг 6: Тестирование
 
