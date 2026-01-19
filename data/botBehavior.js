@@ -187,9 +187,12 @@ const botBehavior = {
     },
 
     cleanTextForTTS(text) {
+        // Убираем markdown символы
         text = text.replace(this.textCleanupRules.markdownSymbols, '');
-        // Убираем SSML паузы, так как в текущей конфигурации мы не используем <speak> в Say
-        text = text.replace(/<break[^>]*\/>/g, '');
+
+        // 🚨 ВАЖНО: Убираем ВСЕ XML/SSML теги (включая <phoneme>, <speak>, <voice>), 
+        // так как они ломают Twilio <Say> если не экранированы, или читаются как мусор.
+        text = text.replace(/<[^>]*>/g, '');
 
         text = text.replace(this.textCleanupRules.multipleSpaces, ' ').trim();
 

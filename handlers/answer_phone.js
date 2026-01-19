@@ -28,7 +28,8 @@ app.post('/voice', (request, response) => {
         speechTimeout: 'auto',
         language: sttLang,
     });
-    twiml.redirect({ method: 'POST' }, '/voice');
+    // Если Gather тайм-аутит (нет ввода), перенаправляем на "переспрос"
+    twiml.redirect({ method: 'POST' }, '/reprompt');
 
     response.type('text/xml');
     response.send(twiml.toString());
@@ -74,6 +75,7 @@ app.post('/respond', async (request, response) => {
 
                 twiml.say({ voice: v }, cleanedText);
                 twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: sttL });
+                twiml.redirect({ method: 'POST' }, '/reprompt');
                 response.type('text/xml');
                 response.send(twiml.toString());
             }
@@ -84,6 +86,7 @@ app.post('/respond', async (request, response) => {
             const v = botBehavior.voiceSettings.he.ttsVoice;
             twiml.say({ voice: v }, msg);
             twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
+            twiml.redirect({ method: 'POST' }, '/reprompt');
             response.type('text/xml');
             response.send(twiml.toString());
         }
@@ -94,6 +97,7 @@ app.post('/respond', async (request, response) => {
         const v = botBehavior.voiceSettings.he.ttsVoice;
         twiml.say({ voice: v }, msg);
         twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
+        twiml.redirect({ method: 'POST' }, '/reprompt');
         response.type('text/xml');
         response.send(twiml.toString());
     }
@@ -136,6 +140,7 @@ app.post('/process_tool', async (request, response) => {
 
         twiml.say({ voice: v_post }, cleanedText);
         twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: sttL });
+        twiml.redirect({ method: 'POST' }, '/reprompt');
         response.type('text/xml');
         response.send(twiml.toString());
 
@@ -146,6 +151,7 @@ app.post('/process_tool', async (request, response) => {
         const v = botBehavior.voiceSettings.he.ttsVoice;
         twiml.say({ voice: v }, msg);
         twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
+        twiml.redirect({ method: 'POST' }, '/reprompt');
         response.type('text/xml');
         response.send(twiml.toString());
     }
@@ -162,9 +168,39 @@ app.post('/handle-dial-status', (request, response) => {
     if (dialStatus === 'busy' || dialStatus === 'no-answer' || dialStatus === 'failed') {
         twiml.say({ voice: botBehavior.voiceSettings.he.ttsVoice }, messageFormatter.getMessage('operatorUnavailable', 'voice'));
         twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
+        twiml.redirect({ method: 'POST' }, '/reprompt');
     } else {
         twiml.hangup();
     }
+
+    response.type('text/xml');
+    response.send(twiml.toString());
+});
+
+// ----------------------------------------------------------------------
+// ROUTE /reprompt: Handle silence/timeout
+// ----------------------------------------------------------------------
+app.post('/reprompt', (request, response) => {
+    const twiml = new VoiceResponse();
+    // Сообщение: "Я вас не слышу, продолжите?" или просто слушать снова?
+    // Лучше просто слушать, или сказать короткое "Я тут" (Ani kan).
+    // Используем 'noSpeech' сообщение, но оно длинное "Не поняла, повторите".
+    // Давайте просто слушать снова тишину, может быть пользователь думает.
+    // Но если мы просто слушаем, это может быть бесконечный цикл.
+    // Twilio рекомендует сказать что-то.
+
+    // Используем .say() только если это 2-й раз?
+    // Для простоты, скажем "Hallo?"
+
+    twiml.say({ voice: botBehavior.voiceSettings.he.ttsVoice }, "הלו?");
+    twiml.gather({
+        input: 'speech',
+        action: '/respond',
+        speechTimeout: 'auto',
+        language: botBehavior.voiceSettings.he.sttLanguage,
+    });
+    // И снова редирект, если опять молчат (бесконечный цикл ожидания)
+    twiml.redirect({ method: 'POST' }, '/reprompt');
 
     response.type('text/xml');
     response.send(twiml.toString());

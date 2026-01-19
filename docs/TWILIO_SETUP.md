@@ -16,15 +16,20 @@
     - **WhatsApp:** `https://api.leadertechnology.shop/whatsapp`
     - **SMS (входящие):** `https://api.leadertechnology.shop/sms`
     - **SMS (статус доставки):** `https://api.leadertechnology.shop/sms/status`
+очисти задачи локального сервера -- taskkill /F /IM node.exe /T
+база знаний, надо загружать -- node scripts/loadDocuments.js
+
+ Найдите Docker Desktop у себя на компьютере и запустите его !!!  
+pm2 start config/ecosystem.config.js
 
 #### 2. При развертывании на VPS (ветка `to-VPC`)
 - **Цель:** Twilio должен отправлять запросы на ваш публичный сервер.
 - **Как это работает:** На VPS ваш сервер доступен через основной домен (например, `assistantbot.online`).
 - **Действие:** Убедитесь, что веб-хуки в Twilio указывают на домен вашего VPS:
-    - **Голос:** `https://assistantbot.online/voice`
-    - **WhatsApp:** `https://assistantbot.online/whatsapp`
-    - **SMS (входящие):** `https://assistantbot.online/sms`
-    - **SMS (статус доставки):** `https://assistantbot.online/sms/status`
+    - **Голос:** `https://assistantbot.online:1337/voice`
+    - **WhatsApp:** `https://assistantbot.online:1337/whatsapp`
+    - **SMS (входящие):** `https://assistantbot.online:1337/sms`
+    - **SMS (статус доставки):** `https://assistantbot.online:1337/sms/status`
 
 ---
 

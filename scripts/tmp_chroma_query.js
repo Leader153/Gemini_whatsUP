@@ -1,5 +1,5 @@
 const { ChromaClient } = require('chromadb');
-const { COLLECTION_NAME } = require('./rag/vectorStore');
+const { COLLECTION_NAME } = require('../rag/vectorStore');
 
 const CHROMA_URL = 'http://localhost:8000';
 
@@ -12,7 +12,7 @@ async function queryChroma() {
         console.log(`\nВ коллекции "${COLLECTION_NAME}" найдено ${count} документов.`);
 
         console.log(`\nВсе документы в коллекции "${COLLECTION_NAME}" (ID и метаданные):`);
-        
+
         // Получаем все документы с их ID и метаданными
         const allDocuments = await collection.get({
             include: ["metadatas"] // Запрашиваем только метаданные
