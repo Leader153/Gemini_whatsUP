@@ -1,4 +1,4 @@
-const { checkAvailability, createBooking } = require('./calendarService');
+const { checkAvailability, createBooking, isSlotAvailable } = require('./calendarService');
 const { saveOrderToFile } = require('../utils/fileUtils');
 const { sendOrderEmail } = require('../utils/emailService');
 const { saveClientData } = require('../utils/crmService');
@@ -24,8 +24,13 @@ const calendarTools = [
                     description: 'Длительность встречи в часах. По умолчанию "1"',
                     enum: ['1', '2'],
                 },
+                yachtName: {
+                    type: 'string',
+                    description: 'Название яхты',
+                    enum: ['JOY', 'Loise'],
+                }
             },
-            required: ['date', 'duration'],
+            required: ['date', 'duration', 'yachtName'],
         },
     },
     {
@@ -55,9 +60,10 @@ const calendarTools = [
                     description: 'Длительность ("1" или "2")',
                     enum: ['1', '2'],
                 },
-                clientEmail: {
+                yachtName: {
                     type: 'string',
-                    description: 'Email клиента (опционально)',
+                    description: 'Название яхты',
+                    enum: ['JOY', 'Loise'],
                 },
                 has_terminal: {
                     type: 'string',
@@ -70,10 +76,6 @@ const calendarTools = [
                 city: {
                     type: 'string',
                     description: 'Ответ на вопрос "В каком городе вы находитесь?"',
-                },
-                monthly_turnover: {
-                    type: 'string',
-                    description: 'Примерный месячный оборот по картам',
                 },
                 current_provider: {
                     type: 'string',
@@ -88,7 +90,7 @@ const calendarTools = [
                     description: 'Как срочно требуется установка',
                 },
             },
-            required: ['startDateTime', 'endDateTime', 'clientName', 'clientPhone', 'duration'],
+            required: ['startDateTime', 'endDateTime', 'clientName', 'clientPhone', 'duration', 'yachtName'],
         },
     },
     {
@@ -128,10 +130,6 @@ const calendarTools = [
                 city: {
                     type: 'string',
                     description: 'Ответ на вопрос "В каком городе вы находитесь?"',
-                },
-                monthly_turnover: {
-                    type: 'string',
-                    description: 'Примерный месячный оборот по картам',
                 },
                 current_provider: {
                     type: 'string',
@@ -182,10 +180,6 @@ const calendarTools = [
                 city: {
                     type: 'string',
                     description: 'Ответ на вопрос "В каком городе вы находитесь?"',
-                },
-                monthly_turnover: {
-                    type: 'string',
-                    description: 'Примерный месячный оборот по картам',
                 },
                 current_provider: {
                     type: 'string',
@@ -244,33 +238,45 @@ async function handleFunctionCall(functionName, args) {
     try {
         switch (functionName) {
             case 'check_yacht_availability': {
-                let { date, duration } = args;
+                let { date, duration, yachtName } = args;
                 date = forceYear2026(date);
                 // Конвертируем duration из строки в число
                 const durationNum = parseInt(duration, 10);
-                const availableSlots = await checkAvailability(date, durationNum);
+                const availableSlots = await checkAvailability(date, durationNum, yachtName);
 
                 if (availableSlots.length === 0) {
                     return {
                         success: true,
-                        message: `На ${date} нет свободных слотов для ${durationNum} час(а) аренды.`,
+                        message: `На ${date} нет свободных слотов для яхты ${yachtName} длительностью ${durationNum} час(а).`,
                         availableSlots: [],
                     };
                 }
 
                 return {
                     success: true,
-                    message: `Найдено ${availableSlots.length} свободных слотов на ${date} для встречи (демонстрация товара). Сверься со списком. Если время подходит, спрашивай имя и телефон для записи.`,
+                    message: `Найдено ${availableSlots.length} свободных слотов на ${date} для яхты ${yachtName} (демонстрация товара). Сверься со списком. Если время подходит, спрашивай имя и телефон для записи.`,
                     availableSlots: availableSlots,
                     date: date,
                     duration: durationNum,
+                    yachtName: yachtName,
                 };
             }
 
             case 'book_yacht': {
-                let { startDateTime, endDateTime, clientName, clientPhone, duration, clientEmail, has_terminal, business_type, city, monthly_turnover, current_provider, points_count, urgency } = args;
+                let { startDateTime, endDateTime, clientName, clientPhone, duration, yachtName, has_terminal, business_type, city, current_provider, points_count, urgency } = args;
                 startDateTime = forceYear2026(startDateTime);
                 endDateTime = forceYear2026(endDateTime);
+
+                // <<!! ПРОВЕРКА ДОСТУПНОСТИ ПЕРЕД БРОНИРОВАНИЕМ !!>>
+                const slotIsAvailable = await isSlotAvailable(startDateTime, endDateTime, yachtName);
+                if (!slotIsAvailable) {
+                    console.warn(`⚠️ Попытка бронирования занятого слота для яхты ${yachtName}: ${startDateTime}`);
+                    return {
+                        success: false,
+                        error: `Это время для яхты ${yachtName} уже занято. Пожалуйста, предложи клиенту выбрать другое время.`,
+                    };
+                }
+
 
                 // Конвертируем duration из строки в число
                 const durationNum = parseInt(duration, 10);
@@ -279,11 +285,10 @@ async function handleFunctionCall(functionName, args) {
                     name: clientName,
                     phone: clientPhone,
                     duration: durationNum,
-                    email: clientEmail,
+                    yachtName: yachtName,
                     has_terminal: has_terminal,
                     business_type: business_type,
                     city: city,
-                    monthly_turnover: monthly_turnover,
                     current_provider: current_provider,
                     points_count: points_count,
                     urgency: urgency,
@@ -303,7 +308,6 @@ async function handleFunctionCall(functionName, args) {
                     has_terminal: has_terminal,
                     business_type: business_type,
                     city: city,
-                    monthly_turnover: monthly_turnover,
                     current_provider: current_provider,
                     points_count: points_count,
                     urgency: urgency,
@@ -335,7 +339,7 @@ async function handleFunctionCall(functionName, args) {
             }
 
             case 'send_order_to_operator': {
-                let { clientName, clientPhone, date, time, duration, has_terminal, business_type, city, monthly_turnover, current_provider, points_count, urgency } = args;
+                let { clientName, clientPhone, date, time, duration, has_terminal, business_type, city, current_provider, points_count, urgency } = args;
                 date = forceYear2026(date);
 
                 const orderDetails = {
@@ -347,7 +351,6 @@ async function handleFunctionCall(functionName, args) {
                     has_terminal,
                     business_type,
                     city,
-                    monthly_turnover,
                     current_provider,
                     points_count,
                     urgency

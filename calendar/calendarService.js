@@ -27,7 +27,7 @@ async function getCalendarClient() {
  * @param {number} duration - Длительность в часах (1, 2 или 3)
  * @returns {Promise<Array>} - Массив свободных временных слотов
  */
-async function checkAvailability(date, duration = 3) {
+async function checkAvailability(date, duration = 3, yachtName) {
     try {
         const calendar = await getCalendarClient();
         const calendarId = process.env.GOOGLE_CALENDAR_ID;
@@ -39,19 +39,20 @@ async function checkAvailability(date, duration = 3) {
         const dayEnd = new Date(date);
         dayEnd.setHours(20, 0, 0, 0);
 
-        // Запрос занятости
-        const freeBusyResponse = await calendar.freebusy.query({
-            requestBody: {
-                timeMin: dayStart.toISOString(),
-                timeMax: dayEnd.toISOString(),
-                items: [{ id: calendarId }],
-            },
+        // Запрос всех событий на день
+        const response = await calendar.events.list({
+            calendarId: calendarId,
+            timeMin: dayStart.toISOString(),
+            timeMax: dayEnd.toISOString(),
+            singleEvents: true,
+            orderBy: 'startTime',
         });
-
-        const busySlots = (freeBusyResponse.data.calendars[calendarId].busy || [])
+        
+        const busySlots = (response.data.items || [])
+            .filter(event => event.summary && event.summary.includes(yachtName))
             .map(slot => ({
-                start: new Date(slot.start),
-                end: new Date(slot.end)
+                start: new Date(slot.start.dateTime || slot.start.date),
+                end: new Date(slot.end.dateTime || slot.end.date)
             }))
             .sort((a, b) => a.start - b.start);
 
@@ -119,7 +120,7 @@ async function createBooking(startDateTime, endDateTime, clientInfo) {
         const calendarId = process.env.GOOGLE_CALENDAR_ID;
 
         const event = {
-            summary: `Бронирование яхты Joy-BE - ${clientInfo.name}`,
+            summary: `Бронирование яхты ${clientInfo.yachtName} - ${clientInfo.name}`,
             description: `Клиент: ${clientInfo.name}\nТелефон: ${clientInfo.phone}\nДлительность: ${clientInfo.duration} час(а)`,
             start: {
                 dateTime: startDateTime,
@@ -129,7 +130,6 @@ async function createBooking(startDateTime, endDateTime, clientInfo) {
                 dateTime: endDateTime,
                 timeZone: 'Asia/Jerusalem',
             },
-            attendees: clientInfo.email ? [{ email: clientInfo.email }] : [],
             reminders: {
                 useDefault: false,
                 overrides: [
@@ -186,9 +186,45 @@ async function listUpcomingEvents(maxResults = 10) {
     }
 }
 
+
+/**
+ * Проверка, доступен ли конкретный временной слот
+ * @param {string} startDateTime - Начало в формате ISO
+ * @param {string} endDateTime - Конец в формате ISO
+ * @returns {Promise<boolean>} - true, если слот свободен
+ */
+async function isSlotAvailable(startDateTime, endDateTime, yachtName) {
+    try {
+        const calendar = await getCalendarClient();
+        const calendarId = process.env.GOOGLE_CALENDAR_ID;
+
+        const timeMin = new Date(startDateTime).toISOString();
+        const timeMax = new Date(endDateTime).toISOString();
+
+        // Запрос событий для конкретного слота
+        const response = await calendar.events.list({
+            calendarId: calendarId,
+            timeMin: timeMin,
+            timeMax: timeMax,
+            singleEvents: true,
+        });
+
+        const busySlots = (response.data.items || []).filter(event => event.summary && event.summary.includes(yachtName));
+
+        // Если в указанном промежутке есть хоть один занятый слот для этой яхты, то он не свободен
+        return busySlots.length === 0;
+
+    } catch (error) {
+        console.error('Error checking specific slot availability:', error);
+        // В случае ошибки лучше считать, что слот занят, во избежание двойного бронирования
+        return false;
+    }
+}
+
 module.exports = {
     checkAvailability,
     createBooking,
     listUpcomingEvents,
     getCalendarClient,
+    isSlotAvailable,
 };
