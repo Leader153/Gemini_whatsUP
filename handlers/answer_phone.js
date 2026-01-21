@@ -67,9 +67,14 @@ app.post('/respond', async (request, response) => {
             status: 'pending'
         });
 
-        // Сразу отвечаем Twilio: играем музыку и идем проверять статус
+        // Сразу отвечаем Twilio: короткая фраза + музыка
         const twiml = new VoiceResponse();
-        // Можно добавить короткую фразу "Минутку..." если задержка большая, но лучше сразу музыку
+        const voice = botBehavior.voiceSettings.he.ttsVoice;
+
+        // Говорим "רק רגע" (минутку) чтобы клиент знал, что бот обрабатывает запрос
+        twiml.say({ voice: voice }, 'רק רגע');
+
+        // Затем включаем музыку ожидания
         twiml.play(botBehavior.messages.waitMusicUrl);
         twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
 
