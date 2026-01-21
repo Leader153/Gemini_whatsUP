@@ -114,7 +114,8 @@ const botBehavior = {
         emptyResponse: 'סליחה, המערכת החזירה תשובה ריקה, אנא נסה שוב',
         transferring: 'בבקשה המתן, אני מעבירה אותך לנציג מכירות.',
         operatorUnavailable: 'מצטערת, נציג המכירות אינו זמין כרגע. איך אוכל לעזור לך בנושא אחר?',
-        waitMusicUrl: 'http://com.dotolearn.humoresque.s3.amazonaws.com/01_Humoresque.mp3',
+        // Прямая ссылка на MP3 файл (Classic music)
+        waitMusicUrl: 'http://demo.twilio.com/docs/classic.mp3',
     },
 
     // ============================================

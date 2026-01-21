@@ -67,15 +67,17 @@ app.post('/respond', async (request, response) => {
             status: 'pending'
         });
 
-        // Сразу отвечаем Twilio: короткая фраза + музыка
+        // Сразу отвечаем Twilio
         const twiml = new VoiceResponse();
-        const voice = botBehavior.voiceSettings.he.ttsVoice;
 
-        // Говорим "רק רגע" (минутку) чтобы клиент знал, что бот обрабатывает запрос
-        twiml.say({ voice: voice }, 'רק רגע');
+        // Проверяем историю: если это первое сообщение, играем музыку
+        const history = sessionManager.getHistory(callSid);
+        if (!history || history.length === 0) {
+            console.log('🎵 First interaction: playing hold music.');
+            twiml.play(botBehavior.messages.waitMusicUrl);
+        }
 
-        // Затем включаем музыку ожидания
-        twiml.play(botBehavior.messages.waitMusicUrl);
+        // Редирект на проверку статуса
         twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
 
         response.type('text/xml');
@@ -114,9 +116,15 @@ app.post('/check_ai', async (request, response) => {
         const result = await Promise.race([task.promise, timeoutPromise]);
 
         if (result === 'still_pending') {
-            // Еще не готово. Играем кусочек музыки и опять на проверку.
-            // Ставим Play на 2 секунды (Twilio прервет его следующим Redirect)
-            twiml.play(botBehavior.messages.waitMusicUrl);
+            // Еще не готово.
+            const history = sessionManager.getHistory(callSid);
+            // Играем музыку ТОЛЬКО если это первый запрос
+            if (!history || history.length === 0) {
+                twiml.play(botBehavior.messages.waitMusicUrl);
+            } else {
+                // Для последующих запросов просто небольшая пауза, чтобы не перегружать цикл редиректов
+                twiml.pause({ length: 1 });
+            }
             twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
         } else {
             // Готово! Удаляем задачу и выдаем ответ.
@@ -129,8 +137,8 @@ app.post('/check_ai', async (request, response) => {
                 const v_check = botBehavior.voiceSettings[langCode].ttsVoice;
 
                 twiml.say({ voice: v_check }, intermediateText);
-                // После "проверяю" тоже можем включить музыку, пока выполняется тул
-                twiml.play(botBehavior.messages.waitMusicUrl);
+                // После "проверяю" музыку убираем (по просьбе пользователя), просто пауза
+                // twiml.play(botBehavior.messages.waitMusicUrl); 
                 twiml.redirect({ method: 'POST' }, `/process_tool?CallSid=${callSid}`);
             } else {
                 const cleanedText = messageFormatter.format(result.text, 'voice');
