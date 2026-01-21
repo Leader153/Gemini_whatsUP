@@ -12,6 +12,9 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use('/', messagingRoutes); // Routes for WhatsApp and SMS
 
+// Объект для хранения активных запросов к Gemini в памяти
+const pendingAITasks = new Map();
+
 // ----------------------------------------------------------------------
 // ROUTE /voice: Start of the call and user speech gathering
 // ----------------------------------------------------------------------
@@ -44,52 +47,31 @@ app.post('/respond', async (request, response) => {
     const clientPhone = request.body.From;
 
     if (speechResult) {
-        try {
-            const result = await conversationEngine.processMessage(
-                speechResult,
-                callSid,
-                'voice',
-                clientPhone
-            );
+        console.log(`🎙️ [VOICE] Speech recognized for ${callSid}: "${speechResult}"`);
 
-            if (result.requiresToolCall) {
-                // If the engine indicates a tool call is needed, we say something
-                // and redirect to a new route to process the tool.
-                sessionManager.setPendingFunctionCalls(callSid, result.functionCalls);
-                const twiml = new VoiceResponse();
-                const intermediateText = messageFormatter.getMessage('checking', 'voice');
-                const langCode = botBehavior.detectLanguage(intermediateText);
-                const v_check = botBehavior.voiceSettings[langCode].ttsVoice;
+        // Создаем "задачу" в фоне
+        const aiTask = conversationEngine.processMessage(
+            speechResult,
+            callSid,
+            'voice',
+            clientPhone
+        );
 
-                twiml.say({ voice: v_check }, intermediateText);
-                twiml.redirect({ method: 'POST' }, `/process_tool?CallSid=${callSid}`);
-                response.type('text/xml');
-                response.send(twiml.toString());
-            } else {
-                // Regular response without function call
-                const twiml = new VoiceResponse();
-                const cleanedText = messageFormatter.format(result.text, 'voice');
-                const langCode = botBehavior.detectLanguage(cleanedText);
-                const v = botBehavior.voiceSettings[langCode].ttsVoice;
-                const sttL = botBehavior.voiceSettings[langCode].sttLanguage;
+        // Сохраняем её в Map
+        pendingAITasks.set(callSid, {
+            promise: aiTask,
+            startTime: Date.now(),
+            status: 'pending'
+        });
 
-                twiml.say({ voice: v }, cleanedText);
-                twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: sttL });
-                twiml.redirect({ method: 'POST' }, '/reprompt');
-                response.type('text/xml');
-                response.send(twiml.toString());
-            }
-        } catch (error) {
-            console.error('Error in /respond:', error);
-            const twiml = new VoiceResponse();
-            const msg = messageFormatter.getMessage('apiError', 'voice');
-            const v = botBehavior.voiceSettings.he.ttsVoice;
-            twiml.say({ voice: v }, msg);
-            twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
-            twiml.redirect({ method: 'POST' }, '/reprompt');
-            response.type('text/xml');
-            response.send(twiml.toString());
-        }
+        // Сразу отвечаем Twilio: играем музыку и идем проверять статус
+        const twiml = new VoiceResponse();
+        // Можно добавить короткую фразу "Минутку..." если задержка большая, но лучше сразу музыку
+        twiml.play(botBehavior.messages.waitMusicUrl);
+        twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
+
+        response.type('text/xml');
+        response.send(twiml.toString());
     } else {
         // No speech detected
         const twiml = new VoiceResponse();
@@ -103,6 +85,68 @@ app.post('/respond', async (request, response) => {
     }
 });
 
+/**
+ * Эндпоинт для проверки готовности ответа AI
+ */
+app.post('/check_ai', async (request, response) => {
+    const callSid = request.query.CallSid || request.body.CallSid;
+    const task = pendingAITasks.get(callSid);
+
+    const twiml = new VoiceResponse();
+
+    if (!task) {
+        console.warn(`⚠️ No task found for CallSid: ${callSid}`);
+        twiml.redirect({ method: 'POST' }, '/reprompt');
+        return response.send(twiml.toString());
+    }
+
+    try {
+        // Проверяем статус промиса ( race с таймаутом в 100мс )
+        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve('still_pending'), 100));
+        const result = await Promise.race([task.promise, timeoutPromise]);
+
+        if (result === 'still_pending') {
+            // Еще не готово. Играем кусочек музыки и опять на проверку.
+            // Ставим Play на 2 секунды (Twilio прервет его следующим Redirect)
+            twiml.play(botBehavior.messages.waitMusicUrl);
+            twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
+        } else {
+            // Готово! Удаляем задачу и выдаем ответ.
+            pendingAITasks.delete(callSid);
+
+            if (result.requiresToolCall) {
+                sessionManager.setPendingFunctionCalls(callSid, result.functionCalls);
+                const intermediateText = messageFormatter.getMessage('checking', 'voice');
+                const langCode = botBehavior.detectLanguage(intermediateText);
+                const v_check = botBehavior.voiceSettings[langCode].ttsVoice;
+
+                twiml.say({ voice: v_check }, intermediateText);
+                // После "проверяю" тоже можем включить музыку, пока выполняется тул
+                twiml.play(botBehavior.messages.waitMusicUrl);
+                twiml.redirect({ method: 'POST' }, `/process_tool?CallSid=${callSid}`);
+            } else {
+                const cleanedText = messageFormatter.format(result.text, 'voice');
+                const langCode = botBehavior.detectLanguage(cleanedText);
+                const v = botBehavior.voiceSettings[langCode].ttsVoice;
+                const sttL = botBehavior.voiceSettings[langCode].sttLanguage;
+
+                twiml.say({ voice: v }, cleanedText);
+                twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: sttL });
+                twiml.redirect({ method: 'POST' }, '/reprompt');
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error checking AI task:', error);
+        pendingAITasks.delete(callSid);
+        const msg = messageFormatter.getMessage('apiError', 'voice');
+        twiml.say({ voice: botBehavior.voiceSettings.he.ttsVoice }, msg);
+        twiml.redirect({ method: 'POST' }, '/reprompt');
+    }
+
+    response.type('text/xml');
+    response.send(twiml.toString());
+});
+
 // ----------------------------------------------------------------------
 // ROUTE /process_tool: Execute functions after "I'm checking..."
 // ----------------------------------------------------------------------
@@ -111,12 +155,13 @@ app.post('/process_tool', async (request, response) => {
     console.log(`⚙️ Processing tools for callSid: ${callSid}`);
 
     try {
-        const functionCalls = sessionManager.getAndClearPendingFunctionCalls(callSid);
-        if (!functionCalls || functionCalls.length === 0) {
+        const pendingData = sessionManager.getAndClearPendingFunctionCalls(callSid);
+        if (!pendingData) {
             throw new Error('No pending function calls found.');
         }
 
-        const result = await conversationEngine.handleToolCalls(functionCalls, callSid, 'voice');
+        const { functionCalls, context } = pendingData;
+        const result = await conversationEngine.handleToolCalls(functionCalls, callSid, 'voice', null, context);
 
         // Handle special case for call transfer
         if (result.transferToOperator) {

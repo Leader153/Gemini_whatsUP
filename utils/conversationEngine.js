@@ -92,15 +92,16 @@ const conversationEngine = {
 
                 // Для текстовых каналов (WhatsApp/SMS) обрабатываем функции сразу
                 if (channel === 'whatsapp' || channel === 'sms') {
-                    // Pass userPhone here
-                    return await this.handleToolCalls(functionCalls, sessionId, channel, userPhone);
+                    // Pass userPhone and context here
+                    return await this.handleToolCalls(functionCalls, sessionId, channel, userPhone, context);
                 }
 
-                // Для голоса возвращаем промежуточное сообщение
+                // Для голоса возвращаем промежуточное сообщение и контекст
                 return {
                     text: messageFormatter.getMessage('checking', channel),
                     requiresToolCall: true,
-                    functionCalls: functionCalls
+                    functionCalls: functionCalls,
+                    context: context // Сохраняем контекст, чтобы не искать снова
                 };
 
             } else {
@@ -150,8 +151,9 @@ const conversationEngine = {
      * @param {string} userPhone - Номер телефона пользователя (Optional, but recommended)
      * @returns {Object} { text: string, requiresToolCall: false }
      */
-    async handleToolCalls(functionCalls, sessionId, channel, userPhone = null) {
+    async handleToolCalls(functionCalls, sessionId, channel, userPhone = null, existingContext = null) {
         console.log(`⚙️ Обработка инструментов для ${sessionId} [${channel}]`);
+        console.time('⏱️ Tool Execution Time');
 
         try {
             // Обрабатываем каждый вызов функции
@@ -181,8 +183,9 @@ const conversationEngine = {
                 }
             }
 
-            // Получаем контекст для повторного вызова модели
-            const context = await getContextForPrompt('', 3);
+            // Используем уже найденный контекст или ищем новый только если его нет
+            const context = existingContext || await getContextForPrompt('', 3);
+            console.timeEnd('⏱️ Tool Execution Time');
             const currentGender = sessionManager.getGender(sessionId);
             const currentDate = new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' });
 
