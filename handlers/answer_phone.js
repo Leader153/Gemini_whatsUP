@@ -49,6 +49,9 @@ app.post('/respond', async (request, response) => {
     if (speechResult) {
         console.log(`🎙️ [VOICE] Speech recognized for ${callSid}: "${speechResult}"`);
 
+        // Сохраняем userPhone в сессии
+        sessionManager.setUserPhone(callSid, clientPhone);
+
         // Создаем "задачу" в фоне
         const aiTask = conversationEngine.processMessage(
             speechResult,
@@ -161,7 +164,11 @@ app.post('/process_tool', async (request, response) => {
         }
 
         const { functionCalls, context } = pendingData;
-        const result = await conversationEngine.handleToolCalls(functionCalls, callSid, 'voice', null, context);
+
+        // Получаем userPhone из сессии
+        const userPhone = sessionManager.getUserPhone(callSid);
+
+        const result = await conversationEngine.handleToolCalls(functionCalls, callSid, 'voice', userPhone, context);
 
         // Handle special case for call transfer
         if (result.transferToOperator) {

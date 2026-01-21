@@ -96,12 +96,14 @@ const conversationEngine = {
                     return await this.handleToolCalls(functionCalls, sessionId, channel, userPhone, context);
                 }
 
-                // Для голоса возвращаем промежуточное сообщение и контекст
+                // Для голоса сохраняем functionCalls И context в sessionManager
+                sessionManager.setPendingFunctionCalls(sessionId, functionCalls, context);
+
+                // Возвращаем промежуточное сообщение
                 return {
                     text: messageFormatter.getMessage('checking', channel),
                     requiresToolCall: true,
-                    functionCalls: functionCalls,
-                    context: context // Сохраняем контекст, чтобы не искать снова
+                    functionCalls: functionCalls
                 };
 
             } else {

@@ -12,6 +12,7 @@ function initSession(sessionId, channel = 'voice') {
             history: [], // Массив объектов { role: 'user'|'model', parts: [{ text: '...' }] }
             pendingFunctionCalls: null, // Для хранения вызовов функций между этапами Redirect
             gender: null, // Пол собеседника: 'male', 'female' или null
+            userPhone: null, // Номер телефона пользователя
             createdAt: Date.now() // Время создания сессии
         };
         console.log(`🆕 Новая сессия создана для: ${sessionId} (канал: ${channel})`);
@@ -67,25 +68,26 @@ function getHistory(sessionId) {
 }
 
 /**
- * Сохраняет вызовы функций для последующей обработки.
+ * Сохраняет вызовы функций и контекст для последующей обработки.
  * @param {string} sessionId 
  * @param {Array} functionCalls 
+ * @param {string} context - RAG контекст (опционально)
  */
-function setPendingFunctionCalls(sessionId, functionCalls) {
+function setPendingFunctionCalls(sessionId, functionCalls, context = null) {
     if (!sessions[sessionId]) initSession(sessionId);
-    sessions[sessionId].pendingFunctionCalls = functionCalls;
+    sessions[sessionId].pendingFunctionCalls = { functionCalls, context };
 }
 
 /**
- * Получает и очищает сохраненные вызовы функций.
+ * Получает и очищает сохраненные вызовы функций и контекст.
  * @param {string} sessionId 
- * @returns {Array|null}
+ * @returns {Object|null} { functionCalls, context }
  */
 function getAndClearPendingFunctionCalls(sessionId) {
     if (!sessions[sessionId] || !sessions[sessionId].pendingFunctionCalls) return null;
-    const calls = sessions[sessionId].pendingFunctionCalls;
+    const data = sessions[sessionId].pendingFunctionCalls;
     sessions[sessionId].pendingFunctionCalls = null;
-    return calls;
+    return data;
 }
 /**
  * Устанавливает пол для текущей сессии.
@@ -112,6 +114,25 @@ function getChannel(sessionId) {
     return sessions[sessionId] ? sessions[sessionId].channel : null;
 }
 
+/**
+ * Устанавливает номер телефона для текущей сессии.
+ * @param {string} sessionId
+ * @param {string} userPhone
+ */
+function setUserPhone(sessionId, userPhone) {
+    if (!sessions[sessionId]) initSession(sessionId);
+    sessions[sessionId].userPhone = userPhone;
+}
+
+/**
+ * Получает номер телефона из текущей сессии.
+ * @param {string} sessionId
+ * @returns {string|null}
+ */
+function getUserPhone(sessionId) {
+    return sessions[sessionId] ? sessions[sessionId].userPhone : null;
+}
+
 module.exports = {
     initSession,
     addToHistory,
@@ -122,4 +143,6 @@ module.exports = {
     setGender,
     getGender,
     getChannel,
+    setUserPhone,
+    getUserPhone,
 };
