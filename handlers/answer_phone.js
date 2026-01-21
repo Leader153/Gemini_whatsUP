@@ -12,8 +12,8 @@ const app = express();
 const path = require('path');
 
 app.use(express.urlencoded({ extended: true }));
-// Раздаем статические файлы из папки public/music по адресу /music
-app.use('/music', express.static(path.join(__dirname, '../public/music')));
+// Раздаем статические файлы из папки public/music по адресу /music с кешированием на 1 день
+app.use('/music', express.static(path.join(__dirname, '../public/music'), { maxAge: '1d' }));
 app.use('/', messagingRoutes); // Routes for WhatsApp and SMS
 
 // Объект для хранения активных запросов к Gemini в памяти
@@ -115,15 +115,18 @@ app.post('/check_ai', async (request, response) => {
         if (result === 'still_pending') {
             // Еще не готово.
             const history = sessionManager.getHistory(callSid);
+            const elapsed = Date.now() - task.startTime;
 
-            // Если это ПЕРВЫЙ запрос, играем короткий (8 сек) файл ожидания
-            if (!history || history.length === 0) {
-                // Формируем URL к файлу (предполагаем HTTPS и домен из env, или хардкод для надежности)
-                // Файл должен лежать в c:\a my box\Gemini_whatsUP\public\music\wait.mp3
+            // Умная логика:
+            // 1. Если это ПЕРВЫЙ запрос И прошло больше 2.5 секунд - играем музыку
+            // 2. Если меньше 2.5 секунд - просто пауза (ждем быстрый ответ без музыки)
+            // 3. Для последующих запросов - всегда пауза
+            if ((!history || history.length === 0) && elapsed > 2500) {
+                // Формируем URL к файлу
                 const musicUrl = 'https://api.leadertechnology.shop/music/wait.mp3';
                 twiml.play(musicUrl);
             } else {
-                // Для последующих - просто пауза
+                // Пауза (быстрое ожидание)
                 twiml.pause({ length: 1 });
             }
 
