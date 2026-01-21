@@ -70,14 +70,7 @@ app.post('/respond', async (request, response) => {
         // Сразу отвечаем Twilio
         const twiml = new VoiceResponse();
 
-        // Проверяем историю: если это первое сообщение, играем музыку
-        const history = sessionManager.getHistory(callSid);
-        if (!history || history.length === 0) {
-            console.log('🎵 First interaction: playing hold music.');
-            twiml.play(botBehavior.messages.waitMusicUrl);
-        }
-
-        // Редирект на проверку статуса
+        // Сразу редирект на проверку статуса (без блокирующей музыки)
         twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
 
         response.type('text/xml');
@@ -117,14 +110,9 @@ app.post('/check_ai', async (request, response) => {
 
         if (result === 'still_pending') {
             // Еще не готово.
-            const history = sessionManager.getHistory(callSid);
-            // Играем музыку ТОЛЬКО если это первый запрос
-            if (!history || history.length === 0) {
-                twiml.play(botBehavior.messages.waitMusicUrl);
-            } else {
-                // Для последующих запросов просто небольшая пауза, чтобы не перегружать цикл редиректов
-                twiml.pause({ length: 1 });
-            }
+            // Играть длинную музыку нельзя, так как она блокирует проверку.
+            // Делаем короткую паузу (1.5 сек) и проверяем снова.
+            twiml.pause({ length: 2 });
             twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
         } else {
             // Готово! Удаляем задачу и выдаем ответ.
