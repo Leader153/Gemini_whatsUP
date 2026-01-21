@@ -9,7 +9,11 @@ const messagingRoutes = require('./messaging_handler');
 require('dotenv').config();
 
 const app = express();
+const path = require('path');
+
 app.use(express.urlencoded({ extended: true }));
+// Раздаем статические файлы из папки public/music по адресу /music
+app.use('/music', express.static(path.join(__dirname, '../public/music')));
 app.use('/', messagingRoutes); // Routes for WhatsApp and SMS
 
 // Объект для хранения активных запросов к Gemini в памяти
@@ -110,9 +114,19 @@ app.post('/check_ai', async (request, response) => {
 
         if (result === 'still_pending') {
             // Еще не готово.
-            // Играть длинную музыку нельзя, так как она блокирует проверку.
-            // Делаем короткую паузу (1.5 сек) и проверяем снова.
-            twiml.pause({ length: 2 });
+            const history = sessionManager.getHistory(callSid);
+
+            // Если это ПЕРВЫЙ запрос, играем короткий (8 сек) файл ожидания
+            if (!history || history.length === 0) {
+                // Формируем URL к файлу (предполагаем HTTPS и домен из env, или хардкод для надежности)
+                // Файл должен лежать в c:\a my box\Gemini_whatsUP\public\music\wait.mp3
+                const musicUrl = 'https://api.leadertechnology.shop/music/wait.mp3';
+                twiml.play(musicUrl);
+            } else {
+                // Для последующих - просто пауза
+                twiml.pause({ length: 1 });
+            }
+
             twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
         } else {
             // Готово! Удаляем задачу и выдаем ответ.
