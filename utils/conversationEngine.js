@@ -28,6 +28,9 @@ const conversationEngine = {
         console.log(`📨 [${channel.toUpperCase()}] Обработка сообщения от ${userPhone}: "${userMessage}"`);
         console.time(`⏱️ Total Response Time [${channel}]`);
 
+        // Начало замера времени ответа Gemini
+        const startTime = performance.now();
+
         try {
             // Инициализация сессии с указанием канала
             sessionManager.initSession(sessionId, channel);
@@ -79,6 +82,11 @@ const conversationEngine = {
             // Отправляем промпт в Gemini
             const result = await model.generateContent({ contents: contentsForGemini });
             console.timeEnd('⏱️ Gemini API Call');
+
+            // Замер времени ответа Gemini в секундах
+            const endTime = performance.now();
+            const responseTimeSeconds = ((endTime - startTime) / 1000).toFixed(2);
+            console.log(`⏱️ ВРЕМЯ ОТВЕТА GEMINI: ${responseTimeSeconds} секунд`);
             const geminiResponse = result.response;
 
             // Сохраняем запрос пользователя в историю
@@ -153,7 +161,7 @@ const conversationEngine = {
      * @param {string} userPhone - Номер телефона пользователя (Optional, but recommended)
      * @returns {Object} { text: string, requiresToolCall: false }
      */
-    async handleToolCalls(functionCalls, sessionId, channel, userPhone = null, existingContext = null) {
+    async handleToolCalls(functionCalls, sessionId, channel, userPhone = null, existingContext = null, generateResponse = true) {
         console.log(`⚙️ Обработка инструментов для ${sessionId} [${channel}]`);
         console.time('⏱️ Tool Execution Time');
 
@@ -185,48 +193,57 @@ const conversationEngine = {
                 }
             }
 
-            // Используем уже найденный контекст или ищем новый только если его нет
-            const context = existingContext || await getContextForPrompt('', 3);
-            console.timeEnd('⏱️ Tool Execution Time');
-            const currentGender = sessionManager.getGender(sessionId);
-            const currentDate = new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' });
+            if (generateResponse) {
+                // Используем уже найденный контекст или ищем новый только если его нет
+                const context = existingContext || await getContextForPrompt('', 3);
+                console.timeEnd('⏱️ Tool Execution Time');
+                const currentGender = sessionManager.getGender(sessionId);
+                const currentDate = new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' });
 
-            // Pass userPhone here as well
-            const systemPrompt = botBehavior.getSystemPrompt(context, currentGender, currentDate, userPhone);
+                // Pass userPhone here as well
+                const systemPrompt = botBehavior.getSystemPrompt(context, currentGender, currentDate, userPhone);
 
-            const model = genAI.getGenerativeModel({
-                model: botBehavior.geminiSettings.model,
-                systemInstruction: systemPrompt,
-                tools: [{
-                    functionDeclarations: calendarTools.map(tool => ({
-                        name: tool.name, description: tool.description, parameters: tool.parameters,
-                    })),
-                }],
-            });
+                const model = genAI.getGenerativeModel({
+                    model: botBehavior.geminiSettings.model,
+                    systemInstruction: systemPrompt,
+                    tools: [{
+                        functionDeclarations: calendarTools.map(tool => ({
+                            name: tool.name, description: tool.description, parameters: tool.parameters,
+                        })),
+                    }],
+                });
 
-            // Отправляем обновленную историю обратно в Gemini
-            const history = sessionManager.getHistory(sessionId);
-            const result = await model.generateContent({ contents: history });
-            let text = result.response.text();
+                // Отправляем обновленную историю обратно в Gemini
+                const history = sessionManager.getHistory(sessionId);
+                const result = await model.generateContent({ contents: history });
+                let text = result.response.text();
 
-            // ИЗВЛЕЧЕНИЕ ГЕНДЕРА
-            const genderMatch = text.match(/\[GENDER:\s*(male|female)\]/i);
-            if (genderMatch) {
-                const detectedGender = genderMatch[1].toLowerCase();
-                sessionManager.setGender(sessionId, detectedGender);
-                text = text.replace(/\[GENDER:\s*(male|female)\]/i, '').trim();
+                // ИЗВЛЕЧЕНИЕ ГЕНДЕРА
+                const genderMatch = text.match(/\[GENDER:\s*(male|female)\]/i);
+                if (genderMatch) {
+                    const detectedGender = genderMatch[1].toLowerCase();
+                    sessionManager.setGender(sessionId, detectedGender);
+                    text = text.replace(/\[GENDER:\s*(male|female)\]/i, '').trim();
+                }
+
+                // Сохраняем и форматируем ответ
+                sessionManager.addToHistory(sessionId, 'model', text);
+                const formattedText = messageFormatter.format(text, channel);
+
+                console.log('Gemini post-tool response:', text);
+
+                return {
+                    text: formattedText,
+                    requiresToolCall: false
+                };
+            } else {
+                console.timeEnd('⏱️ Tool Execution Time');
+                console.log('⏩ Skipping response generation (Streaming mode)');
+                return {
+                    text: '',
+                    requiresToolCall: false
+                };
             }
-
-            // Сохраняем и форматируем ответ
-            sessionManager.addToHistory(sessionId, 'model', text);
-            const formattedText = messageFormatter.format(text, channel);
-
-            console.log('Gemini post-tool response:', text);
-
-            return {
-                text: formattedText,
-                requiresToolCall: false
-            };
 
         } catch (error) {
             console.error('❌ Ошибка в handleToolCalls:', error);
