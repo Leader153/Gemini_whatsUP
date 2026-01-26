@@ -36,21 +36,24 @@ function inferDomain(query) {
  * Найти релевантные документы по запросу, с фильтрацией по домену.
  * @param {string} query - Запрос пользователя
  * @param {number} k - Количество документов для возврата
+ * @param {string} [domain] - Опциональный домен для строгой фильтрации
  * @returns {Promise<Array>} Массив релевантных документов
  */
-async function retrieveContext(query, k = 3) {
+async function retrieveContext(query, k = 3, domain = null) {
     try {
         const vectorStore = await getVectorStore();
-        const domain = inferDomain(query);
+        
+        // FIX: Prioritize explicitly passed domain over inferred one
+        const effectiveDomain = domain || inferDomain(query);
 
         let filter = undefined;
-        if (domain) {
+        if (effectiveDomain) {
             filter = {
-                "Domain": domain
+                "Domain": effectiveDomain
             };
         }
 
-        console.log(`[RAG_DEBUG] Searching for: "${query}" (Domain: ${domain || 'ALL'})`);
+        console.log(`[RAG_DEBUG] Searching for: "${query}" (Domain: ${effectiveDomain || 'ALL'})`);
 
         // Поиск с оценкой релевантности
         const resultsWithScore = await vectorStore.similaritySearchWithScore(query, k, filter);
@@ -78,10 +81,11 @@ async function retrieveContext(query, k = 3) {
  * Получить контекст для промпта Gemini
  * @param {string} query - Запрос пользователя
  * @param {number} k - Количество документов
+ * @param {string} [domain] - Опциональный домен для строгой фильтрации
  * @returns {Promise<string>} Контекст в виде строки
  */
-async function getContextForPrompt(query, k = 3) {
-    const docs = await retrieveContext(query, k);
+async function getContextForPrompt(query, k = 3, domain = null) {
+    const docs = await retrieveContext(query, k, domain);
 
     if (docs.length === 0) {
         return '';

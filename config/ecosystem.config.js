@@ -1,20 +1,31 @@
 module.exports = {
   apps: [{
+    // Туннель Cloudflare (для локальной разработки)
     name: "leader-tunnel",
     script: "cloudflared",
-    // Используем config.local.yml для локальной разработки
     args: "tunnel --config config.local.yml run",
     interpreter: "none",
     cwd: "./",
     exec_mode: "fork"
   }, {
+    // Основной бот
     name: "gemini-bot",
     script: "index.js",
-    watch: true,
     cwd: "./",
-    ignore_watch: ["node_modules", "orders", "data", "logs", ".git"],
+    
+    // Настройки слежения (перезапуск при изменении файлов)
+    watch: true,
+    ignore_watch: ["node_modules", "data", "logs", ".git", ".env*"],
+    
+    // Переменные окружения по умолчанию (Локально)
     env: {
+      NODE_ENV: "development",
+    },
+    
+    // Переменные для VPS (Запуск: pm2 start ... --env production)
+    env_production: {
       NODE_ENV: "production",
+      watch: false // На сервере авто-перезапуск при изменении файлов обычно отключают
     }
   }]
 }

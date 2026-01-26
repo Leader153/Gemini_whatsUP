@@ -22,5 +22,28 @@ tasklist | findstr "node.exe"
 Очистите состояние PM2:
 powershell
 pm2 kill
-
 pm2 start ecosystem.config.js
+
+# Запуск бота Для VPS 
+Файл .env.production (Для VPS)
+SSL сертификаты есть: Они лежат в /etc/letsencrypt/live/assistantbot.online/.
+Порт 1337 занят: 
+Веб-сервера (Nginx/Apache) нет: Значит, ваш бот должен сам поднимать HTTPS.
+pm2 delete all
+Загрузите файлы:
+Залейте на сервер обновленные answer_phone.js, streamingEngine.js, sessionManager.js и этот .env.production.
+Запустите ChromaDB (если не запущена):
+code
+Bash
+docker run -d -p 8000:8000 chromadb/chroma
+Запустите бота:
+code
+Bash
+# Запуск с указанием использовать production настройки
+pm2 start config/ecosystem.config.js --env production
+Проверьте логи:
+pm2 logs gemini-bot
+Вы должны увидеть строчку:
+🔐 Starting HTTPS server (found SSL keys)...
+Или ✅ TwiML HTTPS server running...
+Теперь ваш VPS будет сам шифровать трафик сертификатами Let's Encrypt и отвечать Twilio по безопасному протоколу! 🚀

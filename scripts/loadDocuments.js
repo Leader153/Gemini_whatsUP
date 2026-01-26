@@ -1,16 +1,47 @@
 const fs = require('fs');
 const path = require('path');
-const { Chroma } = require('@langchain/community/vectorstores/chroma');
-const { embeddings } = require('../rag/embeddings');
+const dotenv = require('dotenv');
+
+// --- 1. НАСТРОЙКА ОКРУЖЕНИЯ (ВАЖНО ДЛЯ .env.development) ---
+// Определяем режим (по умолчанию development)
+const nodeEnv = process.env.NODE_ENV || 'development';
+const envFileName = `.env.${nodeEnv}`;
+// Ищем файл на уровень выше, так как скрипт в папке /scripts
+const envPath = path.join(__dirname, '..', envFileName);
+
+console.log(`[CONFIG] Режим загрузки: ${nodeEnv}`);
+if (fs.existsSync(envPath)) {
+    console.log(`[CONFIG] Читаем настройки из: ${envFileName}`);
+    dotenv.config({ path: envPath });
+} else {
+    console.log(`[CONFIG] Файл ${envFileName} не найден, ищем стандартный .env`);
+    dotenv.config({ path: path.join(__dirname, '..', '.env') });
+}
+// ------------------------------------------------------------
+
 const { COLLECTION_NAME } = require('../rag/vectorStore');
+const { embeddings } = require('../rag/embeddings');
 const { ChromaClient } = require('chromadb');
 const { Document } = require("@langchain/core/documents");
+const { Chroma } = require('@langchain/community/vectorstores/chroma');
 
-// Путь к файлу базы знаний
+// Настройки из окружения (теперь они точно загрузятся)
+const CHROMA_URL = process.env.CHROMA_SERVER_URL || 'http://localhost:8000';
 const CSV_PATH = path.join(__dirname, '..', 'data', 'products_knowledge_base.csv');
-const CHROMA_URL = 'http://localhost:8000';
 
-// Простая функция для парсинга CSV, устойчивая к запятым в кавычках и пустым полям
+// Функция для разбора URL (для совместимости с ChromaDB)
+function getChromaConfig(urlStr) {
+    try {
+        const url = new URL(urlStr);
+        return {
+            host: `${url.protocol}//${url.hostname}`,
+            port: parseInt(url.port) || 8000,
+        };
+    } catch (e) {
+        return { path: urlStr };
+    }
+}
+
 function parseCSV(csv) {
     const lines = csv.trim().split('\n');
     const headers = lines.shift().split(',').map(h => h.trim());
@@ -19,62 +50,49 @@ function parseCSV(csv) {
         const values = [];
         let current = '';
         let inQuotes = false;
-
         for (let i = 0; i < line.length; i++) {
             const char = line[i];
-            if (char === '"') {
-                inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
-                values.push(current.trim());
-                current = '';
-            } else {
-                current += char;
-            }
+            if (char === '"') { inQuotes = !inQuotes; }
+            else if (char === ',' && !inQuotes) { values.push(current.trim()); current = ''; }
+            else { current += char; }
         }
-        values.push(current.trim()); // Добавляем последнее значение
-
+        values.push(current.trim());
         return headers.reduce((obj, header, i) => {
             let value = values[i] || '';
-            if (value.startsWith('"') && value.endsWith('"')) {
-                value = value.slice(1, -1).replace(/""/g, '"');
-            }
+            if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1).replace(/""/g, '"');
             obj[header] = value;
             return obj;
         }, {});
     });
 }
 
-
 async function main() {
-    console.log('🚀 Начало загрузки документов в ChromaDB из CSV...\n');
+    console.log('🚀 Начало загрузки документов в ChromaDB...');
 
     try {
-        // 0. Подключение к ChromaDB и удаление старой коллекции
-        console.log('🔄 Подключение к ChromaDB...');
-        const chromaClient = new ChromaClient({ path: CHROMA_URL });
+        console.log(`🔄 Подключение к ChromaDB по адресу: ${CHROMA_URL}`);
+        const chromaConfig = getChromaConfig(CHROMA_URL);
+        const chromaClient = new ChromaClient(chromaConfig);
 
         try {
             console.log(`🗑️  Удаление старой коллекции "${COLLECTION_NAME}"...`);
             await chromaClient.deleteCollection({ name: COLLECTION_NAME });
-            console.log('✅ Старая коллекция удалена\n');
+            console.log('✅ Старая коллекция удалена');
         } catch (error) {
-            console.log('ℹ️  Коллекция не существует, создаем новую\n');
+            console.log('ℹ️  Коллекция не найдена, создаем новую');
         }
 
-        // 1. Загрузить данные из CSV
         console.log(`📁 Чтение файла: ${CSV_PATH}`);
-        if (!fs.existsSync(CSV_PATH)) {
-            throw new Error(`Файл ${CSV_PATH} не найден!`);
-        }
+        if (!fs.existsSync(CSV_PATH)) throw new Error(`Файл ${CSV_PATH} не найден!`);
+        
         const csvData = fs.readFileSync(CSV_PATH, 'utf-8');
         const parsedData = parseCSV(csvData);
 
         if (parsedData.length === 0) {
-            console.log('\n⚠️ CSV файл пуст или не удалось его распарсить.');
+            console.log('⚠️ CSV файл пуст.');
             return;
         }
 
-        // 2. Создать документы LangChain с метаданными
         const docs = parsedData.map(row => {
             const pageContent = `
 Product: ${row.Product_Name || ''}
@@ -85,46 +103,26 @@ Connectivity & Safety: ${row.Connectivity_Safety || ''}
 Target: ${row.Target_Audience || ''}
 Category: ${row.Domain || ''} / ${row.Sub_Category || ''}
             `.trim();
-
-            return new Document({
-                pageContent,
-                metadata: { ...row }
-            });
+            return new Document({ pageContent, metadata: { ...row } });
         });
 
-        console.log(`\n✅ Подготовлено ${docs.length} документов из CSV`);
-        if (docs.length > 0) {
-            console.log('📝 Пример первого документа:\n', docs[0].pageContent);
-        }
+        console.log(`✅ Подготовлено ${docs.length} документов.`);
 
-        // 3. Подключиться к хранилищу и добавить документы
-        console.log(`\n🔄 Добавление документов в ChromaDB...`);
-        console.log(`   Коллекция: ${COLLECTION_NAME}`);
-        console.log(`   URL: ${CHROMA_URL}`);
-
-        // Инициализируем Chroma напрямую для создания коллекции
+        console.log(`🔄 Создание векторного индекса...`);
         await Chroma.fromDocuments(docs, embeddings, {
             collectionName: COLLECTION_NAME,
             url: CHROMA_URL,
+            collectionMetadata: { "hnsw:space": "cosine" }
         });
 
-        console.log('\n✅ Все документы успешно загружены в ChromaDB!');
-        console.log(`📊 Статистика:`);
-        console.log(`   - Всего документов: ${docs.length}`);
-        console.log(`   - Коллекция: ${COLLECTION_NAME}`);
-        console.log(`   - Готово к использованию в RAG!`);
-        console.log('\n💡 Теперь вы можете запустить голосовой бот, который будет различать домены: node handlers/answer_phone.js');
+        console.log('\n✅ УСПЕХ: База знаний обновлена!');
+        console.log(`📊 Всего документов: ${docs.length}`);
 
     } catch (error) {
-        console.error('\n❌ Ошибка загрузки документов:', error.message);
-        console.error('\n💡 Убедитесь, что:');
-        console.error('   1. ChromaDB запущен (docker ps)');
-        console.error(`   2. Файл ${CSV_PATH} существует и корректен.`);
-        console.error('   3. GEMINI_API_KEY установлен в .env');
-        console.error('\n🔧 Полная ошибка:', error);
+        console.error('\n❌ Ошибка загрузки:', error.message);
+        console.error('🔧 Проверьте: запущен ли Docker с ChromaDB и правильность .env файла.');
         process.exit(1);
     }
 }
 
-// Запуск скрипта
 main();

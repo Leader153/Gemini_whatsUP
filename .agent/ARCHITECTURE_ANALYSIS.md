@@ -10,7 +10,7 @@ Gemini_whatsUP/
 │
 ├── handlers/                   # HTTP обработчики
 │   ├── answer_phone.js         # Основной сервер (HTTP + WebSocket)
-│   ├── mediaStreamHandler.js   # WebSocket обработчик для Twilio Media Streams
+│   ├── mediaStreamHandler.js    # WebSocket обработчик для Twilio Media Streams
 │   └── messaging_handler.js    # WhatsApp/SMS обработчик
 │
 ├── utils/                      # Утилиты

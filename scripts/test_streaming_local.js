@@ -1,7 +1,7 @@
 const http = require('http');
 const querystring = require('querystring');
 
-const PORT = 1337; // Based on .env
+const PORT = 1337; 
 const CALL_SID = 'test_call_' + Date.now();
 const USER_PHONE = '+972533403449';
 
@@ -37,18 +37,14 @@ function postRequest(path, data) {
     });
 }
 
-function postRequestEmpty(path) {
-    return postRequest(path, {});
-}
-
 async function runTest() {
-    console.log('🧪 Starting Streaming Test on Port ' + PORT);
+    console.log('🧪 Starting Logic Test on Port ' + PORT);
 
     try {
-        // 1. Initial /respond call
+        // --- TURN 1 ---
         console.log(`\n1. Sending POST to /respond...`);
         const respondRes = await postRequest('/respond', {
-            SpeechResult: 'כמה עולה יאכטה לואיז לשלוש שעות?', // How much does yacht Louise cost for 3 hours?
+            SpeechResult: 'כמה עולה יאכטה לואיז לשלוש שעות?', 
             CallSid: CALL_SID,
             From: USER_PHONE
         });
@@ -56,12 +52,14 @@ async function runTest() {
         console.log('Response from /respond:');
         console.log(respondRes.body);
 
-        if (!respondRes.body.includes('רק רגע, אני בודקת')) {
-            console.error('❌ Failed: Did not find immediate filler phrase.');
+        // ПРОВЕРКА 1: Должна быть музыка (<Play>), а не текст
+        if (respondRes.body.includes('<Play') || respondRes.body.includes('mb.mp3')) {
+            console.log('✅ Success: Music started immediately.');
         } else {
-            console.log('✅ Found immediate filler phrase.');
+            console.error('❌ Failed: Music <Play> tag not found.');
         }
 
+        // ПРОВЕРКА 2: Редирект
         if (!respondRes.body.includes('check_ai')) {
             console.error('❌ Failed: redirect to check_ai not found.');
             return;
@@ -73,24 +71,25 @@ async function runTest() {
 
         console.log(`\n2. Polling /check_ai...`);
 
-        while (!completed && attempts < 30) {
+        while (!completed && attempts < 40) {
             attempts++;
-            // Simulate delay between Twilio requests (Twilio plays audio then requests next TwiML)
-            await new Promise(r => setTimeout(r, 1500));
+            // Имитируем задержку Twilio (он играет музыку или говорит, это занимает время)
+            await new Promise(r => setTimeout(r, 1000));
 
             const checkRes = await postRequest(`/check_ai?CallSid=${CALL_SID}`, {});
             const twiml = checkRes.body.trim();
 
             console.log(`\n--- Attempt ${attempts} ---`);
-            // console.log(twiml);
-
+            
             if (twiml.includes('<Say') && !twiml.includes('apiError')) {
-                // Extract text from Say
                 const match = twiml.match(/<Say.*?>(.*?)<\/Say>/);
                 const text = match ? match[1] : '???';
                 console.log(`🗣️ BOT SAYS: "${text}"`);
-            } else if (twiml.includes('<Pause')) {
-                console.log('⏳ Bot is thinking (Wait music/pause)...');
+                
+                // Если бот что-то сказал, значит он ответил.
+                // Но мы продолжаем поллинг, пока он не вернет Gather (конец ответа)
+            } else if (twiml.includes('<Pause') || twiml.includes('<Play')) {
+                console.log('⏳ Bot is thinking...');
             } else if (twiml.includes('apiError')) {
                 console.log('❌ API Error reported by bot.');
             }
@@ -106,10 +105,13 @@ async function runTest() {
 
         if (!completed) {
             console.log('⚠️ Test timed out (too many polls).');
+            return;
         }
+        
+        console.log('\n✅ TEST PASSED!');
 
     } catch (error) {
-        console.error('❌ Test failed:', error.message);
+        console.error('❌ Test failed:', error);
     }
 }
 
