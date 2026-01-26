@@ -1,7 +1,7 @@
 const { calendar } = require('@googleapis/calendar');
 const { GoogleAuth } = require('google-auth-library');
 const path = require('path');
-require('dotenv').config();
+
 
 /**
  * Инициализация клиента Google Calendar с Service Account
@@ -47,7 +47,7 @@ async function checkAvailability(date, duration = 3, yachtName) {
             singleEvents: true,
             orderBy: 'startTime',
         });
-        
+
         const busySlots = (response.data.items || [])
             .filter(event => event.summary && event.summary.includes(yachtName))
             .map(slot => ({
