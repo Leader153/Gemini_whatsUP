@@ -1,44 +1,45 @@
-require('dotenv').config();
 const twilio = require('twilio');
 
-// Инициализация клиента Twilio с учетными данными из .env
+// Переменные окружения уже загружены в index.js
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const fromNumber = process.env.TWILIO_NUMBER; // например, +972533883507
+const fromNumber = process.env.TWILIO_NUMBER; // Ожидается формат +972...
 
-if (!accountSid || !authToken || !fromNumber) {
-    console.error('❌ Ошибка: Учетные данные Twilio (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER) не найдены в .env файле.');
-    // В реальном приложении здесь лучше выбросить исключение или завершить процесс
-    // throw new Error('Twilio credentials are not configured.');
+let client = null;
+
+if (accountSid && authToken && fromNumber) {
+    client = twilio(accountSid, authToken);
+} else {
+    console.error('❌ [WHATSAPP] Ошибка: Не найдены учетные данные Twilio в .env');
 }
 
-const client = twilio(accountSid, authToken);
-
 /**
- * Отправляет сообщение WhatsApp на указанный номер.
- * @param {string} toNumber - Номер получателя в формате E.164 (например, +972533403449).
- * @param {string} messageBody - Текст сообщения для отправки.
- * @returns {Promise<object>} - Возвращает объект с информацией об отправленном сообщении.
+ * Отправляет сообщение WhatsApp
  */
 async function sendWhatsAppMessage(toNumber, messageBody) {
     if (!client) {
-        console.error('Клиент Twilio не инициализирован. Сообщение не отправлено.');
-        throw new Error('Twilio client is not initialized.');
+        console.error('❌ [WHATSAPP] Клиент не инициализирован. Проверьте ключи.');
+        return { success: false, error: 'Twilio credentials missing' };
     }
 
     try {
-        console.log(`🚀 Отправка WhatsApp сообщения на номер: ${toNumber}`);
+        // Убираем префикс whatsapp:, если он вдруг передан, чтобы избежать дублей (whatsapp:whatsapp:...)
+        const cleanTo = toNumber.replace('whatsapp:', '');
+        const cleanFrom = fromNumber.replace('whatsapp:', '');
+
+        console.log(`🚀 [WHATSAPP] Отправка на ${cleanTo}`);
+        
         const message = await client.messages.create({
-            from: `whatsapp:${fromNumber}`, // Номер, одобренный Meta
-            to: `whatsapp:${toNumber}`, // Формат для WhatsApp
+            from: `whatsapp:${cleanFrom}`,
+            to: `whatsapp:${cleanTo}`,
             body: messageBody,
         });
 
-        console.log(`✅ Сообщение успешно отправлено. SID: ${message.sid}`);
+        console.log(`✅ [WHATSAPP] Отправлено. SID: ${message.sid}`);
         return { success: true, sid: message.sid };
+        
     } catch (error) {
-        console.error(`❌ Ошибка при отправке WhatsApp сообщения на номер ${toNumber}:`, error.message);
-        // Возвращаем информацию об ошибке, чтобы вызывающий код мог ее обработать
+        console.error(`❌ [WHATSAPP] Ошибка отправки:`, error.message);
         return { success: false, error: error.message };
     }
 }
