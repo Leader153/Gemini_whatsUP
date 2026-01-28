@@ -22,7 +22,12 @@ console.log('[STARTUP] Answer Phone Handler Loaded (Optimized)');
 
 app.use(express.urlencoded({ extended: true }));
 app.use('/music', express.static(path.join(__dirname, '../public/music')));
-app.use('/', messagingRoutes); 
+console.log('[DEBUG_ROUTES] messagingRoutes type:', typeof messagingRoutes);
+if (messagingRoutes && typeof messagingRoutes === 'function') {
+    app.use('/', messagingRoutes);
+} else {
+    console.error('[CRITICAL_ERROR] messagingRoutes failed to load correctly. It is:', messagingRoutes);
+}
 
 const pendingAITasks = new Map();
 
@@ -30,17 +35,17 @@ const pendingAITasks = new Map();
 app.post('/voice', (request, response) => {
     const twiml = new VoiceResponse();
     const initialGreeting = messageFormatter.getGreeting('voice');
-    
+
     // Оптимизация: Сразу говорим и слушаем
     twiml.say({ voice: botBehavior.voiceSettings.he.ttsVoice }, initialGreeting);
-    
+
     twiml.gather({
         input: 'speech',
         action: '/respond',
         speechTimeout: 'auto', // Twilio сам решает, когда фраза окончена
         language: botBehavior.voiceSettings.he.sttLanguage,
     });
-    
+
     twiml.redirect({ method: 'POST' }, '/reprompt');
 
     response.type('text/xml');
@@ -51,7 +56,7 @@ app.post('/voice', (request, response) => {
 app.post('/respond', (request, response) => {
     const speechResult = request.body.SpeechResult;
     const callSid = request.body.CallSid;
-    
+
     // --- УСКОРЕНИЕ 1: МОМЕНТАЛЬНЫЙ ОТВЕТ ---
     // Если речь распознана, мы СРАЗУ отправляем Twilio команду "Играй музыку".
     // Вся логика запускается уже ПОСЛЕ отправки ответа.
@@ -59,13 +64,13 @@ app.post('/respond', (request, response) => {
         const twiml = new VoiceResponse();
         // Используем play. Ссылка должна быть быстрой (Twilio Assets идеальны)
         twiml.play({ loop: 10 }, HOLD_MUSIC_URL);
-        
+
         response.type('text/xml');
         response.send(twiml.toString()); // <--- ОТПРАВЛЯЕМ ОТВЕТ ПРЯМО СЕЙЧАС!
-        
+
         // --- АСИНХРОННАЯ ЛОГИКА (В фоне) ---
         // Node.js продолжает выполнение этого блока даже после res.send()
-        
+
         const clientPhone = request.body.From;
         const domain = process.env.DOMAIN_NAME || request.headers.host;
         const protocol = process.env.DOMAIN_NAME ? 'https' : 'http';
@@ -78,7 +83,7 @@ app.post('/respond', (request, response) => {
             status: 'processing',
             queue: [],
             result: null,
-            interrupted: false, 
+            interrupted: false,
             startTime: Date.now()
         };
         pendingAITasks.set(callSid, task);
@@ -91,7 +96,7 @@ app.post('/respond', (request, response) => {
                 if (!task.interrupted) {
                     task.interrupted = true;
                     const elapsed = Date.now() - task.startTime;
-                    const minDuration = 2000; 
+                    const minDuration = 2000;
                     const delay = Math.max(0, minDuration - elapsed);
 
                     console.log(`⚡ [INTERRUPT] Ответ готов. Прерывание через ${delay}мс...`);
@@ -99,7 +104,7 @@ app.post('/respond', (request, response) => {
                     setTimeout(() => {
                         const updateTwiml = new VoiceResponse();
                         updateTwiml.redirect({ method: 'POST' }, `${baseUrl}/check_ai?CallSid=${callSid}`);
-                        
+
                         client.calls(callSid)
                             .update({ twiml: updateTwiml.toString() })
                             .then(() => console.log(`✅ [INTERRUPT] Успешный редирект.`))
@@ -146,8 +151,8 @@ app.post('/check_ai', (request, response) => {
 
     if (task.queue && task.queue.length > 0) {
         let combinedText = "";
-        while(task.queue.length > 0) combinedText += task.queue.shift() + " ";
-        
+        while (task.queue.length > 0) combinedText += task.queue.shift() + " ";
+
         twiml.say({ voice: voice }, combinedText);
         twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
         return response.send(twiml.toString());
@@ -172,7 +177,7 @@ app.post('/check_ai', (request, response) => {
         }
         return response.send(twiml.toString());
     }
-    
+
     response.type('text/xml').send(twiml.toString());
 });
 
@@ -187,7 +192,7 @@ app.post('/process_tool', async (request, response) => {
         const userPhone = sessionManager.getUserPhone(callSid);
 
         const toolResult = await conversationEngine.handleToolCalls(
-            functionCalls, callSid, 'voice', userPhone, context, true 
+            functionCalls, callSid, 'voice', userPhone, context, true
         );
 
         const twiml = new VoiceResponse();
@@ -215,13 +220,13 @@ app.post('/process_tool', async (request, response) => {
 app.post('/reprompt', (request, response) => {
     const twiml = new VoiceResponse();
     const retryCount = parseInt(request.query.retry || '0');
-    
+
     if (retryCount === 0) {
         twiml.play({ loop: 1 }, HOLD_MUSIC_URL);
         twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
         twiml.redirect({ method: 'POST' }, '/reprompt?retry=1');
     } else {
-        twiml.say({ voice: botBehavior.voiceSettings.he.ttsVoice }, "נתראה!"); 
+        twiml.say({ voice: botBehavior.voiceSettings.he.ttsVoice }, "נתראה!");
         twiml.hangup();
     }
     response.type('text/xml').send(twiml.toString());

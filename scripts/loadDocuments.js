@@ -2,13 +2,17 @@ const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 
-// --- НАСТРОЙКА ОКРУЖЕНИЯ ---
+// --- 1. НАСТРОЙКА ОКРУЖЕНИЯ ---
 const nodeEnv = process.env.NODE_ENV || 'development';
 const envFileName = `.env.${nodeEnv}`;
 const envPath = path.join(__dirname, '..', envFileName);
 
-if (fs.existsSync(envPath)) dotenv.config({ path: envPath });
-else dotenv.config({ path: path.join(__dirname, '..', '.env') });
+console.log(`[CONFIG] Режим: ${nodeEnv}`);
+if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+} else {
+    dotenv.config({ path: path.join(__dirname, '..', '.env') });
+}
 
 const { COLLECTION_NAME } = require('../rag/vectorStore');
 const { embeddings } = require('../rag/embeddings');
@@ -50,13 +54,14 @@ function parseCSV(csv) {
 }
 
 async function main() {
-    console.log('🚀 ЗАГРУЗКА БАЗЫ (ВЕРСИЯ KEYWORD BOOST)...');
+    console.log('🚀 ЗАГРУЗКА БАЗЫ ЗНАНИЙ...');
 
     try {
         console.log(`🔄 Подключение к ChromaDB: ${CHROMA_URL}`);
         const chromaConfig = getChromaConfig(CHROMA_URL);
         const chromaClient = new ChromaClient(chromaConfig);
 
+        // Очистка
         try {
             await chromaClient.deleteCollection({ name: COLLECTION_NAME });
             console.log('✅ Старая коллекция удалена.');
@@ -64,30 +69,24 @@ async function main() {
         
         await new Promise(r => setTimeout(r, 1000));
 
+        // Чтение CSV
         if (!fs.existsSync(CSV_PATH)) throw new Error(`Файл не найден!`);
         const parsedData = parseCSV(fs.readFileSync(CSV_PATH, 'utf-8'));
 
         const docs = parsedData.map(row => {
-            // ХИТРОСТЬ: Дублируем важные слова в начало, чтобы поиск работал лучше
             const pageContent = `
-=== KEYWORDS FOR SEARCH ===
-${row.Product_Name} ${row.Model_Type}
-${row.Product_Name} ${row.Model_Type}
-${row.Domain} ${row.Sub_Category}
-
-=== DETAILS ===
-Product Name: ${row.Product_Name}
+Product: ${row.Product_Name}
 Model: ${row.Model_Type}
+City: ${row.City}
 Price: ${row.Price}
 Features: ${row.Key_Features}
-Connectivity: ${row.Connectivity_Safety}
-Target Audience: ${row.Target_Audience}
+Target: ${row.Target_Audience}
 Category: ${row.Domain} / ${row.Sub_Category}
 
-=== MEDIA ===
+--- MEDIA & STYLE ---
 Images: ${row.Photo_URLs || 'None'}
 Video: ${row.Video_URL || 'None'}
-Bot Style: ${row.Human_Style_Note || 'Neutral'}
+Bot Instruction: ${row.Human_Style_Note || 'Neutral tone'}
             `.trim();
 
             return new Document({ 
@@ -95,25 +94,29 @@ Bot Style: ${row.Human_Style_Note || 'Neutral'}
                 metadata: {
                     id: row.id,
                     Domain: row.Domain,
-                    // Добавляем Product Name в метаданные для отладки
-                    Product: row.Product_Name
+                    Sub_Category: row.Sub_Category,
+                    Product: row.Product_Name,
+                    City: row.City
                 } 
             });
         });
 
-        console.log(`✅ Найдено ${docs.length} документов.`);
-        console.log(`🔄 Создание векторов (embedding-001)...`);
+        console.log(`✅ Подготовлено ${docs.length} документов.`);
+        console.log(`🔄 Генерация векторов и сохранение...`);
         
+        // ВАЖНО: Используем единый вызов, чтобы видеть ошибку сразу
         await Chroma.fromDocuments(docs, embeddings, {
             collectionName: COLLECTION_NAME,
             url: CHROMA_URL,
             collectionMetadata: { "hnsw:space": "cosine" }
         });
 
-        console.log('\n✅ УСПЕХ: База обновлена с усиленными ключевыми словами!');
+        console.log('\n✅ УСПЕХ: База обновлена!');
 
     } catch (error) {
-        console.error('\n❌ Ошибка:', error.message);
+        console.error('\n❌ КРИТИЧЕСКАЯ ОШИБКА ЗАГРУЗКИ:');
+        console.error(error); // Выводим полную ошибку
+        console.error('\n💡 СОВЕТ: Проверьте API Key и доступ к модели text-embedding-004');
         process.exit(1);
     }
 }

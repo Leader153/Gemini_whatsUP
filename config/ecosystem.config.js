@@ -12,16 +12,16 @@ module.exports = {
     name: "gemini-bot",
     script: "index.js",
     cwd: "./",
-    
+
     // Настройки слежения (перезапуск при изменении файлов)
-    watch: true,
-    ignore_watch: ["node_modules", "data", "logs", ".git", ".env*"],
-    
+    watch: false, // ОТКЛЮЧЕНО: перезапуск обрывает активные звонки
+    ignore_watch: ["node_modules", "data", "logs", "orders", ".git", ".env*"],
+
     // Переменные окружения по умолчанию (Локально)
     env: {
       NODE_ENV: "development",
     },
-    
+
     // Переменные для VPS (Запуск: pm2 start ... --env production)
     env_production: {
       NODE_ENV: "production",
