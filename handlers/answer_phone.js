@@ -18,15 +18,16 @@ const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWI
 // Ссылка на музыку
 const HOLD_MUSIC_URL = process.env.HOLD_MUSIC_URL || 'https://mabotmusik-2585.twil.io/mb.mp3';
 
-console.log('[STARTUP] Answer Phone Handler Loaded (Optimized)');
+console.log('[STARTUP] Answer Phone Handler Loaded (Production Ready)');
 
 app.use(express.urlencoded({ extended: true }));
 app.use('/music', express.static(path.join(__dirname, '../public/music')));
-console.log('[DEBUG_ROUTES] messagingRoutes type:', typeof messagingRoutes);
+
+// Подключение WhatsApp/SMS маршрутов
 if (messagingRoutes && typeof messagingRoutes === 'function') {
     app.use('/', messagingRoutes);
 } else {
-    console.error('[CRITICAL_ERROR] messagingRoutes failed to load correctly. It is:', messagingRoutes);
+    console.error('[CRITICAL_ERROR] messagingRoutes failed to load.');
 }
 
 const pendingAITasks = new Map();
@@ -42,7 +43,7 @@ app.post('/voice', (request, response) => {
     twiml.gather({
         input: 'speech',
         action: '/respond',
-        speechTimeout: 'auto', // Twilio сам решает, когда фраза окончена
+        speechTimeout: 'auto',
         language: botBehavior.voiceSettings.he.sttLanguage,
     });
 
@@ -57,20 +58,15 @@ app.post('/respond', (request, response) => {
     const speechResult = request.body.SpeechResult;
     const callSid = request.body.CallSid;
 
-    // --- УСКОРЕНИЕ 1: МОМЕНТАЛЬНЫЙ ОТВЕТ ---
-    // Если речь распознана, мы СРАЗУ отправляем Twilio команду "Играй музыку".
-    // Вся логика запускается уже ПОСЛЕ отправки ответа.
+    // --- УСКОРЕНИЕ: МОМЕНТАЛЬНЫЙ ОТВЕТ ---
     if (speechResult) {
         const twiml = new VoiceResponse();
-        // Используем play. Ссылка должна быть быстрой (Twilio Assets идеальны)
         twiml.play({ loop: 10 }, HOLD_MUSIC_URL);
 
         response.type('text/xml');
-        response.send(twiml.toString()); // <--- ОТПРАВЛЯЕМ ОТВЕТ ПРЯМО СЕЙЧАС!
+        response.send(twiml.toString()); 
 
-        // --- АСИНХРОННАЯ ЛОГИКА (В фоне) ---
-        // Node.js продолжает выполнение этого блока даже после res.send()
-
+        // --- АСИНХРОННАЯ ЛОГИКА ---
         const clientPhone = request.body.From;
         const domain = process.env.DOMAIN_NAME || request.headers.host;
         const protocol = process.env.DOMAIN_NAME ? 'https' : 'http';
@@ -88,7 +84,6 @@ app.post('/respond', (request, response) => {
         };
         pendingAITasks.set(callSid, task);
 
-        // Ленивая подгрузка модуля (хотя require кешируется, это не страшно)
         const streamingEngine = require('../utils/streamingEngine');
 
         setImmediate(async () => {
@@ -122,7 +117,6 @@ app.post('/respond', (request, response) => {
         });
 
     } else {
-        // Если тишина
         const twiml = new VoiceResponse();
         twiml.redirect({ method: 'POST' }, '/reprompt');
         response.type('text/xml');
@@ -178,10 +172,11 @@ app.post('/check_ai', (request, response) => {
         return response.send(twiml.toString());
     }
 
-    response.type('text/xml').send(twiml.toString());
+    response.type('text/xml');
+    response.send(twiml.toString());
 });
 
-// 4. ИНСТРУМЕНТЫ
+// 4. ИНСТРУМЕНТЫ (Перевод на оператора)
 app.post('/process_tool', async (request, response) => {
     const callSid = request.body.CallSid || request.query.CallSid;
     try {
@@ -199,21 +194,63 @@ app.post('/process_tool', async (request, response) => {
         const voice = botBehavior.voiceSettings.he.ttsVoice;
 
         if (toolResult.transferToOperator) {
+            console.log(`📞 Попытка перевода на оператора: ${botBehavior.operatorSettings.phoneNumber}`);
             twiml.say({ voice: voice }, toolResult.text);
-            twiml.dial({ timeout: botBehavior.operatorSettings.timeout, action: botBehavior.operatorSettings.callbackUrl }, botBehavior.operatorSettings.phoneNumber);
+            
+            // ВАЖНО: Указываем action, чтобы вернуть звонок, если не ответят
+            twiml.dial({ 
+                timeout: botBehavior.operatorSettings.timeout, 
+                action: '/handle-dial-status' 
+            }, botBehavior.operatorSettings.phoneNumber);
         } else {
             const cleanText = botBehavior.cleanTextForTTS(toolResult.text);
             twiml.say({ voice: voice }, cleanText);
             twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
             twiml.redirect({ method: 'POST' }, '/reprompt');
         }
-        response.type('text/xml').send(twiml.toString());
+        response.type('text/xml');
+        response.send(twiml.toString());
     } catch (error) {
         const twiml = new VoiceResponse();
         twiml.say(messageFormatter.getMessage('apiError', 'voice'));
         twiml.redirect('/reprompt');
         response.type('text/xml').send(twiml.toString());
     }
+});
+
+// --- НОВЫЙ МАРШРУТ: ВОЗВРАТ ЗВОНКА ОТ ОПЕРАТОРА ---
+// Именно это сохраняет память и возвращает бота
+app.post('/handle-dial-status', (request, response) => {
+    const dialStatus = request.body.DialCallStatus;
+    const voice = botBehavior.voiceSettings.he.ttsVoice;
+
+    console.log(`🔄 Статус звонка оператору: ${dialStatus}`);
+
+    const twiml = new VoiceResponse();
+
+    if (dialStatus === 'completed' || dialStatus === 'answered') {
+        // Успех, кладем трубку
+        twiml.hangup();
+    } else {
+        // Не дозвонились (busy, no-answer, failed)
+        // Говорим сообщение и снова слушаем клиента
+        // Память (sessionManager) жива, так как CallSid тот же!
+        
+        twiml.say({ voice: voice }, "מצטערת, הנציג אינו זמין כרגע. איך אוכל לעזור לך בנושא אחר?");
+        // (Извините, представитель сейчас недоступен. Чем еще могу помочь?)
+
+        twiml.gather({ 
+            input: 'speech', 
+            action: '/respond', 
+            speechTimeout: 'auto', 
+            language: botBehavior.voiceSettings.he.sttLanguage 
+        });
+        
+        twiml.redirect({ method: 'POST' }, '/reprompt');
+    }
+
+    response.type('text/xml');
+    response.send(twiml.toString());
 });
 
 // 5. ПЕРЕСПРОС
