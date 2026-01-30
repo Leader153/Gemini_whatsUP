@@ -1,4 +1,4 @@
-const { google } = require('googleapis');
+const { calendar } = require('@googleapis/calendar');
 const { GoogleAuth } = require('google-auth-library');
 const path = require('path');
 
@@ -21,20 +21,27 @@ const YACHT_ALIASES = {
     'Sea-u': ['Sea-u', 'סי יו', 'Sea u', 'סי-יו']
 };
 
+/**
+ * Получение клиента календаря (Используем ваши библиотеки)
+ */
 async function getCalendarClient() {
-    if (authClientInstance) return google.calendar({ version: 'v3', auth: authClientInstance });
-
+    // Если клиент уже создан, возвращаем его (но для @googleapis/calendar это работает немного иначе, создаем заново или кэшируем auth)
+    
     const keyPath = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH || './calendar/service-account-key.json';
     const absoluteKeyPath = path.resolve(process.cwd(), keyPath);
 
     try {
-        const auth = new GoogleAuth({
-            keyFile: absoluteKeyPath,
-            scopes: ['https://www.googleapis.com/auth/calendar'],
-        });
+        if (!authClientInstance) {
+            authClientInstance = new GoogleAuth({
+                keyFile: absoluteKeyPath,
+                scopes: ['https://www.googleapis.com/auth/calendar'],
+            });
+        }
 
-        authClientInstance = await auth.getClient();
-        return google.calendar({ version: 'v3', auth: authClientInstance });
+        const client = await authClientInstance.getClient();
+        // Создаем экземпляр календаря v3
+        return calendar({ version: 'v3', auth: client });
+
     } catch (error) {
         console.error(`❌ Ошибка ключа: ${absoluteKeyPath}`);
         throw error;
@@ -49,10 +56,8 @@ function isEventForYacht(eventSummary, targetYachtName) {
     
     const summaryLower = eventSummary.toLowerCase();
     
-    // 1. Проверяем точное совпадение
     if (summaryLower.includes(targetYachtName.toLowerCase())) return true;
 
-    // 2. Ищем название яхты в словаре синонимов
     const dbNameKey = Object.keys(YACHT_ALIASES).find(key => 
         targetYachtName.toLowerCase().includes(key.toLowerCase()) || 
         key.toLowerCase().includes(targetYachtName.toLowerCase())
@@ -68,7 +73,7 @@ function isEventForYacht(eventSummary, targetYachtName) {
 
 async function checkAvailability(date, duration = 2, yachtName) {
     try {
-        const calendar = await getCalendarClient();
+        const calendarClient = await getCalendarClient();
         const calendarId = process.env.GOOGLE_CALENDAR_ID;
 
         const dayStart = new Date(date);
@@ -77,7 +82,7 @@ async function checkAvailability(date, duration = 2, yachtName) {
         const dayEnd = new Date(date);
         dayEnd.setHours(20, 0, 0, 0);
 
-        const response = await calendar.events.list({
+        const response = await calendarClient.events.list({
             calendarId: calendarId,
             timeMin: dayStart.toISOString(),
             timeMax: dayEnd.toISOString(),
@@ -88,7 +93,6 @@ async function checkAvailability(date, duration = 2, yachtName) {
 
         const allEvents = response.data.items || [];
         
-        // ФИЛЬТРАЦИЯ: Оставляем только события для ЭТОЙ яхты
         const busySlots = allEvents
             .filter(event => isEventForYacht(event.summary, yachtName))
             .map(event => ({
@@ -140,7 +144,7 @@ async function checkAvailability(date, duration = 2, yachtName) {
 
 async function createBooking(startDateTime, endDateTime, clientInfo) {
     try {
-        const calendar = await getCalendarClient();
+        const calendarClient = await getCalendarClient();
         const calendarId = process.env.GOOGLE_CALENDAR_ID;
 
         const summary = `${clientInfo.yachtName} - ${clientInfo.name}`;
@@ -160,7 +164,7 @@ async function createBooking(startDateTime, endDateTime, clientInfo) {
             end: { dateTime: endDateTime, timeZone: 'Asia/Jerusalem' },
         };
 
-        const response = await calendar.events.insert({
+        const response = await calendarClient.events.insert({
             calendarId: calendarId,
             requestBody: event,
         });
@@ -176,10 +180,10 @@ async function createBooking(startDateTime, endDateTime, clientInfo) {
 
 async function isSlotAvailable(startDateTime, endDateTime, yachtName) {
     try {
-        const calendar = await getCalendarClient();
+        const calendarClient = await getCalendarClient();
         const calendarId = process.env.GOOGLE_CALENDAR_ID;
 
-        const response = await calendar.events.list({
+        const response = await calendarClient.events.list({
             calendarId: calendarId,
             timeMin: new Date(startDateTime).toISOString(),
             timeMax: new Date(endDateTime).toISOString(),
@@ -201,6 +205,5 @@ async function isSlotAvailable(startDateTime, endDateTime, yachtName) {
 module.exports = {
     checkAvailability,
     createBooking,
-    isSlotAvailable,
-    getCalendarClient // Экспортируем, если нужно для других целей
+    isSlotAvailable
 };

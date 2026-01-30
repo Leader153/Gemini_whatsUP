@@ -1,0 +1,2393 @@
+
+[2026-01-30T09:56:45.806Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:46.347Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:46.853Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:47.414Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:47.959Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:48.472Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:48.980Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:49.622Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:50.234Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:50.767Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:51.350Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:51.870Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:52.344Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:52.813Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:53.321Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T09:56:53.869Z] CRITICAL (Uncaught): Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module './googleCalendar'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarTools.js:1:46)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:07.764Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:08.378Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:08.880Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:09.394Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:09.868Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:10.365Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:10.846Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:11.322Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:11.812Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:12.288Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:12.816Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:13.379Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:13.898Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:14.385Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:14.855Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:15.413Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:30.692Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:31.256Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:31.799Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:32.291Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:32.798Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:33.327Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:33.838Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:34.324Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:34.810Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:35.301Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:35.789Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:36.332Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:36.824Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:37.303Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:37.832Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:03:38.520Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:11.284Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:11.884Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:12.379Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:12.867Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:13.344Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:13.832Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:14.312Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:14.799Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:15.266Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:15.746Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:16.228Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:16.754Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:17.245Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:17.713Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:18.265Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:14:18.817Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:48.743Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:49.244Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:49.722Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:50.235Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:50.760Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:51.231Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:51.714Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:52.211Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:52.688Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:53.157Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:53.628Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:54.117Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:54.587Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:55.068Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:55.535Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:49:56.023Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:26.861Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:27.648Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:28.448Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:29.149Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:29.842Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:30.566Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:31.337Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:32.184Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:32.943Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:33.721Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:34.482Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:35.236Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:36.052Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:36.841Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:37.715Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:38.749Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+
+[2026-01-30T10:51:39.610Z] CRITICAL (Uncaught): Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+Stack: Error: Cannot find module 'googleapis'
+Require stack:
+- C:\a my box\Gemini_whatsUP\calendar\calendarService.js
+- C:\a my box\Gemini_whatsUP\calendar\calendarTools.js
+- C:\a my box\Gemini_whatsUP\utils\conversationEngine.js
+- C:\a my box\Gemini_whatsUP\handlers\answer_phone.js
+- C:\a my box\Gemini_whatsUP\index.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at Hook._require.Module.require (C:\Users\leade\AppData\Roaming\npm\node_modules\pm2\node_modules\require-in-the-middle\index.js:81:25)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\a my box\Gemini_whatsUP\calendar\calendarService.js:1:20)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
