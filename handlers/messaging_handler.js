@@ -1,115 +1,94 @@
 const express = require('express');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const conversationEngine = require('../utils/conversationEngine');
-const messageFormatter = require('../utils/messageFormatter');
+const { sendWhatsAppMessage } = require('../utils/whatsappService'); // Для пересылки чека
 
 const router = express.Router();
+const OWNER_PHONE = '+972533403449'; // Твой номер
 
-// ----------------------------------------------------------------------
-// МАРШРУТ /whatsapp: Обработка входящих WhatsApp сообщений
-// ----------------------------------------------------------------------
+// WHATSAPP ВХОД
 router.post('/whatsapp', async (request, response) => {
-    const incomingMessage = request.body.Body; // Текст сообщения
-    const fromNumber = request.body.From;
-    const messageSid = request.body.MessageSid;
+    const incomingMessage = request.body.Body;
+    const fromNumber = request.body.From; 
+    const numMedia = parseInt(request.body.NumMedia); // Количество файлов
 
-    // --- ЗАЩИТА ОТ ПУСТЫХ СООБЩЕНИЙ ---
-    // Если пришел статус доставки или медиа без подписи, Body может быть undefined
+    // --- ЛОГИКА: ПОЛУЧЕНИЕ ЧЕКА (ФОТО) ---
+    if (numMedia > 0) {
+        console.log(`📸 Получено медиа от клиента ${fromNumber}`);
+        const mediaUrl = request.body.MediaUrl0; // Ссылка на первое фото
+        const mimeType = request.body.MediaContentType0; // Тип файла
+
+        // Пересылаем тебе на WhatsApp
+        const forwardMsg = `📸 *קבלה/קובץ מלקוח!*
+מאת: ${fromNumber}
+הנה הקובץ: ${mediaUrl}`;
+        
+        // Наш whatsappService сам превратит ссылку в картинку
+        await sendWhatsAppMessage(OWNER_PHONE, forwardMsg);
+
+        // Отвечаем клиенту (авто-ответ)
+        const twiml = new MessagingResponse();
+        twiml.message("קיבלתי את הקובץ/תמונה, תודה! אני מעבירה לאישור.");
+        
+        response.type('text/xml');
+        return response.send(twiml.toString());
+    }
+
+    // --- ОБЫЧНЫЙ ТЕКСТ ---
     if (!incomingMessage) {
-        console.log(`⚠️ [WHATSAPP] Получено техническое сообщение или медиа без текста (игнорируем). SID: ${messageSid}`);
-        // Отправляем пустой TwiML, чтобы Twilio не ругался
+        // Игнорируем статусы
         response.type('text/xml');
         return response.send('<Response></Response>');
     }
 
     console.log('📱 WhatsApp сообщение от:', fromNumber);
-    console.log('📝 Текст:', incomingMessage);
-
+    
+    // Обработка текста ботом
     const sessionId = fromNumber;
-    const userPhone = fromNumber.replace('whatsapp:', '');
+    const userPhone = fromNumber.replace('whatsapp:', ''); 
 
     try {
         const result = await conversationEngine.processMessage(
-            incomingMessage,
-            sessionId,
-            'whatsapp',
-            userPhone
+            incomingMessage, sessionId, 'whatsapp', userPhone
         );
 
         const twiml = new MessagingResponse();
-
-        if (result.text) {
-            twiml.message(result.text);
-        }
-
-        // Если result.text пустой (например, сработал инструмент и ответ не нужен),
-        // мы просто ничего не отправляем в ответ.
+        if (result.text) twiml.message(result.text);
 
         response.type('text/xml');
         response.send(twiml.toString());
 
     } catch (error) {
-        console.error('❌ Ошибка обработки WhatsApp:', error);
-        // В случае ошибки лучше ничего не отвечать клиенту, или ответить, если это критично
-        const twiml = new MessagingResponse();
-        // twiml.message(messageFormatter.getMessage('apiError', 'whatsapp')); // Можно раскомментировать для отладки
+        console.error('❌ Ошибка:', error);
         response.type('text/xml');
-        response.send(twiml.toString());
+        response.send(new MessagingResponse().toString());
     }
 });
 
-// ----------------------------------------------------------------------
-// МАРШРУТ /sms: Обработка входящих SMS сообщений
-// ----------------------------------------------------------------------
+// SMS ВХОД
 router.post('/sms', async (request, response) => {
-    const incomingMessage = request.body.Body;
-    const fromNumber = request.body.From;
+    const incomingMessage = request.body.Body; 
+    const fromNumber = request.body.From; 
 
-    // --- ЗАЩИТА ОТ ПУСТЫХ СООБЩЕНИЙ ---
-    if (!incomingMessage) {
-        return response.status(200).send('<Response></Response>');
-    }
+    if (!incomingMessage) return response.status(200).send('<Response></Response>');
 
-    console.log('📲 SMS сообщение от:', fromNumber);
-
-    const sessionId = `sms:${fromNumber}`;
-    const userPhone = fromNumber;
-
+    const sessionId = `sms:${fromNumber}`; 
     try {
         const result = await conversationEngine.processMessage(
-            incomingMessage,
-            sessionId,
-            'sms',
-            userPhone
+            incomingMessage, sessionId, 'sms', fromNumber
         );
-
         const twiml = new MessagingResponse();
-        if (result.text) {
-            twiml.message(result.text);
-        }
-
+        if (result.text) twiml.message(result.text);
         response.type('text/xml');
         response.send(twiml.toString());
-
     } catch (error) {
-        console.error('❌ Ошибка обработки SMS:', error);
-        const twiml = new MessagingResponse();
         response.type('text/xml');
-        response.send(twiml.toString());
+        response.send(new MessagingResponse().toString());
     }
 });
 
-// ----------------------------------------------------------------------
-// СТАТУСЫ (Оставляем как есть, они работают корректно)
-// ----------------------------------------------------------------------
-router.post('/whatsapp/status', (req, res) => {
-    // console.log(`📊 WhatsApp статус: ${req.body.MessageStatus}`); 
-    // Закомментировал лог, чтобы не засорять консоль
-    res.sendStatus(200);
-});
-
-router.post('/sms/status', (req, res) => {
-    res.sendStatus(200);
-});
+// СТАТУСЫ
+router.post('/whatsapp/status', (req, res) => res.sendStatus(200));
+router.post('/sms/status', (req, res) => res.sendStatus(200));
 
 module.exports = router;

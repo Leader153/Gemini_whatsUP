@@ -1,68 +1,107 @@
-const { calendar } = require('@googleapis/calendar');
+const { google } = require('googleapis');
 const { GoogleAuth } = require('google-auth-library');
 const path = require('path');
 
+let authClientInstance = null;
 
-/**
- * Инициализация клиента Google Calendar с Service Account
- */
+// --- СЛОВАРЬ СИНОНИМОВ (ALIASES) ---
+const YACHT_ALIASES = {
+    // Герцлия
+    'Joy-BE': ['JOY', 'Joy', 'ג\'וי', 'JOYB', 'joy', 'גוי בי', 'Joy-BE'],
+    'Louse Yacht': ['Louse', 'Loise', 'לואיז', 'Luize', 'לויז', 'Louise'],
+    'Dolfin': ['Dolfin', 'Dolphin', 'דולפין', 'עסוק/ה'],
+    'Lee-Yam': ['Lee-Yam', 'Lee Yam', 'לי ים', 'leeyam', 'לי-ים'],
+    'Bagira': ['Bagira', 'בגירה'],
+    
+    // Хайфа
+    'Kaifun': ['Kaifun', 'קיפון', 'Caifun'],
+    'Katamaran': ['Katamaran', 'קטמרן', 'Catamaran'],
+    'King': ['King', 'קינג'],
+    'Yami': ['Yami', 'יאמי'],
+    'Sea-u': ['Sea-u', 'סי יו', 'Sea u', 'סי-יו']
+};
+
 async function getCalendarClient() {
+    if (authClientInstance) return google.calendar({ version: 'v3', auth: authClientInstance });
+
     const keyPath = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH || './calendar/service-account-key.json';
-    const absoluteKeyPath = path.resolve(keyPath);
+    const absoluteKeyPath = path.resolve(process.cwd(), keyPath);
 
-    const authClient = new GoogleAuth({
-        keyFile: absoluteKeyPath,
-        scopes: ['https://www.googleapis.com/auth/calendar'],
-    });
+    try {
+        const auth = new GoogleAuth({
+            keyFile: absoluteKeyPath,
+            scopes: ['https://www.googleapis.com/auth/calendar'],
+        });
 
-    const client = await authClient.getClient();
-    const calendarClient = calendar({ version: 'v3', auth: client });
-
-    return calendarClient;
+        authClientInstance = await auth.getClient();
+        return google.calendar({ version: 'v3', auth: authClientInstance });
+    } catch (error) {
+        console.error(`❌ Ошибка ключа: ${absoluteKeyPath}`);
+        throw error;
+    }
 }
 
 /**
- * Проверка доступности времени в календаре
- * @param {string} date - Дата в формате YYYY-MM-DD
- * @param {number} duration - Длительность в часах (1, 2 или 3)
- * @returns {Promise<Array>} - Массив свободных временных слотов
+ * Проверка, относится ли событие к указанной яхте
  */
-async function checkAvailability(date, duration = 3, yachtName) {
+function isEventForYacht(eventSummary, targetYachtName) {
+    if (!eventSummary) return false;
+    
+    const summaryLower = eventSummary.toLowerCase();
+    
+    // 1. Проверяем точное совпадение
+    if (summaryLower.includes(targetYachtName.toLowerCase())) return true;
+
+    // 2. Ищем название яхты в словаре синонимов
+    const dbNameKey = Object.keys(YACHT_ALIASES).find(key => 
+        targetYachtName.toLowerCase().includes(key.toLowerCase()) || 
+        key.toLowerCase().includes(targetYachtName.toLowerCase())
+    );
+
+    if (dbNameKey && YACHT_ALIASES[dbNameKey]) {
+        const aliases = YACHT_ALIASES[dbNameKey];
+        return aliases.some(alias => summaryLower.includes(alias.toLowerCase()));
+    }
+
+    return false;
+}
+
+async function checkAvailability(date, duration = 2, yachtName) {
     try {
         const calendar = await getCalendarClient();
         const calendarId = process.env.GOOGLE_CALENDAR_ID;
 
-        // Границы рабочего дня (8:00 - 20:00)
         const dayStart = new Date(date);
         dayStart.setHours(8, 0, 0, 0);
-
+        
         const dayEnd = new Date(date);
         dayEnd.setHours(20, 0, 0, 0);
 
-        // Запрос всех событий на день
         const response = await calendar.events.list({
             calendarId: calendarId,
             timeMin: dayStart.toISOString(),
             timeMax: dayEnd.toISOString(),
             singleEvents: true,
             orderBy: 'startTime',
+            timeZone: 'Asia/Jerusalem'
         });
 
-        const busySlots = (response.data.items || [])
-            .filter(event => event.summary && event.summary.includes(yachtName))
-            .map(slot => ({
-                start: new Date(slot.start.dateTime || slot.start.date),
-                end: new Date(slot.end.dateTime || slot.end.date)
+        const allEvents = response.data.items || [];
+        
+        // ФИЛЬТРАЦИЯ: Оставляем только события для ЭТОЙ яхты
+        const busySlots = allEvents
+            .filter(event => isEventForYacht(event.summary, yachtName))
+            .map(event => ({
+                start: new Date(event.start.dateTime || event.start.date),
+                end: new Date(event.end.dateTime || event.end.date)
             }))
             .sort((a, b) => a.start - b.start);
 
-        // Находим свободные интервалы (Inversion of busy slots)
         const freeRanges = [];
-        let currentStart = dayStart;
+        let currentStart = new Date(dayStart);
 
-        busySlots.forEach(busy => {
+        for (const busy of busySlots) {
             if (busy.start > currentStart) {
-                // Если между текущим началом и следующим занятым слотом есть время
                 const diffMs = busy.start - currentStart;
                 const diffHours = diffMs / (1000 * 60 * 60);
 
@@ -70,13 +109,11 @@ async function checkAvailability(date, duration = 3, yachtName) {
                     freeRanges.push({ start: new Date(currentStart), end: new Date(busy.start) });
                 }
             }
-            // Двигаем текущее начало к концу занятого слота (если он внутри рабочего дня)
             if (busy.end > currentStart) {
                 currentStart = new Date(busy.end);
             }
-        });
+        }
 
-        // Проверяем остаток дня после последнего занятого слота
         if (currentStart < dayEnd) {
             const diffMs = dayEnd - currentStart;
             const diffHours = diffMs / (1000 * 60 * 60);
@@ -85,58 +122,42 @@ async function checkAvailability(date, duration = 3, yachtName) {
             }
         }
 
-        // Форматируем результат для бота
         return freeRanges.map(range => {
-            const formatTime = (d) => {
-                const h = d.getHours();
-                return h.toString(); // "8", "12", "15" и т.д.
-            };
-
+            const formatTime = (d) => d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jerusalem' });
             return {
                 start: formatTime(range.start),
                 end: formatTime(range.end),
                 startISO: range.start.toISOString(),
-                endISO: range.end.toISOString(),
-                displayText: `בין ${formatTime(range.start)} ל-${formatTime(range.end)}` // "между X и Y" на иврите
+                displayText: `בין ${formatTime(range.start)} ל-${formatTime(range.end)}`
             };
         });
 
     } catch (error) {
-        console.error('Error checking availability:', error);
-        throw error;
+        console.error('❌ Ошибка Calendar API:', error.message);
+        return [];
     }
 }
 
-/**
- * Создание бронирования в календаре
- * @param {string} startDateTime - Начало в формате ISO
- * @param {string} endDateTime - Конец в формате ISO
- * @param {Object} clientInfo - Информация о клиенте
- * @returns {Promise<Object>} - Созданное событие
- */
 async function createBooking(startDateTime, endDateTime, clientInfo) {
     try {
         const calendar = await getCalendarClient();
         const calendarId = process.env.GOOGLE_CALENDAR_ID;
 
+        const summary = `${clientInfo.yachtName} - ${clientInfo.name}`;
+        
+        const description = `
+        לקוח: ${clientInfo.name}
+        טלפון: ${clientInfo.phone}
+        יאכטה: ${clientInfo.yachtName}
+        משך: ${clientInfo.duration} שעות
+        נוצר ע"י בוט
+        `;
+
         const event = {
-            summary: `Бронирование яхты ${clientInfo.yachtName} - ${clientInfo.name}`,
-            description: `Клиент: ${clientInfo.name}\nТелефон: ${clientInfo.phone}\nДлительность: ${clientInfo.duration} час(а)`,
-            start: {
-                dateTime: startDateTime,
-                timeZone: 'Asia/Jerusalem',
-            },
-            end: {
-                dateTime: endDateTime,
-                timeZone: 'Asia/Jerusalem',
-            },
-            reminders: {
-                useDefault: false,
-                overrides: [
-                    { method: 'email', minutes: 24 * 60 }, // За день
-                    { method: 'popup', minutes: 60 }, // За час
-                ],
-            },
+            summary: summary,
+            description: description.trim(),
+            start: { dateTime: startDateTime, timeZone: 'Asia/Jerusalem' },
+            end: { dateTime: endDateTime, timeZone: 'Asia/Jerusalem' },
         };
 
         const response = await calendar.events.insert({
@@ -144,87 +165,42 @@ async function createBooking(startDateTime, endDateTime, clientInfo) {
             requestBody: event,
         });
 
-        console.log('✅ Бронирование создано:', response.data.htmlLink);
+        console.log('✅ Event Created:', response.data.htmlLink);
         return response.data;
 
     } catch (error) {
-        console.error('Error creating booking:', error);
+        console.error('❌ Booking Error:', error);
         throw error;
     }
 }
 
-/**
- * Получение списка предстоящих событий
- * @param {number} maxResults - Максимальное количество событий
- * @returns {Promise<Array>} - Массив событий
- */
-async function listUpcomingEvents(maxResults = 10) {
-    try {
-        const calendar = await getCalendarClient();
-        const calendarId = process.env.GOOGLE_CALENDAR_ID;
-
-        const response = await calendar.events.list({
-            calendarId: calendarId,
-            timeMin: new Date().toISOString(),
-            maxResults: maxResults,
-            singleEvents: true,
-            orderBy: 'startTime',
-        });
-
-        const events = response.data.items || [];
-        return events.map(event => ({
-            id: event.id,
-            summary: event.summary,
-            start: event.start.dateTime || event.start.date,
-            end: event.end.dateTime || event.end.date,
-            description: event.description,
-        }));
-
-    } catch (error) {
-        console.error('Error listing events:', error);
-        throw error;
-    }
-}
-
-
-/**
- * Проверка, доступен ли конкретный временной слот
- * @param {string} startDateTime - Начало в формате ISO
- * @param {string} endDateTime - Конец в формате ISO
- * @returns {Promise<boolean>} - true, если слот свободен
- */
 async function isSlotAvailable(startDateTime, endDateTime, yachtName) {
     try {
         const calendar = await getCalendarClient();
         const calendarId = process.env.GOOGLE_CALENDAR_ID;
 
-        const timeMin = new Date(startDateTime).toISOString();
-        const timeMax = new Date(endDateTime).toISOString();
-
-        // Запрос событий для конкретного слота
         const response = await calendar.events.list({
             calendarId: calendarId,
-            timeMin: timeMin,
-            timeMax: timeMax,
+            timeMin: new Date(startDateTime).toISOString(),
+            timeMax: new Date(endDateTime).toISOString(),
             singleEvents: true,
+            timeZone: 'Asia/Jerusalem'
         });
 
-        const busySlots = (response.data.items || []).filter(event => event.summary && event.summary.includes(yachtName));
+        const events = response.data.items || [];
+        const conflicts = events.filter(e => isEventForYacht(e.summary, yachtName));
 
-        // Если в указанном промежутке есть хоть один занятый слот для этой яхты, то он не свободен
-        return busySlots.length === 0;
+        return conflicts.length === 0;
 
     } catch (error) {
-        console.error('Error checking specific slot availability:', error);
-        // В случае ошибки лучше считать, что слот занят, во избежание двойного бронирования
-        return false;
+        console.error('❌ Slot Check Error:', error);
+        return false; 
     }
 }
 
 module.exports = {
     checkAvailability,
     createBooking,
-    listUpcomingEvents,
-    getCalendarClient,
     isSlotAvailable,
+    getCalendarClient // Экспортируем, если нужно для других целей
 };
