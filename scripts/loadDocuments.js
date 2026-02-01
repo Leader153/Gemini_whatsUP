@@ -2,17 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 
-// --- 1. НАСТРОЙКА ОКРУЖЕНИЯ ---
 const nodeEnv = process.env.NODE_ENV || 'development';
 const envFileName = `.env.${nodeEnv}`;
 const envPath = path.join(__dirname, '..', envFileName);
 
-console.log(`[CONFIG] Режим: ${nodeEnv}`);
-if (fs.existsSync(envPath)) {
-    dotenv.config({ path: envPath });
-} else {
-    dotenv.config({ path: path.join(__dirname, '..', '.env') });
-}
+if (fs.existsSync(envPath)) dotenv.config({ path: envPath });
+else dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const { COLLECTION_NAME } = require('../rag/vectorStore');
 const { embeddings } = require('../rag/embeddings');
@@ -54,14 +49,13 @@ function parseCSV(csv) {
 }
 
 async function main() {
-    console.log('🚀 ЗАГРУЗКА БАЗЫ ЗНАНИЙ...');
+    console.log('🚀 ЗАГРУЗКА БАЗЫ (MAX PARTICIPANTS)...');
 
     try {
         console.log(`🔄 Подключение к ChromaDB: ${CHROMA_URL}`);
         const chromaConfig = getChromaConfig(CHROMA_URL);
         const chromaClient = new ChromaClient(chromaConfig);
 
-        // Очистка
         try {
             await chromaClient.deleteCollection({ name: COLLECTION_NAME });
             console.log('✅ Старая коллекция удалена.');
@@ -69,42 +63,55 @@ async function main() {
         
         await new Promise(r => setTimeout(r, 1000));
 
-        // Чтение CSV
         if (!fs.existsSync(CSV_PATH)) throw new Error(`Файл не найден!`);
         const parsedData = parseCSV(fs.readFileSync(CSV_PATH, 'utf-8'));
 
         const docs = parsedData.map(row => {
             const pageContent = `
-Product: ${row.Product_Name}
+=== KEYWORDS ===
+${row.Product_Name} ${row.City !== 'N/A' ? row.City : ''}
+${row.Product_Name} ${row.Model_Type}
+
+=== DETAILS ===
+Product Name: ${row.Product_Name}
 Model: ${row.Model_Type}
 City: ${row.City}
 Price: ${row.Price}
+Max Participants: ${row.Max_Participants || 'Unknown'} 
 Features: ${row.Key_Features}
 Target: ${row.Target_Audience}
 Category: ${row.Domain} / ${row.Sub_Category}
+Bonuses: ${row.Bonuses || 'Standard'}
 
---- MEDIA & STYLE ---
+=== LOCATION ===
+Waze/Maps: ${row.Location_Link || 'None'}
+Directions: ${row.Location_Desc || 'None'}
+
+=== MEDIA ===
 Images: ${row.Photo_URLs || 'None'}
 Video: ${row.Video_URL || 'None'}
-Bot Instruction: ${row.Human_Style_Note || 'Neutral tone'}
+Bot Style: ${row.Human_Style_Note || 'Neutral'}
+
+=== PAYMENT INFO ===
+Payment Link: ${row.Payment_Link || 'None'}
+Payment Guide: ${row.Payment_Guide_URL || 'None'}
             `.trim();
 
-            return new Document({ 
-                pageContent, 
-                metadata: {
-                    id: row.id,
-                    Domain: row.Domain,
-                    Sub_Category: row.Sub_Category,
-                    Product: row.Product_Name,
-                    City: row.City
-                } 
-            });
+            const metadata = {
+                id: row.id,
+                Domain: row.Domain,
+                Sub_Category: row.Sub_Category,
+                Product: row.Product_Name,
+                City: row.City,
+                Max_Participants: row.Max_Participants // Добавили в метаданные
+            };
+
+            return new Document({ pageContent, metadata });
         });
 
         console.log(`✅ Подготовлено ${docs.length} документов.`);
-        console.log(`🔄 Генерация векторов и сохранение...`);
+        console.log(`🔄 Генерация векторов...`);
         
-        // ВАЖНО: Используем единый вызов, чтобы видеть ошибку сразу
         await Chroma.fromDocuments(docs, embeddings, {
             collectionName: COLLECTION_NAME,
             url: CHROMA_URL,
@@ -114,9 +121,7 @@ Bot Instruction: ${row.Human_Style_Note || 'Neutral tone'}
         console.log('\n✅ УСПЕХ: База обновлена!');
 
     } catch (error) {
-        console.error('\n❌ КРИТИЧЕСКАЯ ОШИБКА ЗАГРУЗКИ:');
-        console.error(error); // Выводим полную ошибку
-        console.error('\n💡 СОВЕТ: Проверьте API Key и доступ к модели text-embedding-004');
+        console.error('\n❌ Ошибка:', error.message);
         process.exit(1);
     }
 }

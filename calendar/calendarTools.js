@@ -3,8 +3,34 @@ const { sendWhatsAppMessage } = require('../utils/whatsappService');
 const { sendOrderEmail } = require('../utils/emailService');
 const { sendSms } = require('../utils/smsService');
 
+const OWNER_PHONE_NUMBER = '+972533403449'; 
 const DEFAULT_PAYMENT_LINK = "https://secure.cardcom.solutions/EA/EA5/5a2HEfT6E6KH1aSdcinQ/PaymentSP";
 const WA_NUMBER = (process.env.TWILIO_NUMBER || '972533883507').replace(/[^\d]/g, '');
+
+// --- РЕКВИЗИТЫ ---
+const PAYBOX_PHONE = "053-340-3449";
+const BANK_DETAILS = `
+בנק: יהב (04)
+סניף: 279 (קריית ביאליק)
+חשבון: 129718
+שם: דניאל פלידר (לידר הפלגות)
+`.trim();
+
+// --- ТЕКСТЫ (Pre-booking & Terms) ---
+const CLOSING_DEAL_TEXT = `
+*תהליך סגירת עסקה / שריון מקום* ⚓
+
+כדי לשריין את היאכטה, עלינו לבצע הזמנה מסודרת.
+אשלח לך כעת *אישור הזמנה* הכולל את כל הפרטים וקישור לתשלום מקדמה.
+
+💳 *אפשרויות לתשלום המקדמה:*
+1. כרטיס אשראי (קישור מאובטח).
+2. אפליקציית PayBox.
+3. העברה בנקאית.
+
+לאחר התשלום, חובה לשלוח לנו צילום אסמכתא בווטסאפ לקבלת קבלה ואישור סופי.
+*האם לשלוח לך את ההזמנה?*
+`;
 
 const TERMS_PART_1 = `
 *תנאי הזמנה ותנאי ביטול - חלק א'*
@@ -30,7 +56,6 @@ const TERMS_PART_2 = `
 10. *כוח עליון:* דחיית מועד בלבד.
 
 *אישור:* תשלום המקדמה מהווה הסכמה לתנאים.
-נא לשלוח צילום אסמכתא.
 `;
 
 const calendarTools = [
@@ -71,8 +96,17 @@ const calendarTools = [
         }
     },
     {
+        name: 'send_closing_process_info',
+        description: 'Send payment explanation via WhatsApp. Use BEFORE booking.',
+        parameters: {
+            type: 'OBJECT',
+            properties: { clientPhone: { type: 'STRING' } },
+            required: ['clientPhone']
+        }
+    },
+    {
         name: 'send_booking_confirmation',
-        description: 'Finalize booking: Calendar, WhatsApp (Split messages), Email.',
+        description: 'Finalize booking: Calendar, WhatsApp, Email.',
         parameters: {
             type: 'OBJECT',
             properties: {
@@ -82,6 +116,7 @@ const calendarTools = [
                 startTime: { type: 'STRING' },
                 duration: { type: 'NUMBER' },
                 yachtName: { type: 'STRING' },
+                participants: { type: 'STRING' }, 
                 locationLink: { type: 'STRING' },
                 locationDesc: { type: 'STRING' },
                 totalPrice: { type: 'NUMBER' },
@@ -94,26 +129,24 @@ const calendarTools = [
 ];
 
 // --- ИСПРАВЛЕНИЕ ДАТЫ (DD.MM.YYYY -> YYYY-MM-DD) ---
+// Это решает ошибку 400 Bad Request
 function normalizeDate(dateStr) {
     if (!dateStr) return dateStr;
     
-    // Если дата уже в формате YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-
-    // Если дата в формате DD.MM.YYYY или DD/MM/YYYY
-    const parts = dateStr.split(/[./]/);
-    if (parts.length === 3) {
-        // parts[0] = Day, parts[1] = Month, parts[2] = Year
-        return `${parts[2]}-${parts[1]}-${parts[0]}`; 
-    }
+    // Заменяем точки и слеши на тире
+    let cleanDate = dateStr.replace(/[./]/g, '-');
     
-    return dateStr; // Возвращаем как есть, если формат неизвестен
-}
+    // Если формат DD-MM-YYYY (европейский), переворачиваем в YYYY-MM-DD
+    // Проверка: если в начале 1 или 2 цифры, а в конце 4 (31-01-2026)
+    if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(cleanDate)) {
+        const parts = cleanDate.split('-');
+        // parts[0]=Day, parts[1]=Month, parts[2]=Year
+        cleanDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
 
-function forceYear2026(dateStr) {
-    let normalized = normalizeDate(dateStr);
-    if (!normalized) return normalized;
-    return normalized.replace(/^202[0-9]/, '2026');
+    // Принудительно ставим 2026 год (заменяем любой другой год в начале)
+    // Например 2024-02-01 -> 2026-02-01
+    return cleanDate.replace(/^\d{4}/, '2026');
 }
 
 async function trySendWithFallback(phone, text) {
@@ -121,7 +154,7 @@ async function trySendWithFallback(phone, text) {
     if (!waResult.success) {
         console.log(`⚠️ WhatsApp failed. Sending SMS fallback.`);
         const waLink = `https://wa.me/${WA_NUMBER}?text=Hi`;
-        const smsBody = `Leader: שלחנו לך פרטים בוואטסאפ. לחץ כאן לקבלתם: ${waLink}`;
+        const smsBody = `Leader: שלחנו לך פרטים בוואטסאפ. לחץ כאן: ${waLink}`;
         await sendSms(phone, smsBody);
     }
     return { result: "Message sent." };
@@ -133,7 +166,7 @@ async function handleFunctionCall(name, args) {
     try {
         switch (name) {
             case 'check_yacht_availability': {
-                const date = forceYear2026(args.date);
+                const date = normalizeDate(args.date);
                 const { checkAvailability } = require('./calendarService');
                 const slots = await checkAvailability(date, args.duration, args.yachtName);
                 if (slots.length === 0) return { result: "אין שעות פנויות." };
@@ -145,6 +178,9 @@ async function handleFunctionCall(name, args) {
 
             case 'send_whatsapp_message':
                 return await trySendWithFallback(args.clientPhone, args.messageBody);
+
+            case 'send_closing_process_info':
+                return await trySendWithFallback(args.clientPhone, CLOSING_DEAL_TEXT);
 
             case 'send_booking_confirmation':
                 return await handleBookingConfirmation(args);
@@ -162,73 +198,94 @@ async function handleFunctionCall(name, args) {
 }
 
 async function handleBookingConfirmation(args) {
-    const { clientName, clientPhone, date, startTime, duration, yachtName, locationLink, locationDesc, totalPrice, paymentLink, guideLink } = args;
+    const { clientName, clientPhone, date, startTime, duration, yachtName, participants, locationLink, locationDesc, totalPrice, paymentLink, guideLink } = args;
 
-    // Нормализуем дату для Google Calendar (YYYY-MM-DD)
+    // 1. Нормализация даты (Фикс ошибки)
     const isoDate = normalizeDate(date);
 
     const [hours, minutes] = startTime.split(':').map(Number);
     const endHours = hours + duration;
     const endTimeStr = `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
     
-    // Используем нормализованную дату для создания ISO строк
+    // Формируем ISO дату для Google (YYYY-MM-DDTHH:MM:00)
     const startTimeISO = `${isoDate}T${startTime}:00`;
     const endTimeISO = `${isoDate}T${endTimeStr}:00`;
 
+    // 2. Деньги
     const deposit = 500;
     const balance = totalPrice - deposit;
 
-    let bonuses = "בלונים בתוך היאכטה\n שלט \"מזל טוב\"\n מים";
-    if (duration >= 3) bonuses = "בקבוק שמפניה\n" + bonuses;
+    // 3. Бонусы
+    let bonuses = "✅ בלונים בתוך היאכטה\n✅ שלט \"מזל טוב\"\n✅ מים";
+    let swimmingText = "";
+    if (duration >= 3) {
+        bonuses = "🍾 בקבוק שמפניה (מתנה!)\n" + bonuses;
+        swimmingText = "🏊 אפשרות לירידה למים (באישור סקיפר)";
+    }
 
-    // 1. ЗАПИСЬ В КАЛЕНДАРЬ
+    // 4. ЗАПИСЬ В КАЛЕНДАРЬ
     try {
         console.log(`📅 Booking: ${startTimeISO} - ${endTimeISO}`);
         await createBooking(startTimeISO, endTimeISO, { name: clientName, phone: clientPhone, yachtName: yachtName, duration: duration });
         console.log("✅ Запись в Google Calendar создана.");
     } catch (calError) {
-        console.error("⚠️ Calendar Error (Check date format):", calError);
+        console.error("⚠️ Calendar Error:", calError);
+        // Не прерываем процесс, отправляем WA даже если календарь сбойнул
     }
 
-    // 2. СООБЩЕНИЯ КЛИЕНТУ (WhatsApp)
-    const msgDetails = `
+    // 5. СООБЩЕНИЯ КЛИЕНТУ (WhatsApp)
+    
+    // А) Детали
+    const msgBooking = `
 לכבוד: ${clientName}
 *אישור הזמנת שייט ביאכטה* ⚓
 
 פרטי ההזמנה:
-📅 *תאריך:* ${date}
-⏰ *שעה:* ${startTime} - ${endTimeStr}
+📅 *תאריך:* ${isoDate.split('-').reverse().join('.')}
+⏰ *שעה:* ${startTime} - ${endTimeStr} (סה"כ ${duration} שעות)
 ⛵ *יאכטה:* ${yachtName}
+👥 *משתתפים:* עד ${participants || '13'} איש
 
-🎁 *כולל:*
+📍 *מקום מפגש:*
+${locationDesc || 'מרינה'}
+
+🎁 *החבילה כוללת:*
 ${bonuses}
+${swimmingText}
     `.trim();
 
+    // Б) Оплата (Все опции)
     const msgPayment = `
 💰 *הסדרת תשלום*
 
 סה"כ לתשלום: ${totalPrice} ₪
 *מקדמה נדרשת כעת: ${deposit} ₪*
 
-👇 *לביצוע תשלום מאובטח לחצו כאן:* 👇
+אנא בחרו את דרך התשלום הנוחה לכם:
+
+1️⃣ *כרטיס אשראי (מומלץ):*
 ${paymentLink || DEFAULT_PAYMENT_LINK}
 
-${guideLink ? `(מצורף דף הסבר: ${guideLink})` : ''}
+2️⃣ *PayBox:*
+למספר: ${PAYBOX_PHONE}
+
+3️⃣ *העברה בנקאית:*
+${BANK_DETAILS}
+
+${guideLink ? `(מצורף מדריך: ${guideLink})` : ''}
 
 *היתרה (${balance} ₪) תשולם במועד ההפלגה.*
     `.trim();
 
+    // В) Локация
     const msgLocation = `
-📍 *הוראות הגעה:*
-${locationDesc || 'מרינה'}
-
-לניווט בוייז:
+📍 *הוראות הגעה (Waze):*
 ${locationLink || ''}
     `.trim();
 
-    console.log(`📤 Sending Client Messages to ${clientPhone}`);
+    console.log(`📤 Sending Booking Sequence to ${clientPhone}`);
     
-    await trySendWithFallback(clientPhone, msgDetails);
+    await trySendWithFallback(clientPhone, msgBooking);
     await new Promise(r => setTimeout(r, 1000));
     
     await trySendWithFallback(clientPhone, msgPayment);
@@ -245,7 +302,7 @@ ${locationLink || ''}
 
     await sendOrderEmail(args);
     
-    return { result: "כל הפרטים נשלחו ללקוח (ווטסאפ) ולמייל." };
+    return { result: "הזמנה בוצעה ביומן, וכל הפרטים נשלחו ללקוח." };
 }
 
 module.exports = { calendarTools, handleFunctionCall };

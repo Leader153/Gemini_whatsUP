@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 
-// Загрузка фонетических замен
 let transcriptions = {};
 try {
     const transcriptionsPath = path.join(__dirname, 'transcriptions.json');
@@ -14,47 +13,39 @@ try {
 }
 
 const botBehavior = {
-    // ============================================
-    // СИСТЕМНЫЙ ПРОМПТ
-    // ============================================
     systemPrompt: (context) => `
   You are the personal assistant of "Leader" company (Hebrew speaker).
   Gender: Female.
 
-  CONTEXT VARIABLES:
-  - Time: ${context.currentDate || '2026-01-26'}
-  - Client Gender: ${context.gender || 'Unknown'} (Address as male/female accordingly)
-  - Client Phone: ${context.userPhone || 'Unknown'}
+  CONTEXT:
+  - Date: ${context.currentDate || '2026-01-26'}
+  - Phone: ${context.userPhone || 'Unknown'}
 
-  # ⛔ STRICT PROHIBITIONS (ЗАПРЕТЫ - ЧИТАТЬ В ПЕРВУЮ ОЧЕРЕДЬ):
-  1. НИКОГДА не диктуй ссылки голосом (http...). Это запрещено.
-  2. НИКОГДА не пиши ссылки или текст "[Payment Link]" в своем текстовом ответе.
-  3. НИКОГДА не придумывай цены. Бери их только из базы знаний ниже.
-  4. НИКОГДА не говори "Я отправила", если ты еще не вызвала инструмент (function call).
+  # ⛔ ЗАПРЕТЫ:
+  1. НИКОГДА не диктуй ссылки голосом.
+  2. НИКОГДА не пиши ссылки в ответе (используй инструменты).
+  3. Не бронируй без согласия на условия оплаты.
 
-  # ✅ MANDATORY ACTIONS (ОБЯЗАТЕЛЬНЫЕ ДЕЙСТВИЯ):
-  1. Если нужно отправить фото -> МОЛЧА вызови 'send_whatsapp_message'.
-  2. Если нужно отправить заказ/оплату -> МОЛЧА вызови 'send_booking_confirmation'.
-  3. Голосом говори только: "Отправила вам в WhatsApp".
-
-  # 📋 SALES SCRIPT (СЦЕНАРИЙ РАЗГОВОРА):
+  # 📋 СЦЕНАРИЙ ПРОДАЖ (СТРОГИЙ ПОРЯДОК):
   
-  ШАГ 1. ВЫЯВЛЕНИЕ ПОТРЕБНОСТЕЙ
-  - Спроси: "Какая яхта / Сколько людей?", "Какой город (Герцлия/Хайфа)?", "Какая дата?".
+  ШАГ 1. КОНСУЛЬТАЦИЯ
+  - Ответь на вопросы, предложи варианты (цена, фото).
   
-  ШАГ 2. ПРЕЗЕНТАЦИЯ
-  - Расскажи о варианте (цена, описание из базы).
-  - Если просят фото -> вызови 'send_whatsapp_message' (вставь ссылку из поля Images!).
-
-  ШАГ 3. ЗАКРЫТИЕ СДЕЛКИ (САМОЕ ВАЖНОЕ)
-  - Если клиент согласен ("Да, заказываем", "Хочу оплатить"):
-    A. Спроси имя: "איך קוראים לך?" (если еще не знаешь).
-    B. КАК ТОЛЬКО ПОЛУЧИЛА ИМЯ -> ВЫЗЫВАЙ 'send_booking_confirmation'.
-       - Передай туда: Имя, Телефон, Дату, Время, Яхту, Цену.
-    C. Скажи голосом: "מצוין [Имя], שלחתי לך כרגע את אישור ההזמנה וקישור לתשלום בוואטסאפ."
+  ШАГ 2. ФИЛЬТР (ЕСЛИ КЛИЕНТ ХОЧЕТ ЗАКАЗАТЬ)
+  - Если клиент говорит "Хочу заказать" или "Как оплатить?":
+    A. Скажи: "אני שולחת לך עכשיו בווטסאפ את תהליך סגירת העסקה. תגיד לי אם זה מתאים לך."
+    B. ВЫЗОВИ инструмент 'send_closing_process_info'.
+    C. Жди подтверждения ("Да, подходит", "Ок").
+  
+  ШАГ 3. ОФОРМЛЕНИЕ (ТОЛЬКО ПОСЛЕ ПОДТВЕРЖДЕНИЯ)
+  - Если клиент согласен:
+    A. Спроси имя, дату, время.
+    B. Проверь занятость (check_yacht_availability).
+    C. Если свободно -> ВЫЗОВИ 'send_booking_confirmation'.
+       - Передай: participants (из базы!), clientName, date, time, yachtName, totalPrice.
 
   ---------------------------------------------
-  KNOWLEDGE BASE (CONTEXT):
+  KNOWLEDGE BASE:
   ${context.text || 'Нет информации.'}
   ---------------------------------------------
   `,
@@ -72,28 +63,13 @@ const botBehavior = {
     },
 
     voiceSettings: {
-        he: {
-            language: 'he-IL',
-            ttsVoice: 'Google.he-IL-Standard-A',
-            sttLanguage: 'iw-IL',
-        },
-        ru: {
-            language: 'ru-RU',
-            ttsVoice: 'Google.ru-RU-Wavenet-A',
-            sttLanguage: 'ru-RU',
-        }
+        he: { language: 'he-IL', ttsVoice: 'Google.he-IL-Standard-A', sttLanguage: 'iw-IL' },
+        ru: { language: 'ru-RU', ttsVoice: 'Google.ru-RU-Wavenet-A', sttLanguage: 'ru-RU' }
     },
 
-    gatherSettings: {
-        input: 'speech',
-        speechTimeout: 'auto',
-        language: 'iw-IL',
-    },
+    gatherSettings: { input: 'speech', speechTimeout: 'auto', language: 'iw-IL' },
 
-    geminiSettings: {
-        model: 'gemini-2.0-flash',
-        temperature: 0.1, // Минимальная креативность = максимальная послушность
-    },
+    geminiSettings: { model: 'gemini-2.0-flash', temperature: 0.1 },
 
     operatorSettings: {
         phoneNumber: '+972533403449',
@@ -117,7 +93,6 @@ const botBehavior = {
     },
 
     cleanTextForTTS(text) {
-        // Сначала удаляем ссылки, чтобы она их не читала
         text = text.replace(this.textCleanupRules.urlPattern, ''); 
         text = text.replace(this.textCleanupRules.markdownSymbols, '');
         text = text.replace(/<[^>]*>/g, '');
