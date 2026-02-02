@@ -7,18 +7,29 @@ const crmService = require('./crmService');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// --- ВАЖНО: Функция для запоминания темы (Яхты vs Терминалы) ---
+// --- УМНОЕ ОПРЕДЕЛЕНИЕ ДОМЕНА ---
 function detectDomain(text) {
-    const lowerText = text.toLowerCase();
-    if (lowerText.includes('יאכטה') || lowerText.includes('שיט') || lowerText.includes('הפלגה') || lowerText.includes('yacht')) {
+    const lower = text.toLowerCase();
+    
+    // Яхты
+    if (lower.includes('יאכטה') || lower.includes('שיט') || lower.includes('הפלגה') || lower.includes('yacht') || lower.includes('ים') || lower.includes('סירה')) {
         return 'Yachts';
     }
-    if (lowerText.includes('מסוף') || lowerText.includes('אשראי') || lowerText.includes('terminal')) {
+    
+    // Терминалы (Расширенный список)
+    const terminalKeywords = [
+        'מסוף', 'אשראי', 'terminal', 'קופה', // Стандартные
+        'חנות', 'עסק', 'לגבות', 'תשלום',     // Магазин, Бизнес, Оплата
+        'סליקה', 'מכשיר'                     // Слика, Аппарат
+    ];
+    
+    if (terminalKeywords.some(word => lower.includes(word))) {
         return 'Terminals';
     }
+
     return null;
 }
-// ----------------------------------------------------------------
+// --------------------------------
 
 const streamingEngine = {
     async processMessageStream(userMessage, sessionId, userPhone, onChunk, onComplete, onError) {
@@ -28,7 +39,6 @@ const streamingEngine = {
         try {
             sessionManager.initSession(sessionId, 'voice');
 
-            // 1. STICKY CONTEXT: Определяем или вспоминаем домен
             let currentDomain = detectDomain(userMessage);
             if (!currentDomain) {
                 currentDomain = sessionManager.getDomain(sessionId);
@@ -37,11 +47,8 @@ const streamingEngine = {
                 console.log(`🔍 [STREAM] Смена домена: ${currentDomain}`);
             }
 
-            // 2. RAG + CRM
             let searchQuery = userMessage;
-            if (currentDomain) {
-                searchQuery += ` (Domain: ${currentDomain})`;
-            }
+            if (currentDomain) searchQuery += ` (Domain: ${currentDomain})`;
 
             console.time('⏱️ RAG + CRM Task');
             const [context, customerData] = await Promise.all([
@@ -50,15 +57,14 @@ const streamingEngine = {
             ]);
             console.timeEnd('⏱️ RAG + CRM Task');
 
-            if (customerData?.gender) {
-                sessionManager.setGender(sessionId, customerData.gender);
-            }
+            if (customerData?.gender) sessionManager.setGender(sessionId, customerData.gender);
 
-            const currentGender = sessionManager.getGender(sessionId);
-            const currentDate = new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' });
-            
-            // Передаем контекст (с учетом домена) в промпт
-            const systemPrompt = botBehavior.getSystemPrompt(context, currentGender, currentDate, userPhone);
+            const systemPrompt = botBehavior.getSystemPrompt(
+                context, 
+                sessionManager.getGender(sessionId), 
+                new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' }), 
+                userPhone
+            );
 
             const model = genAI.getGenerativeModel({
                 model: botBehavior.geminiSettings.model,
@@ -84,36 +90,23 @@ const streamingEngine = {
         }
     },
 
-    // --- CONTINUE STREAM (после вызова функции) ---
     async continueConversationStream(sessionId, userPhone, onChunk, onComplete, onError) {
-        console.log(`📨 [STREAM] Continue conversation...`);
+        console.log(`📨 [STREAM] Continue...`);
         const startTime = performance.now();
-
         try {
-            const currentGender = sessionManager.getGender(sessionId);
-            const currentDate = new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' });
-            // При продолжении контекст уже в истории, RAG можно пропустить
-            const context = ''; 
-
-            const systemPrompt = botBehavior.getSystemPrompt(context, currentGender, currentDate, userPhone);
-
+            const systemPrompt = botBehavior.getSystemPrompt('', sessionManager.getGender(sessionId), new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' }), userPhone);
             const model = genAI.getGenerativeModel({
                 model: botBehavior.geminiSettings.model,
                 systemInstruction: { parts: [{ text: systemPrompt }] },
                 tools: [{
-                    functionDeclarations: calendarTools.map(t => ({
-                        name: t.name, description: t.description, parameters: t.parameters
-                    }))
+                    functionDeclarations: calendarTools.map(t => ({ name: t.name, description: t.description, parameters: t.parameters }))
                 }]
             });
-
             const history = sessionManager.getHistory(sessionId);
             const result = await model.generateContentStream({ contents: history });
-
             await this._handleStreamResult(result, startTime, sessionId, null, onChunk, onComplete);
-
         } catch (error) {
-            console.error('❌ [STREAM] Post-tool error:', error);
+            console.error('❌ [STREAM] Continue Error:', error);
             if (onError) onError(error);
         }
     },
@@ -161,13 +154,8 @@ const streamingEngine = {
                 if (onComplete) onComplete({ text: fullText, requiresToolCall: true, functionCalls });
             } else {
                 if (userMessageToSave) sessionManager.addToHistory(sessionId, 'user', userMessageToSave);
-                
                 const genderMatch = fullText.match(/\[GENDER:\s*(male|female)\]/i);
-                if (genderMatch) {
-                    sessionManager.setGender(sessionId, genderMatch[1].toLowerCase());
-                    fullText = fullText.replace(/\[GENDER:.*?\]/gi, '').trim();
-                }
-
+                if (genderMatch) sessionManager.setGender(sessionId, genderMatch[1].toLowerCase());
                 sessionManager.addToHistory(sessionId, 'model', fullText);
                 if (onComplete) onComplete({ text: fullText, requiresToolCall: false, functionCalls: null });
             }

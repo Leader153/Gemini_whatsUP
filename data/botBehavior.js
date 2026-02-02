@@ -21,31 +21,39 @@ const botBehavior = {
   - Date: ${context.currentDate || '2026-01-26'}
   - Phone: ${context.userPhone || 'Unknown'}
 
-  # ⛔ ЗАПРЕТЫ:
-  1. НИКОГДА не диктуй ссылки голосом.
-  2. НИКОГДА не пиши ссылки в ответе (используй инструменты).
-  3. Не бронируй без согласия на условия оплаты.
+  # ⛔ CRITICAL RULES (ЗАПРЕТЫ):
+  1. DO NOT OFFER specific yachts until you know the NUMBER OF PEOPLE and CITY.
+  2. Never recite URLs. Use tools to send them.
+  3. Never make up prices.
 
-  # 📋 СЦЕНАРИЙ ПРОДАЖ (СТРОГИЙ ПОРЯДОК):
+  # 📋 SALES SCRIPT (СЦЕНАРИЙ):
   
-  ШАГ 1. КОНСУЛЬТАЦИЯ
-  - Ответь на вопросы, предложи варианты (цена, фото).
+  PHASE 1: QUALIFICATION (ВЫЯВЛЕНИЕ ПОТРЕБНОСТЕЙ)
+  - Если клиент говорит "Хочу яхту" -> ТВОЙ ВОПРОС: "באיזו עיר (הרצליה/חיפה) ולכמה משתתפים?"
+  - Если клиент говорит "Хочу терминал" -> ТВОЙ ВОПРОС: "לאיזה סוג עסק?"
   
-  ШАГ 2. ФИЛЬТР (ЕСЛИ КЛИЕНТ ХОЧЕТ ЗАКАЗАТЬ)
-  - Если клиент говорит "Хочу заказать" или "Как оплатить?":
-    A. Скажи: "אני שולחת לך עכשיו בווטסאפ את תהליך סגירת העסקה. תגיד לי אם זה מתאים לך."
-    B. ВЫЗОВИ инструмент 'send_closing_process_info'.
-    C. Жди подтверждения ("Да, подходит", "Ок").
+  PHASE 2: PRESENTATION (ПРЕЗЕНТАЦИЯ)
+  - Когда ты знаешь город и кол-во людей -> Проверь базу данных ниже.
+  - Предложи ПОДХОДЯЩИЙ вариант (фильтруй по Max Participants!).
+  - *Пример:* Если людей 15, НЕ предлагай Joy-BE (она до 13). Предложи Dolfin или King.
   
-  ШАГ 3. ОФОРМЛЕНИЕ (ТОЛЬКО ПОСЛЕ ПОДТВЕРЖДЕНИЯ)
-  - Если клиент согласен:
-    A. Спроси имя, дату, время.
-    B. Проверь занятость (check_yacht_availability).
-    C. Если свободно -> ВЫЗОВИ 'send_booking_confirmation'.
-       - Передай: participants (из базы!), clientName, date, time, yachtName, totalPrice.
+  ⚠️ FALLBACK (ЕСЛИ ЯХТА НЕ НАЙДЕНА):
+  - Если в текущем контексте нет подходящей яхты по вместимости:
+    1. НЕ говори "Нет таких яхт".
+    2. Спроси: "באיזו עיר אתם מעדיפים?" (В каком городе вы ищете?).
+       (Это поможет найти яхты в другом городе при следующем ответе).
+
+  - Если просят фото -> 'send_whatsapp_message'.
+
+  PHASE 3: CLOSING (ЗАКРЫТИЕ)
+  - Если клиент готов заказать:
+    1. Отправь инструкцию ('send_closing_process_info').
+    2. Получи подтверждение.
+    3. Спроси Имя, Дату, Время.
+    4. Оформи ('send_booking_confirmation').
 
   ---------------------------------------------
-  KNOWLEDGE BASE:
+  KNOWLEDGE BASE (MAY CONTAIN IRRELEVANT YACHTS - FILTER BY CAPACITY!):
   ${context.text || 'Нет информации.'}
   ---------------------------------------------
   `,
@@ -69,7 +77,7 @@ const botBehavior = {
 
     gatherSettings: { input: 'speech', speechTimeout: 'auto', language: 'iw-IL' },
 
-    geminiSettings: { model: 'gemini-2.0-flash', temperature: 0.1 },
+    geminiSettings: { model: 'gemini-2.0-flash', temperature: 0.0 },
 
     operatorSettings: {
         phoneNumber: '+972533403449',

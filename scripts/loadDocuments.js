@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 
+// --- НАСТРОЙКА ОКРУЖЕНИЯ ---
 const nodeEnv = process.env.NODE_ENV || 'development';
 const envFileName = `.env.${nodeEnv}`;
 const envPath = path.join(__dirname, '..', envFileName);
@@ -49,7 +50,7 @@ function parseCSV(csv) {
 }
 
 async function main() {
-    console.log('🚀 ЗАГРУЗКА БАЗЫ (MAX PARTICIPANTS)...');
+    console.log('🚀 ЗАГРУЗКА НОВОЙ БАЗЫ (FULL VERSION)...');
 
     try {
         console.log(`🔄 Подключение к ChromaDB: ${CHROMA_URL}`);
@@ -67,6 +68,15 @@ async function main() {
         const parsedData = parseCSV(fs.readFileSync(CSV_PATH, 'utf-8'));
 
         const docs = parsedData.map(row => {
+            // Формируем красивую строку цены
+            let prices = [];
+            if (row.Price_1h && row.Price_1h !== 'N/A') prices.push(`שעה 1: ${row.Price_1h}`);
+            if (row.Price_2h && row.Price_2h !== 'N/A') prices.push(`שעתיים: ${row.Price_2h}`);
+            if (row.Price_3h && row.Price_3h !== 'N/A') prices.push(`3 שעות: ${row.Price_3h}`);
+            
+            let priceString = prices.join('; ');
+            if (row.Price_Note && row.Price_Note !== 'N/A') priceString += ` (${row.Price_Note})`;
+
             const pageContent = `
 === KEYWORDS ===
 ${row.Product_Name} ${row.City !== 'N/A' ? row.City : ''}
@@ -76,8 +86,8 @@ ${row.Product_Name} ${row.Model_Type}
 Product Name: ${row.Product_Name}
 Model: ${row.Model_Type}
 City: ${row.City}
-Price: ${row.Price}
-Max Participants: ${row.Max_Participants || 'Unknown'} 
+Price: ${priceString}
+Max Participants: ${row.Max_Participants || 'Unknown'}
 Features: ${row.Key_Features}
 Target: ${row.Target_Audience}
 Category: ${row.Domain} / ${row.Sub_Category}
@@ -102,8 +112,7 @@ Payment Guide: ${row.Payment_Guide_URL || 'None'}
                 Domain: row.Domain,
                 Sub_Category: row.Sub_Category,
                 Product: row.Product_Name,
-                City: row.City,
-                Max_Participants: row.Max_Participants // Добавили в метаданные
+                City: row.City
             };
 
             return new Document({ pageContent, metadata });

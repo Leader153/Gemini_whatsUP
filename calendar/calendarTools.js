@@ -2,10 +2,11 @@ const { checkAvailability, createBooking, isSlotAvailable } = require('./calenda
 const { sendWhatsAppMessage } = require('../utils/whatsappService');
 const { sendOrderEmail } = require('../utils/emailService');
 const { sendSms } = require('../utils/smsService');
+const { getNextOrderNumber } = require('../utils/orderCounter'); // <-- СЧЕТЧИК
 
-const OWNER_PHONE_NUMBER = '+972533403449'; 
 const DEFAULT_PAYMENT_LINK = "https://secure.cardcom.solutions/EA/EA5/5a2HEfT6E6KH1aSdcinQ/PaymentSP";
 const WA_NUMBER = (process.env.TWILIO_NUMBER || '972533883507').replace(/[^\d]/g, '');
+const OWNER_PHONE_NUMBER = '+972533403449'; 
 
 // --- РЕКВИЗИТЫ ---
 const PAYBOX_PHONE = "053-340-3449";
@@ -16,7 +17,7 @@ const BANK_DETAILS = `
 שם: דניאל פלידר (לידר הפלגות)
 `.trim();
 
-// --- ТЕКСТЫ (Pre-booking & Terms) ---
+// --- ТЕКСТЫ ---
 const CLOSING_DEAL_TEXT = `
 *תהליך סגירת עסקה / שריון מקום* ⚓
 
@@ -28,7 +29,7 @@ const CLOSING_DEAL_TEXT = `
 2. אפליקציית PayBox.
 3. העברה בנקאית.
 
-לאחר התשלום, חובה לשלוח לנו צילום אסמכתא בווטסאפ לקבלת קבלה ואישור סופי.
+לאחר התשלום, חובה לשלוח לנו צילום אסמכתא בווטסאפ.
 *האם לשלוח לך את ההזמנה?*
 `;
 
@@ -104,6 +105,19 @@ const calendarTools = [
             required: ['clientPhone']
         }
     },
+    // --- ЗАПРОС НА ОТМЕНУ ---
+    {
+        name: 'request_cancellation',
+        description: 'Handle booking cancellation request. Ask for Order ID first.',
+        parameters: {
+            type: 'OBJECT',
+            properties: {
+                orderId: { type: 'STRING', description: 'The order number provided by client' },
+                clientPhone: { type: 'STRING' }
+            },
+            required: ['orderId', 'clientPhone']
+        }
+    },
     {
         name: 'send_booking_confirmation',
         description: 'Finalize booking: Calendar, WhatsApp, Email.',
@@ -128,24 +142,14 @@ const calendarTools = [
     }
 ];
 
-// --- ИСПРАВЛЕНИЕ ДАТЫ (DD.MM.YYYY -> YYYY-MM-DD) ---
-// Это решает ошибку 400 Bad Request
-function normalizeDate(dateStr) {
+function forceYear2026(dateStr) {
     if (!dateStr) return dateStr;
-    
-    // Заменяем точки и слеши на тире
+    // Исправляем DD.MM.YYYY
     let cleanDate = dateStr.replace(/[./]/g, '-');
-    
-    // Если формат DD-MM-YYYY (европейский), переворачиваем в YYYY-MM-DD
-    // Проверка: если в начале 1 или 2 цифры, а в конце 4 (31-01-2026)
     if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(cleanDate)) {
         const parts = cleanDate.split('-');
-        // parts[0]=Day, parts[1]=Month, parts[2]=Year
         cleanDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
     }
-
-    // Принудительно ставим 2026 год (заменяем любой другой год в начале)
-    // Например 2024-02-01 -> 2026-02-01
     return cleanDate.replace(/^\d{4}/, '2026');
 }
 
@@ -166,7 +170,7 @@ async function handleFunctionCall(name, args) {
     try {
         switch (name) {
             case 'check_yacht_availability': {
-                const date = normalizeDate(args.date);
+                const date = forceYear2026(args.date);
                 const { checkAvailability } = require('./calendarService');
                 const slots = await checkAvailability(date, args.duration, args.yachtName);
                 if (slots.length === 0) return { result: "אין שעות פנויות." };
@@ -184,6 +188,22 @@ async function handleFunctionCall(name, args) {
 
             case 'send_booking_confirmation':
                 return await handleBookingConfirmation(args);
+            
+            // --- ОТМЕНА ЗАКАЗА ---
+            case 'request_cancellation':
+                const cancelMsg = `
+🚫 *בקשה לביטול הזמנה*
+מספר הזמנה: ${args.orderId}
+הבקשה הועברה לטיפול המשרד. ניצור קשר בהקדם.
+                `.trim();
+                await trySendWithFallback(args.clientPhone, cancelMsg);
+                
+                // Уведомление владельцу
+                const adminMsg = `❌ БИТУЛЬ! Клиент ${args.clientPhone} хочет отменить заказ #${args.orderId}`;
+                await sendWhatsAppMessage(OWNER_PHONE_NUMBER, adminMsg);
+                await sendOrderEmail({ clientName: 'CANCEL REQUEST', date: 'N/A', status: adminMsg });
+                
+                return { result: "Cancellation request sent." };
 
             case 'save_client_data':
                 return { result: `Saved: ${args.name}` };
@@ -200,22 +220,18 @@ async function handleFunctionCall(name, args) {
 async function handleBookingConfirmation(args) {
     const { clientName, clientPhone, date, startTime, duration, yachtName, participants, locationLink, locationDesc, totalPrice, paymentLink, guideLink } = args;
 
-    // 1. Нормализация даты (Фикс ошибки)
-    const isoDate = normalizeDate(date);
+    // ГЕНЕРАЦИЯ НОМЕРА ЗАКАЗА
+    const orderId = getNextOrderNumber(); 
 
     const [hours, minutes] = startTime.split(':').map(Number);
     const endHours = hours + duration;
     const endTimeStr = `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-    
-    // Формируем ISO дату для Google (YYYY-MM-DDTHH:MM:00)
-    const startTimeISO = `${isoDate}T${startTime}:00`;
-    const endTimeISO = `${isoDate}T${endTimeStr}:00`;
+    const startTimeISO = `${date}T${startTime}:00`;
+    const endTimeISO = `${date}T${endTimeStr}:00`;
 
-    // 2. Деньги
     const deposit = 500;
     const balance = totalPrice - deposit;
 
-    // 3. Бонусы
     let bonuses = "✅ בלונים בתוך היאכטה\n✅ שלט \"מזל טוב\"\n✅ מים";
     let swimmingText = "";
     if (duration >= 3) {
@@ -223,25 +239,20 @@ async function handleBookingConfirmation(args) {
         swimmingText = "🏊 אפשרות לירידה למים (באישור סקיפר)";
     }
 
-    // 4. ЗАПИСЬ В КАЛЕНДАРЬ
     try {
-        console.log(`📅 Booking: ${startTimeISO} - ${endTimeISO}`);
-        await createBooking(startTimeISO, endTimeISO, { name: clientName, phone: clientPhone, yachtName: yachtName, duration: duration });
-        console.log("✅ Запись в Google Calendar создана.");
+        await createBooking(startTimeISO, endTimeISO, { name: `${clientName} (#${orderId})`, phone: clientPhone, yachtName: yachtName, duration: duration });
     } catch (calError) {
         console.error("⚠️ Calendar Error:", calError);
-        // Не прерываем процесс, отправляем WA даже если календарь сбойнул
     }
 
-    // 5. СООБЩЕНИЯ КЛИЕНТУ (WhatsApp)
-    
-    // А) Детали
+    // СООБЩЕНИЕ 1
     const msgBooking = `
 לכבוד: ${clientName}
 *אישור הזמנת שייט ביאכטה* ⚓
+מספר הזמנה: *${orderId}*
 
 פרטי ההזמנה:
-📅 *תאריך:* ${isoDate.split('-').reverse().join('.')}
+📅 *תאריך:* ${date}
 ⏰ *שעה:* ${startTime} - ${endTimeStr} (סה"כ ${duration} שעות)
 ⛵ *יאכטה:* ${yachtName}
 👥 *משתתפים:* עד ${participants || '13'} איש
@@ -254,9 +265,9 @@ ${bonuses}
 ${swimmingText}
     `.trim();
 
-    // Б) Оплата (Все опции)
+    // СООБЩЕНИЕ 2 (ОПЛАТА)
     const msgPayment = `
-💰 *הסדרת תשלום*
+💰 *הסדרת תשלום עבור הזמנה #${orderId}*
 
 סה"כ לתשלום: ${totalPrice} ₪
 *מקדמה נדרשת כעת: ${deposit} ₪*
@@ -275,34 +286,40 @@ ${BANK_DETAILS}
 ${guideLink ? `(מצורף מדריך: ${guideLink})` : ''}
 
 *היתרה (${balance} ₪) תשולם במועד ההפלגה.*
+
+⚠️ *שים לב:* תשלום המקדמה מהווה אישור לתנאי ההזמנה.
+נא לשלוח צילום אסמכתא לאחר התשלום.
     `.trim();
 
-    // В) Локация
     const msgLocation = `
-📍 *הוראות הגעה (Waze):*
+📍 *הוראות הגעה:*
+${locationDesc || 'מרינה'}
+
+לניווט בוייז:
 ${locationLink || ''}
     `.trim();
 
-    console.log(`📤 Sending Booking Sequence to ${clientPhone}`);
-    
     await trySendWithFallback(clientPhone, msgBooking);
     await new Promise(r => setTimeout(r, 1000));
-    
     await trySendWithFallback(clientPhone, msgPayment);
     await new Promise(r => setTimeout(r, 1000));
-    
     if (locationLink) {
         await trySendWithFallback(clientPhone, msgLocation);
         await new Promise(r => setTimeout(r, 1000));
     }
-
     await trySendWithFallback(clientPhone, TERMS_PART_1);
     await new Promise(r => setTimeout(r, 1000));
     await trySendWithFallback(clientPhone, TERMS_PART_2);
 
-    await sendOrderEmail(args);
+    // Уведомление владельцу
+    const ownerMsg = `💰 *הזמנה חדשה #${orderId}*
+${clientName}, ${yachtName}, ${date}`;
+    await sendWhatsAppMessage(OWNER_PHONE_NUMBER, ownerMsg);
     
-    return { result: "הזמנה בוצעה ביומן, וכל הפרטים נשלחו ללקוח." };
+    // Email
+    await sendOrderEmail({ ...args, orderId: orderId });
+    
+    return { result: `הזמנה #${orderId} נוצרה בהצלחה.` };
 }
 
 module.exports = { calendarTools, handleFunctionCall };
