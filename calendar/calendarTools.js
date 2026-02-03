@@ -8,6 +8,15 @@ const DEFAULT_PAYMENT_LINK = "https://secure.cardcom.solutions/EA/EA5/5a2HEfT6E6
 const WA_NUMBER = (process.env.TWILIO_NUMBER || '972533883507').replace(/[^\d]/g, '');
 const OWNER_PHONE_NUMBER = '+972533403449'; 
 
+// --- ВЕРНУЛ РЕКВИЗИТЫ НА МЕСТО ---
+const PAYBOX_PHONE = "053-340-3449";
+const BANK_DETAILS = `
+בנק: יהב (04)
+סניף: 279 (קריית ביאליק)
+חשבון: 129718
+שם: דניאל פלידר (לידר הפלגות)
+`.trim();
+
 // --- ТЕКСТЫ ---
 const CLOSING_DEAL_TEXT = `
 *תהליך סגירת עסקה / שריון מקום* ⚓
@@ -131,7 +140,6 @@ const calendarTools = [
 
 function forceYear2026(dateStr) {
     if (!dateStr) return dateStr;
-    // Исправляем DD.MM.YYYY
     let cleanDate = dateStr.replace(/[./]/g, '-');
     if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(cleanDate)) {
         const parts = cleanDate.split('-');
@@ -176,7 +184,6 @@ async function handleFunctionCall(name, args) {
             case 'send_booking_confirmation':
                 return await handleBookingConfirmation(args);
             
-            // --- ОТМЕНА ЗАКАЗА ---
             case 'request_cancellation':
                 const cancelMsg = `🚫 בקשה לביטול הזמנה ${args.orderId} התקבלה.`;
                 await trySendWithFallback(args.clientPhone, cancelMsg);
@@ -210,12 +217,9 @@ async function handleBookingConfirmation(args) {
     // --- ЗАЩИТА ОТ ДВОЙНОГО ЗАКАЗА ---
     const { isSlotAvailable } = require('./calendarService');
     const isFree = await isSlotAvailable(startTimeISO, endTimeISO, yachtName);
-    
     if (!isFree) {
-        console.warn(`⚠️ ALARM: Slot is busy! ${isoDate} ${startTime}`);
         return { result: "שגיאה: הזמן הזה נתפס הרגע על ידי לקוח אחר. אנא נסה שעה אחרת." };
     }
-    // ---------------------------------
 
     const orderId = getNextOrderNumber(); 
     const deposit = 500;
@@ -253,7 +257,6 @@ ${bonuses}
 ${swimmingText}
     `.trim();
 
-    // СООБЩЕНИЕ 2 (ОПЛАТА)
     const msgPayment = `
 💰 *הסדרת תשלום עבור הזמנה #${orderId}*
 
@@ -299,12 +302,10 @@ ${locationLink || ''}
     await new Promise(r => setTimeout(r, 1000));
     await trySendWithFallback(clientPhone, TERMS_PART_2);
 
-    // Уведомление владельцу
     const ownerMsg = `💰 *הזמנה חדשה #${orderId}*
 ${clientName}, ${yachtName}, ${isoDate}`;
     await sendWhatsAppMessage(OWNER_PHONE_NUMBER, ownerMsg);
     
-    // Email
     await sendOrderEmail({ ...args, orderId: orderId });
     
     return { result: `הזמנה #${orderId} נוצרה בהצלחה.` };
