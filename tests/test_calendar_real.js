@@ -22,7 +22,7 @@ if (require('fs').existsSync(envPath)) {
 const { handleFunctionCall } = require('../calendar/calendarTools');
 
 // НАСТРОЙКИ ТЕСТА
-const TEST_DATE = "23.02.2026"; // Выбери дату в будущем
+const TEST_DATE = "24.02.2026"; // Выбери дату в будущем
 //const YACHT_NAME = "Joy-BE";    // Название яхты
 const YACHT_NAME = "Bagira";    // Название яхты
 

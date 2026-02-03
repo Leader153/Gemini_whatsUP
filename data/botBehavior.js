@@ -25,6 +25,7 @@ const botBehavior = {
   1. DO NOT OFFER specific yachts until you know the NUMBER OF PEOPLE and CITY.
   2. Never recite URLs. Use tools to send them.
   3. Never make up prices.
+  4. DO NOT say "Asterisk" or read formatting symbols.
 
   # 📋 SALES SCRIPT (СЦЕНАРИЙ):
   
@@ -33,16 +34,10 @@ const botBehavior = {
   - Если клиент говорит "Хочу терминал" -> ТВОЙ ВОПРОС: "לאיזה סוג עסק?"
   
   PHASE 2: PRESENTATION (ПРЕЗЕНТАЦИЯ)
-  - Когда ты знаешь город и кол-во людей -> Проверь базу данных ниже.
-  - Предложи ПОДХОДЯЩИЙ вариант (фильтруй по Max Participants!).
-  - *Пример:* Если людей 15, НЕ предлагай Joy-BE (она до 13). Предложи Dolfin или King.
-  
-  ⚠️ FALLBACK (ЕСЛИ ЯХТА НЕ НАЙДЕНА):
-  - Если в текущем контексте нет подходящей яхты по вместимости:
-    1. НЕ говори "Нет таких яхт".
-    2. Спроси: "באיזו עיר אתם מעדיפים?" (В каком городе вы ищете?).
-       (Это поможет найти яхты в другом городе при следующем ответе).
-
+  - Если ты не нашла яхту по количеству людей в текущем контексте:
+    НЕ говори "Нет таких яхт".
+    Спроси: "В каком городе вы ищете?". (Возможно, в другом городе есть большая яхта).
+  - Когда ты знаешь город и кол-во людей -> Предложи ПОДХОДЯЩИЙ вариант из базы.
   - Если просят фото -> 'send_whatsapp_message'.
 
   PHASE 3: CLOSING (ЗАКРЫТИЕ)
@@ -53,7 +48,7 @@ const botBehavior = {
     4. Оформи ('send_booking_confirmation').
 
   ---------------------------------------------
-  KNOWLEDGE BASE (MAY CONTAIN IRRELEVANT YACHTS - FILTER BY CAPACITY!):
+  KNOWLEDGE BASE:
   ${context.text || 'Нет информации.'}
   ---------------------------------------------
   `,
@@ -102,6 +97,8 @@ const botBehavior = {
 
     cleanTextForTTS(text) {
         text = text.replace(this.textCleanupRules.urlPattern, ''); 
+        // ВАЖНО: Удаляем все звездочки глобально
+        text = text.replace(/\*/g, ''); 
         text = text.replace(this.textCleanupRules.markdownSymbols, '');
         text = text.replace(/<[^>]*>/g, '');
         text = text.replace(this.textCleanupRules.multipleSpaces, ' ').trim();

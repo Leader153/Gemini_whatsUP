@@ -1,9 +1,10 @@
-const { google } = require('googleapis');
+const { calendar } = require('@googleapis/calendar');
 const { GoogleAuth } = require('google-auth-library');
 const path = require('path');
 
 let authClientInstance = null;
 
+// --- СЛОВАРЬ СИНОНИМОВ (ALIASES) ---
 const YACHT_ALIASES = {
     // Герцлия
     'Joy-BE': ['JOY', 'Joy', 'ג\'וי', 'JOYB', 'joy', 'גוי בי', 'Joy-BE'],
@@ -20,41 +21,52 @@ const YACHT_ALIASES = {
     'Sea-u': ['Sea-u', 'סי יו', 'Sea u', 'סי-יו']
 };
 
+/**
+ * Получение клиента календаря
+ */
 async function getCalendarClient() {
-    if (authClientInstance) return google.calendar({ version: 'v3', auth: authClientInstance });
-    
     const keyPath = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH || './calendar/service-account-key.json';
     const absoluteKeyPath = path.resolve(process.cwd(), keyPath);
 
     try {
-        const auth = new GoogleAuth({
-            keyFile: absoluteKeyPath,
-            scopes: ['https://www.googleapis.com/auth/calendar'],
-        });
-        authClientInstance = await auth.getClient();
-        return google.calendar({ version: 'v3', auth: authClientInstance });
+        // Создаем auth клиент, если его нет
+        if (!authClientInstance) {
+            authClientInstance = new GoogleAuth({
+                keyFile: absoluteKeyPath,
+                scopes: ['https://www.googleapis.com/auth/calendar'],
+            });
+        }
+
+        const client = await authClientInstance.getClient();
+        // Используем библиотеку @googleapis/calendar
+        return calendar({ version: 'v3', auth: client });
+
     } catch (error) {
-        console.error(`❌ Error loading key: ${absoluteKeyPath}`);
+        console.error(`❌ Ошибка ключа: ${absoluteKeyPath}`);
         throw error;
     }
 }
 
-// УМНАЯ ПРОВЕРКА (Улучшенная)
+/**
+ * Проверка, относится ли событие к указанной яхте
+ */
 function isEventForYacht(eventSummary, targetYachtName) {
     if (!eventSummary) return false;
+    
     const summaryLower = eventSummary.toLowerCase();
-    const targetLower = targetYachtName.toLowerCase();
-
+    
     // 1. Прямое совпадение
-    if (summaryLower.includes(targetLower)) return true;
+    if (summaryLower.includes(targetYachtName.toLowerCase())) return true;
 
     // 2. Поиск по словарю синонимов
-    for (const [dbName, aliases] of Object.entries(YACHT_ALIASES)) {
-        // Если запрашиваемое имя совпадает с ключом или одним из алиасов
-        if (dbName.toLowerCase() === targetLower || aliases.some(a => targetLower.includes(a.toLowerCase()))) {
-            // То проверяем, есть ли любой из алиасов в заголовке события
-            return aliases.some(alias => summaryLower.includes(alias.toLowerCase()));
-        }
+    const dbNameKey = Object.keys(YACHT_ALIASES).find(key => 
+        targetYachtName.toLowerCase().includes(key.toLowerCase()) || 
+        key.toLowerCase().includes(targetYachtName.toLowerCase())
+    );
+
+    if (dbNameKey && YACHT_ALIASES[dbNameKey]) {
+        const aliases = YACHT_ALIASES[dbNameKey];
+        return aliases.some(alias => summaryLower.includes(alias.toLowerCase()));
     }
 
     return false;
@@ -62,15 +74,16 @@ function isEventForYacht(eventSummary, targetYachtName) {
 
 async function checkAvailability(date, duration = 2, yachtName) {
     try {
-        const calendar = await getCalendarClient();
+        const calendarClient = await getCalendarClient();
         const calendarId = process.env.GOOGLE_CALENDAR_ID;
 
         const dayStart = new Date(date);
         dayStart.setHours(8, 0, 0, 0);
+        
         const dayEnd = new Date(date);
         dayEnd.setHours(20, 0, 0, 0);
 
-        const response = await calendar.events.list({
+        const response = await calendarClient.events.list({
             calendarId: calendarId,
             timeMin: dayStart.toISOString(),
             timeMax: dayEnd.toISOString(),
@@ -79,7 +92,9 @@ async function checkAvailability(date, duration = 2, yachtName) {
             timeZone: 'Asia/Jerusalem'
         });
 
-        const busySlots = (response.data.items || [])
+        const allEvents = response.data.items || [];
+        
+        const busySlots = allEvents
             .filter(event => isEventForYacht(event.summary, yachtName))
             .map(event => ({
                 start: new Date(event.start.dateTime || event.start.date),
@@ -94,11 +109,14 @@ async function checkAvailability(date, duration = 2, yachtName) {
             if (busy.start > currentStart) {
                 const diffMs = busy.start - currentStart;
                 const diffHours = diffMs / (1000 * 60 * 60);
+
                 if (diffHours >= duration) {
                     freeRanges.push({ start: new Date(currentStart), end: new Date(busy.start) });
                 }
             }
-            if (busy.end > currentStart) currentStart = new Date(busy.end);
+            if (busy.end > currentStart) {
+                currentStart = new Date(busy.end);
+            }
         }
 
         if (currentStart < dayEnd) {
@@ -114,53 +132,79 @@ async function checkAvailability(date, duration = 2, yachtName) {
             return {
                 start: formatTime(range.start),
                 end: formatTime(range.end),
+                startISO: range.start.toISOString(),
                 displayText: `בין ${formatTime(range.start)} ל-${formatTime(range.end)}`
             };
         });
 
     } catch (error) {
-        console.error('❌ Calendar API Error:', error);
+        console.error('❌ Ошибка Calendar API:', error.message);
         return [];
     }
 }
 
 async function createBooking(startDateTime, endDateTime, clientInfo) {
     try {
-        const calendar = await getCalendarClient();
+        const calendarClient = await getCalendarClient();
+        const calendarId = process.env.GOOGLE_CALENDAR_ID;
+
+        const summary = `${clientInfo.yachtName} - ${clientInfo.name}`;
+        
+        const description = `
+        לקוח: ${clientInfo.name}
+        טלפון: ${clientInfo.phone}
+        יאכטה: ${clientInfo.yachtName}
+        משך: ${clientInfo.duration} שעות
+        נוצר ע"י בוט
+        `;
+
         const event = {
-            summary: `${clientInfo.yachtName} - ${clientInfo.name}`,
-            description: `Tel: ${clientInfo.phone}\nDuration: ${clientInfo.duration}h\nCreated by Bot`,
+            summary: summary,
+            description: description.trim(),
             start: { dateTime: startDateTime, timeZone: 'Asia/Jerusalem' },
             end: { dateTime: endDateTime, timeZone: 'Asia/Jerusalem' },
         };
-        const res = await calendar.events.insert({ calendarId: process.env.GOOGLE_CALENDAR_ID, requestBody: event });
-        console.log('✅ Booking created:', res.data.htmlLink);
-        return res.data;
+
+        const response = await calendarClient.events.insert({
+            calendarId: calendarId,
+            requestBody: event,
+        });
+
+        console.log('✅ Event Created:', response.data.htmlLink);
+        return response.data;
+
     } catch (error) {
-        console.error('❌ Booking failed:', error);
+        console.error('❌ Booking Error:', error);
         throw error;
     }
 }
 
 async function isSlotAvailable(startDateTime, endDateTime, yachtName) {
     try {
-        const calendar = await getCalendarClient();
-        const res = await calendar.events.list({
-            calendarId: process.env.GOOGLE_CALENDAR_ID,
+        const calendarClient = await getCalendarClient();
+        const calendarId = process.env.GOOGLE_CALENDAR_ID;
+
+        const response = await calendarClient.events.list({
+            calendarId: calendarId,
             timeMin: new Date(startDateTime).toISOString(),
             timeMax: new Date(endDateTime).toISOString(),
             singleEvents: true,
             timeZone: 'Asia/Jerusalem'
         });
-        
-        // Проверяем конфликты
-        const conflicts = (res.data.items || []).filter(e => isEventForYacht(e.summary, yachtName));
+
+        const events = response.data.items || [];
+        const conflicts = events.filter(e => isEventForYacht(e.summary, yachtName));
+
         return conflicts.length === 0;
 
     } catch (error) {
         console.error('❌ Slot Check Error:', error);
-        return false;
+        return false; 
     }
 }
 
-module.exports = { checkAvailability, createBooking, isSlotAvailable };
+module.exports = {
+    checkAvailability,
+    createBooking,
+    isSlotAvailable
+};
