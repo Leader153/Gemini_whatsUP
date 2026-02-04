@@ -67,7 +67,7 @@ async function main() {
         if (!fs.existsSync(CSV_PATH)) throw new Error(`Файл не найден!`);
         const parsedData = parseCSV(fs.readFileSync(CSV_PATH, 'utf-8'));
 
-        const docs = parsedData.map(row => {
+    const docs = parsedData.map(row => {
             // Формируем красивую строку цены
             let prices = [];
             if (row.Price_1h && row.Price_1h !== 'N/A') prices.push(`שעה 1: ${row.Price_1h}`);
@@ -77,10 +77,13 @@ async function main() {
             let priceString = prices.join('; ');
             if (row.Price_Note && row.Price_Note !== 'N/A') priceString += ` (${row.Price_Note})`;
 
+            // ВАЖНО: Добавляем Search_Keywords в начало для поиска
             const pageContent = `
-=== KEYWORDS ===
-${row.Product_Name} ${row.City !== 'N/A' ? row.City : ''}
-${row.Product_Name} ${row.Model_Type}
+=== KEYWORDS FOR SEARCH ===
+${row.Search_Keywords || ''}
+${row.Product_Name}
+${row.City !== 'N/A' ? row.City : ''}
+${row.Model_Type}
 
 === DETAILS ===
 Product Name: ${row.Product_Name}
@@ -112,11 +115,12 @@ Payment Guide: ${row.Payment_Guide_URL || 'None'}
                 Domain: row.Domain,
                 Sub_Category: row.Sub_Category,
                 Product: row.Product_Name,
-                City: row.City
+                City: row.City,
+                Max_Participants: row.Max_Participants
             };
 
             return new Document({ pageContent, metadata });
-        });
+        });   
 
         console.log(`✅ Подготовлено ${docs.length} документов.`);
         console.log(`🔄 Генерация векторов...`);
