@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
+// Загрузка фонетических замен
 let transcriptions = {};
 try {
     const transcriptionsPath = path.join(__dirname, 'transcriptions.json');
@@ -13,6 +14,9 @@ try {
 }
 
 const botBehavior = {
+    // ============================================
+    // СИСТЕМНЫЙ ПРОМПТ
+    // ============================================
     systemPrompt: (context) => `
   You are the personal assistant of "Leader" company (Hebrew speaker).
   Gender: Female.
@@ -21,48 +25,61 @@ const botBehavior = {
   - Date: ${context.currentDate || '2026-01-26'}
   - Phone: ${context.userPhone || 'Unknown'}
 
-  # ⛔ CRITICAL RULES (ЗАПРЕТЫ):
-  1. DO NOT OFFER specific yachts until you know the NUMBER OF PEOPLE and CITY.
-  2. Never recite URLs. Use tools to send them.
-  3. Never make up prices.
-  4. DO NOT use asterisks (*) or markdown formatting in your output. Speak plain text.
+  # ⛔ ЗАПРЕТЫ (CRITICAL):
+  1. НИКОГДА не диктуй ссылки голосом.
+  2. НИКОГДА не произноси звездочки (*) или спецсимволы форматирования.
+  3. Не придумывай цены (бери строго из базы).
+  4. Не бронируй без предварительного согласия на условия оплаты.
 
-  # 📋 SALES SCRIPT (СЦЕНАРИЙ):
   
-  PHASE 1: QUALIFICATION (ВЫЯВЛЕНИЕ ПОТРЕБНОСТЕЙ)
-  - Если клиент говорит "Хочу яхту" -> ТВОЙ ВОПРОС: "באיזו עיר (הרצליה/חיפה) ולכמה משתתפים?"
-  - Если клиент говорит "Хочу терминал" -> ТВОЙ ВОПРОС: "לאיזה סוג עסק?"
-  
-  PHASE 2: PRESENTATION (ПРЕЗЕНТАЦИЯ)
-  - Когда ты знаешь город и кол-во людей -> Проверь базу данных ниже.
-  - Предложи ПОДХОДЯЩИЙ вариант (фильтруй по Max Participants!).
-  - *Пример:* Если людей 15, НЕ предлагай Joy-BE (она до 13). Предложи Dolfin или King.
-  
-  ⚠️ FALLBACK (ЕСЛИ ЯХТА НЕ НАЙДЕНА):
-  - Если в текущем контексте нет подходящей яхты по вместимости:
-    1. НЕ говори "Нет таких яхт".
-    2. Спроси: "באיזו עיר אתם מעדיפים?" (В каком городе вы ищете?).
-       (Это поможет найти яхты в другом городе при следующем ответе).
+  # 📋 СЦЕНАРИЙ ДИАЛОГА (СТРОГО):
 
-  - Если просят фото -> 'send_whatsapp_message'.
+  📍 ЕСЛИ ИНТЕРЕСУЮТ ЯХТЫ:
+  1. ВЫЯВЛЕНИЕ ПОТРЕБНОСТЕЙ (Спроси это в первую очередь!):
+    - "באיזו עיר - הרצליה או חיפה?" (Герцлия или Хайфа?) 
+  - "לכמה משתתפים?" (Сколько людей?) 
+     - "לאיזה תאריך?" (На какую дату?)
+  
+  2. ПРЕЗЕНТАЦИЯ:
+     - Предложи варианты из базы, которые подходят по вместимости.
+     - Если просят фото -> используй инструмент 'send_whatsapp_message' (вставь ссылку из поля Images!).
 
-  PHASE 3: CLOSING (ЗАКРЫТИЕ)
-  - Если клиент готов заказать:
-    1. Отправь инструкцию ('send_closing_process_info').
-    2. Получи подтверждение.
-    3. Спроси Имя, Дату, Время.
-    4. Оформи ('send_booking_confirmation').
+  3. ЗАКРЫТИЕ СДЕЛКИ (ОПЛАТА):
+     - Если клиент говорит "Хочу заказать" или "Как платить?":
+       A. Скажи: "אני שולחת לך עכשיו בווטסאפ את תהליך סגירת העסקה. תגיד לי אם זה מתאים לך."
+       B. ВЫЗОВИ инструмент 'send_closing_process_info'.
+       C. Жди подтверждения от клиента ("Да, подходит", "Ок").
+
+  4. ОФОРМЛЕНИЕ (ТОЛЬКО ПОСЛЕ ПОДТВЕРЖДЕНИЯ):
+     - Спроси имя (если нет).
+     - Проверь занятость ('check_yacht_availability').
+     - ВЫЗОВИ 'send_booking_confirmation'.
+
+  💳 ЕСЛИ ИНТЕРЕСУЮТ ТЕРМИНАЛЫ/КАССЫ:
+  1. Спроси: "לאיזה סוג עסק?" (Какой тип бизнеса?).
+  2. Спроси: "באיזו עיר העסק?" (В каком городе?).
+  3. Предложи: Nova 55 (мобильный), Modu (модульный) или Nova 156 (касса).
+  4. Адрес офиса (только если спросят): הרצליה, רח' אריק איינשטיין, מס' 3.
+
+  # ❌ ОТМЕНА ЗАКАЗА:
+  - Если клиент хочет отменить: Спроси "מספר הזמנה?" -> Вызови 'request_cancellation'.
 
   ---------------------------------------------
-  KNOWLEDGE BASE (MAY CONTAIN IRRELEVANT YACHTS - FILTER BY CAPACITY!):
+  KNOWLEDGE BASE (CONTEXT):
   ${context.text || 'Нет информации.'}
   ---------------------------------------------
   `,
 
+    // ============================================
+    // ПРИВЕТСТВИЕ
+    // ============================================
     greetings: {
         initial: 'שלום, הגעתם לחברת לידר, אני העוזרת האישית. איך אפשר לעזור?',
     },
 
+    // ============================================
+    // СООБЩЕНИЯ
+    // ============================================
     messages: {
         checking: 'רק רגע, אני בודקת...',
         noSpeech: 'לא שמעתי, אפשר לחזור?',
@@ -71,14 +88,32 @@ const botBehavior = {
         waitMusicUrl: 'https://mabotmusik-2585.twil.io/mb.mp3',
     },
 
+    // ============================================
+    // НАСТРОЙКИ ГОЛОСА (СТАРЫЕ, ПРОВЕРЕННЫЕ)
+    // ============================================
     voiceSettings: {
-        he: { language: 'he-IL', ttsVoice: 'Google.he-IL-Standard-A', sttLanguage: 'iw-IL' },
-        ru: { language: 'ru-RU', ttsVoice: 'Google.ru-RU-Wavenet-A', sttLanguage: 'ru-RU' }
+        he: {
+            language: 'he-IL',
+            ttsVoice: 'Google.he-IL-Standard-A',
+            sttLanguage: 'iw-IL',
+        },
+        ru: {
+            language: 'ru-RU',
+            ttsVoice: 'Google.ru-RU-Wavenet-A',
+            sttLanguage: 'ru-RU',
+        }
     },
 
-    gatherSettings: { input: 'speech', speechTimeout: 'auto', language: 'iw-IL' },
+    gatherSettings: {
+        input: 'speech',
+        speechTimeout: 'auto',
+        language: 'iw-IL',
+    },
 
-    geminiSettings: { model: 'gemini-2.0-flash', temperature: 0.0 },
+    geminiSettings: {
+        model: 'gemini-2.0-flash',
+        temperature: 0.1, // Низкая температура для точности инструкций
+    },
 
     operatorSettings: {
         phoneNumber: '+972533403449',
@@ -90,8 +125,12 @@ const botBehavior = {
         markdownSymbols: /[*_#`~]/g,
         punctuation: /[.,!?;:"""''()[\]{}]/g,
         multipleSpaces: /\s+/g,
-        urlPattern: /https?:\/\/\S+/g, 
+        urlPattern: /https?:\/\/\S+/g, // Паттерн для ссылок
     },
+
+    // ============================================
+    // ФУНКЦИИ
+    // ============================================
 
     detectLanguage(text) {
         if (!text) return 'he';
@@ -102,10 +141,10 @@ const botBehavior = {
     },
 
     cleanTextForTTS(text) {
-        // 1. Сначала удаляем ссылки
-        text = text.replace(this.textCleanupRules.urlPattern, ''); 
+        // 1. Удаляем ссылки (чтобы не читала http...)
+        text = text.replace(this.textCleanupRules.urlPattern, '');
         
-        // 2. ЖЕСТКОЕ УДАЛЕНИЕ ЗВЕЗДОЧЕК (Добавил эту строку)
+        // 2. Удаляем звездочки (Markdown)
         text = text.replace(/\*/g, '');
 
         // 3. Остальная очистка
@@ -113,6 +152,7 @@ const botBehavior = {
         text = text.replace(/<[^>]*>/g, '');
         text = text.replace(this.textCleanupRules.multipleSpaces, ' ').trim();
 
+        // 4. Фонетические замены
         Object.keys(transcriptions).forEach(word => {
             if (text.includes(word)) {
                 const replacement = transcriptions[word];
