@@ -79,14 +79,21 @@ async function main() {
 
             // ВАЖНО: Добавляем Search_Keywords в начало для поиска
             const pageContent = `
+<<<<<<< HEAD
 === KEYWORDS FOR SEARCH ===
 ${row.Search_Keywords || ''}
 ${row.Product_Name}
 ${row.City !== 'N/A' ? row.City : ''}
 ${row.Model_Type}
+=======
+=== SEARCH KEYWORDS (HIDDEN) ===
+${row.Search_Keywords}
+${row.Product_Name}
+${row.City !== 'N/A' ? row.City : ''}
+>>>>>>> b710c831e18f4cca5e1b69f253dba911941c7bb0
 
-=== DETAILS ===
-Product Name: ${row.Product_Name}
+=== PRODUCT DETAILS (FOR USER) ===
+Name: ${row.Product_Name}
 Model: ${row.Model_Type}
 City: ${row.City}
 Price: ${priceString}
@@ -97,7 +104,7 @@ Category: ${row.Domain} / ${row.Sub_Category}
 Bonuses: ${row.Bonuses || 'Standard'}
 
 === LOCATION ===
-Waze/Maps: ${row.Location_Link || 'None'}
+Waze: ${row.Location_Link || 'None'}
 Directions: ${row.Location_Desc || 'None'}
 
 === MEDIA ===
@@ -105,9 +112,9 @@ Images: ${row.Photo_URLs || 'None'}
 Video: ${row.Video_URL || 'None'}
 Bot Style: ${row.Human_Style_Note || 'Neutral'}
 
-=== PAYMENT INFO ===
-Payment Link: ${row.Payment_Link || 'None'}
-Payment Guide: ${row.Payment_Guide_URL || 'None'}
+=== PAYMENT ===
+Link: ${row.Payment_Link || 'None'}
+Guide: ${row.Payment_Guide_URL || 'None'}
             `.trim();
 
             const metadata = {
@@ -131,7 +138,7 @@ Payment Guide: ${row.Payment_Guide_URL || 'None'}
             collectionMetadata: { "hnsw:space": "cosine" }
         });
 
-        console.log('\n✅ УСПЕХ: База обновлена!');
+        console.log('\n✅ УСПЕХ: База обновлена! Имя на иврите отделено от ключевых слов.');
 
     } catch (error) {
         console.error('\n❌ Ошибка:', error.message);

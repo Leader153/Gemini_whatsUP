@@ -7,26 +7,31 @@ const crmService = require('./crmService');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// --- УМНОЕ ОПРЕДЕЛЕНИЕ ДОМЕНА ---
+// --- УМНОЕ ОПРЕДЕЛЕНИЕ ДОМЕНА (ИСПРАВЛЕНО) ---
 function detectDomain(text) {
     const lower = text.toLowerCase();
     
-    // Яхты
-    if (lower.includes('יאכטה') || lower.includes('שיט') || lower.includes('הפלגה') || lower.includes('yacht') || lower.includes('ים') || lower.includes('סירה')) {
-        return 'Yachts';
-    }
-    
-    // Терминалы (Расширенный список)
+    // 1. ТЕРМИНАЛЫ (Приоритет)
     const terminalKeywords = [
-        'מסוף', 'אשראי', 'terminal', 'קופה', // Стандартные
-        'חנות', 'עסק', 'לגבות', 'תשלום',     // Магазин, Бизнес, Оплата
-        'סליקה', 'מכשיר'                     // Слика, Аппарат
+        'מסוף', 'אשראי', 'terminal', 'קופה',
+        'חנות', 'עסק', 'לגבות', 'תשלום',
+        'סליקה', 'מכשיר', 'pos'
     ];
     
     if (terminalKeywords.some(word => lower.includes(word))) {
         return 'Terminals';
     }
 
+    // 2. ЯХТЫ
+    const yachtKeywords = [
+        'יאכטה', 'שיט', 'הפלגה', 'yacht', 'סירה', 
+        'שייט', 'ים ', ' ים' // Только с пробелами!
+    ];
+
+    if (yachtKeywords.some(word => lower.includes(word))) {
+        return 'Yachts';
+    }
+    
     return null;
 }
 // --------------------------------
@@ -43,8 +48,11 @@ const streamingEngine = {
             if (!currentDomain) {
                 currentDomain = sessionManager.getDomain(sessionId);
             } else {
-                sessionManager.setDomain(sessionId, currentDomain);
-                console.log(`🔍 [STREAM] Смена домена: ${currentDomain}`);
+                const oldDomain = sessionManager.getDomain(sessionId);
+                if (oldDomain !== currentDomain) {
+                    console.log(`🔍 [STREAM] Смена домена: ${oldDomain} -> ${currentDomain}`);
+                    sessionManager.setDomain(sessionId, currentDomain);
+                }
             }
 
             let searchQuery = userMessage;
@@ -59,12 +67,7 @@ const streamingEngine = {
 
             if (customerData?.gender) sessionManager.setGender(sessionId, customerData.gender);
 
-            const systemPrompt = botBehavior.getSystemPrompt(
-                context, 
-                sessionManager.getGender(sessionId), 
-                new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' }), 
-                userPhone
-            );
+            const systemPrompt = botBehavior.getSystemPrompt(context, sessionManager.getGender(sessionId), new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' }), userPhone);
 
             const model = genAI.getGenerativeModel({
                 model: botBehavior.geminiSettings.model,

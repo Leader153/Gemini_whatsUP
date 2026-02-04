@@ -8,29 +8,21 @@ const messageFormatter = require('./messageFormatter');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// --- УМНОЕ ОПРЕДЕЛЕНИЕ ДОМЕНА ---
 function detectDomain(text) {
     const lower = text.toLowerCase();
     
-    // Яхты
-    if (lower.includes('יאכטה') || lower.includes('שיט') || lower.includes('הפלגה') || lower.includes('yacht') || lower.includes('ים') || lower.includes('סירה')) {
-        return 'Yachts';
-    }
-    
-    // Терминалы (Расширенный список)
     const terminalKeywords = [
-        'מסוף', 'אשראי', 'terminal', 'קופה', // Стандартные
-        'חנות', 'עסק', 'לגבות', 'תשלום',     // Магазин, Бизнес, Оплата
-        'סליקה', 'מכשיר'                     // Слика, Аппарат
+        'מסוף', 'אשראי', 'terminal', 'קופה',
+        'חנות', 'עסק', 'לגבות', 'תשלום',
+        'סליקה', 'מכשיר', 'pos', 'kaspa'
     ];
-    
-    if (terminalKeywords.some(word => lower.includes(word))) {
-        return 'Terminals';
-    }
+    if (terminalKeywords.some(word => lower.includes(word))) return 'Terminals';
 
+    const yachtKeywords = ['יאכטה', 'שיט', 'הפלגה', 'yacht', 'סירה', 'שייט', 'ים ', ' ים'];
+    if (yachtKeywords.some(word => lower.includes(word))) return 'Yachts';
+    
     return null;
 }
-// --------------------------------
 
 const conversationEngine = {
     async processMessage(userMessage, sessionId, channel, userPhone) {
@@ -40,18 +32,21 @@ const conversationEngine = {
             sessionManager.initSession(sessionId, channel);
 
             let currentDomain = detectDomain(userMessage);
-            if (!currentDomain) {
-                currentDomain = sessionManager.getDomain(sessionId);
-            } else {
-                sessionManager.setDomain(sessionId, currentDomain);
-                console.log(`🔍 [ENGINE] Смена домена: ${currentDomain}`);
+            if (!currentDomain) currentDomain = sessionManager.getDomain(sessionId);
+            else {
+                const oldDomain = sessionManager.getDomain(sessionId);
+                if (oldDomain !== currentDomain) sessionManager.setDomain(sessionId, currentDomain);
             }
 
             let searchQuery = userMessage;
             if (currentDomain) searchQuery += ` (Domain: ${currentDomain})`;
 
+            // ЗАЩИТА ОТ ПУСТОГО ПОИСКА
+            // Если сообщение от пользователя пустое (что редко), не ищем.
+            const contextPromise = userMessage.trim() ? getContextForPrompt(searchQuery, 3) : Promise.resolve('');
+            
             const [context, customerData] = await Promise.all([
-                getContextForPrompt(searchQuery, 3),
+                contextPromise,
                 !sessionManager.getGender(sessionId) ? crmService.getCustomerData(userPhone) : null
             ]);
 
@@ -62,16 +57,17 @@ const conversationEngine = {
             const model = genAI.getGenerativeModel({
                 model: botBehavior.geminiSettings.model,
                 systemInstruction: { parts: [{ text: systemPrompt }] },
-                tools: [{
-                    functionDeclarations: calendarTools.map(t => ({ name: t.name, description: t.description, parameters: t.parameters }))
-                }]
+                tools: [{ functionDeclarations: calendarTools.map(t => ({ name: t.name, description: t.description, parameters: t.parameters })) }]
             });
 
             const history = sessionManager.getHistory(sessionId);
-            const result = await model.generateContent({ contents: [...history, { role: 'user', parts: [{ text: userMessage }] }] });
+            // Если сообщение пользователя пустое, не добавляем его в историю (это бывает при автоматических вызовах)
+            const newContent = userMessage.trim() ? [{ role: 'user', parts: [{ text: userMessage }] }] : [];
+            
+            const result = await model.generateContent({ contents: [...history, ...newContent] });
             const response = result.response;
             
-            sessionManager.addToHistory(sessionId, 'user', userMessage);
+            if (userMessage.trim()) sessionManager.addToHistory(sessionId, 'user', userMessage);
 
             const functionCalls = response.functionCalls();
             if (functionCalls && functionCalls.length > 0) {
@@ -110,7 +106,9 @@ const conversationEngine = {
             }
 
             if (generateResponse) {
-                const context = existingContext || await getContextForPrompt('', 3);
+                // ПРИ ГЕНЕРАЦИИ ОТВЕТА ПОСЛЕ ФУНКЦИИ НЕ ДЕЛАЕМ НОВЫЙ RAG ПОИСК (Экономим время)
+                const context = existingContext || ''; 
+                
                 const systemPrompt = botBehavior.getSystemPrompt(context, sessionManager.getGender(sessionId), new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' }), userPhone);
                 const model = genAI.getGenerativeModel({
                     model: botBehavior.geminiSettings.model,
