@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-const { calendar } = require('@googleapis/calendar'); // <--- ВОТ ГЛАВНОЕ ИЗМЕНЕНИЕ
-=======
 const { calendar } = require('@googleapis/calendar');
->>>>>>> b710c831e18f4cca5e1b69f253dba911941c7bb0
 const { GoogleAuth } = require('google-auth-library');
 const path = require('path');
 
@@ -33,10 +29,7 @@ async function getCalendarClient() {
     const absoluteKeyPath = path.resolve(process.cwd(), keyPath);
 
     try {
-<<<<<<< HEAD
-=======
         // Создаем auth клиент, если его нет
->>>>>>> b710c831e18f4cca5e1b69f253dba911941c7bb0
         if (!authClientInstance) {
             authClientInstance = new GoogleAuth({
                 keyFile: absoluteKeyPath,
