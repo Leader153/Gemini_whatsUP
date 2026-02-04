@@ -1,9 +1,10 @@
-const { google } = require('googleapis');
+const { calendar } = require('@googleapis/calendar'); // <--- ВОТ ГЛАВНОЕ ИЗМЕНЕНИЕ
 const { GoogleAuth } = require('google-auth-library');
 const path = require('path');
 
 let authClientInstance = null;
 
+// --- СЛОВАРЬ СИНОНИМОВ (ALIASES) ---
 const YACHT_ALIASES = {
     // Герцлия
     'Joy-BE': ['JOY', 'Joy', 'ג\'וי', 'JOYB', 'joy', 'גוי בי', 'Joy-BE'],
@@ -20,21 +21,27 @@ const YACHT_ALIASES = {
     'Sea-u': ['Sea-u', 'סי יו', 'Sea u', 'סי-יו']
 };
 
+/**
+ * Получение клиента календаря
+ */
 async function getCalendarClient() {
-    if (authClientInstance) return google.calendar({ version: 'v3', auth: authClientInstance });
-    
     const keyPath = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH || './calendar/service-account-key.json';
     const absoluteKeyPath = path.resolve(process.cwd(), keyPath);
 
     try {
-        const auth = new GoogleAuth({
-            keyFile: absoluteKeyPath,
-            scopes: ['https://www.googleapis.com/auth/calendar'],
-        });
-        authClientInstance = await auth.getClient();
-        return google.calendar({ version: 'v3', auth: authClientInstance });
+        if (!authClientInstance) {
+            authClientInstance = new GoogleAuth({
+                keyFile: absoluteKeyPath,
+                scopes: ['https://www.googleapis.com/auth/calendar'],
+            });
+        }
+
+        const client = await authClientInstance.getClient();
+        // Используем библиотеку @googleapis/calendar
+        return calendar({ version: 'v3', auth: client });
+
     } catch (error) {
-        console.error(`❌ Error loading key: ${absoluteKeyPath}`);
+        console.error(`❌ Ошибка ключа: ${absoluteKeyPath}`);
         throw error;
     }
 }

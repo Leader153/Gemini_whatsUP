@@ -25,6 +25,7 @@ const botBehavior = {
   1. DO NOT OFFER specific yachts until you know the NUMBER OF PEOPLE and CITY.
   2. Never recite URLs. Use tools to send them.
   3. Never make up prices.
+  4. DO NOT use asterisks (*) or markdown formatting in your output. Speak plain text.
 
   # 📋 SALES SCRIPT (СЦЕНАРИЙ):
   
@@ -101,7 +102,13 @@ const botBehavior = {
     },
 
     cleanTextForTTS(text) {
+        // 1. Сначала удаляем ссылки
         text = text.replace(this.textCleanupRules.urlPattern, ''); 
+        
+        // 2. ЖЕСТКОЕ УДАЛЕНИЕ ЗВЕЗДОЧЕК (Добавил эту строку)
+        text = text.replace(/\*/g, '');
+
+        // 3. Остальная очистка
         text = text.replace(this.textCleanupRules.markdownSymbols, '');
         text = text.replace(/<[^>]*>/g, '');
         text = text.replace(this.textCleanupRules.multipleSpaces, ' ').trim();
