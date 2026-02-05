@@ -197,14 +197,22 @@ app.post('/process_tool', async (request, response) => {
             console.log(`📞 Попытка перевода на оператора: ${botBehavior.operatorSettings.phoneNumber}`);
             twiml.say({ voice: voice }, toolResult.text);
             
-            // ВАЖНО: Указываем action, чтобы вернуть звонок, если не ответят
+// ВАЖНО: Указываем action, чтобы вернуть звонок, если не ответят
             twiml.dial({ 
                 timeout: botBehavior.operatorSettings.timeout, 
                 action: '/handle-dial-status' 
             }, botBehavior.operatorSettings.phoneNumber);
         } else {
-            const cleanText = botBehavior.cleanTextForTTS(toolResult.text);
-            twiml.say({ voice: voice }, cleanText);
+            // --- ЗАЩИТА ОТ ПУСТОГО ТЕКСТА ---
+            if (toolResult.text) {
+                const cleanText = botBehavior.cleanTextForTTS(toolResult.text);
+                // Говорим только если текст не пустой
+                if (cleanText && cleanText.trim().length > 0) {
+                    twiml.say({ voice: voice }, cleanText);
+                }
+            }
+            // --------------------------------
+
             twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
             twiml.redirect({ method: 'POST' }, '/reprompt');
         }
