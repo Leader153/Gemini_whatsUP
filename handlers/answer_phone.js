@@ -262,19 +262,31 @@ app.post('/handle-dial-status', (request, response) => {
 });
 
 // 5. ПЕРЕСПРОС
+// 6. ПЕРЕСПРОС (БЕСКОНЕЧНЫЙ ЦИКЛ ОЖИДАНИЯ)
 app.post('/reprompt', (request, response) => {
     const twiml = new VoiceResponse();
-    const retryCount = parseInt(request.query.retry || '0');
+    
+    // Мы убрали "if (retryCount > 0) hangup".
+    // Теперь бот никогда не сбрасывает сам.
 
-    if (retryCount === 0) {
-        twiml.play({ loop: 1 }, HOLD_MUSIC_URL);
-        twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
-        twiml.redirect({ method: 'POST' }, '/reprompt?retry=1');
-    } else {
-        twiml.say({ voice: botBehavior.voiceSettings.he.ttsVoice }, "נתראה!");
-        twiml.hangup();
-    }
-    response.type('text/xml').send(twiml.toString());
+    console.log(`🎵 [REPROMPT] Клиент молчит. Ждем...`);
+
+    // 1. Играем музыку (чтобы клиент понял, что связь есть)
+    twiml.play({ loop: 1 }, HOLD_MUSIC_URL); 
+    
+    // 2. Снова включаем микрофон
+    twiml.gather({ 
+        input: 'speech', 
+        action: '/respond', 
+        speechTimeout: 'auto', 
+        language: botBehavior.voiceSettings.he.sttLanguage 
+    });
+
+    // 3. Если опять промолчал — возвращаемся в начало этого блока
+    twiml.redirect({ method: 'POST' }, '/reprompt');
+
+    response.type('text/xml');
+    response.send(twiml.toString());
 });
 
 // SERVER
