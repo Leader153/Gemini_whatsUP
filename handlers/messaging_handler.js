@@ -53,8 +53,11 @@ router.post('/whatsapp', async (request, response) => {
     console.log('📱 WhatsApp сообщение от:', fromNumber);
     console.log('📨 Текст:', incomingMessage);
     
-    const sessionId = fromNumber;
+    // --- ИЗМЕНЕНИЕ: Синхронизация с голосом ---
+    // Убираем приставку 'whatsapp:', чтобы ID совпадал с ID при звонке
     const userPhone = fromNumber.replace('whatsapp:', ''); 
+    const sessionId = userPhone; 
+    // ------------------------------------------
 
     try {
         const result = await conversationEngine.processMessage(

@@ -109,7 +109,8 @@ app.post('/respond', (request, response) => {
             };
 
             await streamingEngine.processMessageStream(
-                speechResult, callSid, clientPhone,
+                speechResult, clientPhone, 
+                clientPhone,
                 (chunk) => { if (task.queue) task.queue.push(chunk); interruptMusic(); },
                 (res) => { task.status = 'completed'; task.result = res; interruptMusic(); },
                 (err) => { console.error('Streaming error:', err); task.status = 'error'; interruptMusic(); }
