@@ -64,7 +64,7 @@ app.post('/respond', (request, response) => {
         twiml.play({ loop: 10 }, HOLD_MUSIC_URL);
 
         response.type('text/xml');
-        response.send(twiml.toString()); 
+        response.send(twiml.toString());
 
         // --- АСИНХРОННАЯ ЛОГИКА ---
         const clientPhone = request.body.From;
@@ -109,7 +109,7 @@ app.post('/respond', (request, response) => {
             };
 
             await streamingEngine.processMessageStream(
-                speechResult, clientPhone, 
+                speechResult, clientPhone,
                 clientPhone,
                 (chunk) => { if (task.queue) task.queue.push(chunk); interruptMusic(); },
                 (res) => { task.status = 'completed'; task.result = res; interruptMusic(); },
@@ -148,7 +148,13 @@ app.post('/check_ai', (request, response) => {
         let combinedText = "";
         while (task.queue.length > 0) combinedText += task.queue.shift() + " ";
 
-        twiml.say({ voice: voice }, combinedText);
+        // --- ИСПРАВЛЕНИЕ: Определяем язык из текста и выбираем правильный голос ---
+        const detectedLang = botBehavior.detectLanguage(combinedText);
+        const correctVoice = botBehavior.voiceSettings[detectedLang].ttsVoice;
+        console.log(`🗣️ [TTS] Detected language: ${detectedLang}, using voice: ${correctVoice}`);
+        // ---------------------------------------------------------------------------
+
+        twiml.say({ voice: correctVoice }, combinedText);
         twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
         return response.send(twiml.toString());
     }
@@ -197,11 +203,11 @@ app.post('/process_tool', async (request, response) => {
         if (toolResult.transferToOperator) {
             console.log(`📞 Попытка перевода на оператора: ${botBehavior.operatorSettings.phoneNumber}`);
             twiml.say({ voice: voice }, toolResult.text);
-            
-// ВАЖНО: Указываем action, чтобы вернуть звонок, если не ответят
-            twiml.dial({ 
-                timeout: botBehavior.operatorSettings.timeout, 
-                action: '/handle-dial-status' 
+
+            // ВАЖНО: Указываем action, чтобы вернуть звонок, если не ответят
+            twiml.dial({
+                timeout: botBehavior.operatorSettings.timeout,
+                action: '/handle-dial-status'
             }, botBehavior.operatorSettings.phoneNumber);
         } else {
             // --- ЗАЩИТА ОТ ПУСТОГО ТЕКСТА ---
@@ -209,7 +215,13 @@ app.post('/process_tool', async (request, response) => {
                 const cleanText = botBehavior.cleanTextForTTS(toolResult.text);
                 // Говорим только если текст не пустой
                 if (cleanText && cleanText.trim().length > 0) {
-                    twiml.say({ voice: voice }, cleanText);
+                    // --- ИСПРАВЛЕНИЕ: Определяем язык и выбираем правильный голос ---
+                    const detectedLang = botBehavior.detectLanguage(cleanText);
+                    const correctVoice = botBehavior.voiceSettings[detectedLang].ttsVoice;
+                    console.log(`🗣️ [TTS-TOOL] Detected language: ${detectedLang}, using voice: ${correctVoice}`);
+                    // ---------------------------------------------------------------------------
+
+                    twiml.say({ voice: correctVoice }, cleanText);
                 }
             }
             // --------------------------------
@@ -244,17 +256,17 @@ app.post('/handle-dial-status', (request, response) => {
         // Не дозвонились (busy, no-answer, failed)
         // Говорим сообщение и снова слушаем клиента
         // Память (sessionManager) жива, так как CallSid тот же!
-        
+
         twiml.say({ voice: voice }, "מצטערת, הנציג אינו זמין כרגע. איך אוכל לעזור לך בנושא אחר?");
         // (Извините, представитель сейчас недоступен. Чем еще могу помочь?)
 
-        twiml.gather({ 
-            input: 'speech', 
-            action: '/respond', 
-            speechTimeout: 'auto', 
-            language: botBehavior.voiceSettings.he.sttLanguage 
+        twiml.gather({
+            input: 'speech',
+            action: '/respond',
+            speechTimeout: 'auto',
+            language: botBehavior.voiceSettings.he.sttLanguage
         });
-        
+
         twiml.redirect({ method: 'POST' }, '/reprompt');
     }
 
@@ -262,25 +274,33 @@ app.post('/handle-dial-status', (request, response) => {
     response.send(twiml.toString());
 });
 
-// 5. ПЕРЕСПРОС
-// 6. ПЕРЕСПРОС (С ОГРАНИЧЕНИЕМ)
+
+// 6. ПЕРЕСПРОС (УЛУЧШЕННЫЙ: НАПОМИНАНИЕ + 3 ПОПЫТКИ)
 app.post('/reprompt', (request, response) => {
     const twiml = new VoiceResponse();
-    
-    // Получаем номер попытки из ссылки (если нет, то 0)
     const retryCount = parseInt(request.query.retry || '0');
+    // Важно: берем голос динамически, если вдруг переключились на русский, 
+    // но по умолчанию будет иврит
+    const voice = botBehavior.voiceSettings.he.ttsVoice; 
 
     console.log(`🎵 [REPROMPT] Тишина. Попытка №${retryCount + 1}`);
 
-    // Если мы уже ждали 2 раза и клиент все еще молчит -> ВЕШАЕМ ТРУБКУ
-    if (retryCount >= 2) {
-        console.log('🛑 [HANGUP] Клиент не отвечает. Завершаем звонок.');
-        twiml.say({ voice: botBehavior.voiceSettings.he.ttsVoice }, "תודה, נתראה!"); // "Спасибо, увидимся!"
+    // Если прошло 3 попытки (0, 1, 2) -> Вешаем трубку
+    if (retryCount >= 3) {
+        console.log('🛑 [HANGUP] Клиент долго молчит. Завершаем.');
+        twiml.say({ voice: voice }, "תודה, נתראה!"); // "Спасибо, увидимся!"
         twiml.hangup();
     } else {
-        // Если это 1-я или 2-я попытка -> Ждем еще
+        // Если это не самый первый раз (клиент молчит уже какое-то время)
+        if (retryCount > 0) {
+            // ГОЛОСОВОЕ НАПОМИНАНИЕ (Чтобы не казалось, что завис)
+            twiml.say({ voice: voice }, "אני עדיין כאן. קיבלת את ההודעה? יש עוד משהו שאוכל לעזור בו?");
+        }
+
+        // Играем музыку
         twiml.play({ loop: 1 }, HOLD_MUSIC_URL); 
         
+        // Снова слушаем
         twiml.gather({ 
             input: 'speech', 
             action: '/respond', 
@@ -288,7 +308,7 @@ app.post('/reprompt', (request, response) => {
             language: botBehavior.voiceSettings.he.sttLanguage 
         });
 
-        // Перезапускаем reprompt, но увеличиваем счетчик (+1)
+        // Увеличиваем счетчик
         twiml.redirect({ method: 'POST' }, `/reprompt?retry=${retryCount + 1}`);
     }
 
