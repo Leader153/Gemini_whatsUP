@@ -148,15 +148,28 @@ function forceYear2026(dateStr) {
     return cleanDate.replace(/^\d{4}/, '2026');
 }
 
+/**
+ * Умная отправка: WhatsApp + SMS-страховка с правильным текстом
+ */
 async function trySendWithFallback(phone, text) {
-    const waResult = await sendWhatsAppMessage(phone, text);
-    if (!waResult.success) {
-        console.log(`⚠️ WhatsApp failed. Sending SMS fallback.`);
-        const waLink = `https://wa.me/${WA_NUMBER}?text=Hi`;
-        const smsBody = `Leader: שלחנו לך פרטים בוואטסאפ. לחץ כאן: ${waLink}`;
-        await sendSms(phone, smsBody);
-    }
-    return { result: "Message sent." };
+    // 1. Пробуем отправить WhatsApp
+    await sendWhatsAppMessage(phone, text);
+    
+    // 2. ОТПРАВЛЯЕМ SMS ВСЕГДА (СТРАХОВКА)
+    console.log(`📨 Sending Safety SMS to ${phone}...`);
+    
+    // Текст, который появится у клиента в WhatsApp автоматически
+    const preFilledText = "שלום, אשמח לקבל פרטים ותמונות"; 
+    // Кодируем иврит для ссылки
+    const waLink = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(preFilledText)}`;
+    
+    // Текст самого SMS
+    // "Leader: Чтобы мы могли выслать фото и детали в WhatsApp, нажмите на ссылку и отправьте сообщение:"
+    const smsBody = `Leader: כדי שנוכל לשלוח לך תמונות ופרטים לווטסאפ, לחץ על הקישור ושלח את ההודעה: ${waLink}`;
+    
+    await sendSms(phone, smsBody);
+
+    return { result: "Message sent (with SMS backup)." };
 }
 
 async function handleFunctionCall(name, args) {
