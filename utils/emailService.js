@@ -14,10 +14,11 @@ async function sendOrderEmail(data) {
     const mailOptions = {
         from: `"Gemini Bot" <${process.env.EMAIL_USER}>`,
         to: process.env.EMAIL_TO, // Твой email
-        subject: `💰 Новый заказ: ${data.clientName} (${data.date})`,
+        subject: `💰 Новый заказ #${data.orderId || 'N/A'}: ${data.clientName} (${data.date})`,
         html: `
             <div style="font-family: Arial; padding: 20px; border: 1px solid #ccc;">
                 <h2>Новый заказ яхты/терминала</h2>
+                <p><strong>Номер заказа:</strong> #${data.orderId || 'N/A'}</p>
                 <p><strong>Клиент:</strong> ${data.clientName}</p>
                 <p><strong>Телефон:</strong> ${data.clientPhone}</p>
                 <p><strong>Яхта:</strong> ${data.yachtName}</p>
