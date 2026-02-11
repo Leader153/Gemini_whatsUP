@@ -1,0 +1,11 @@
+#
+# Конфигурация для ЛОКАЛЬНОЙ разработки.
+# Этот файл используется для запуска туннеля Cloudflare, который
+# пробрасывает трафик на локально запущенный HTTP сервер.
+#
+tunnel: 9d279e74-afc1-4150-8f1e-333e7e691212
+credentials-file: C:\Users\leade\.cloudflared\9d279e74-afc1-4150-8f1e-333e7e691212.json
+ingress:
+  - hostname: api.leadertechnology.shop
+    service: http://localhost:1337
+  - service: http_status:404

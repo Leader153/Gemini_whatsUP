@@ -1,418 +1,327 @@
-const { checkAvailability, createBooking } = require('./calendarService');
-const { saveOrderToFile } = require('../utils/fileUtils');
+const { checkAvailability, createBooking, isSlotAvailable } = require('./calendarService');
+const { sendWhatsAppMessage } = require('../utils/whatsappService');
 const { sendOrderEmail } = require('../utils/emailService');
-const { saveClientData } = require('../utils/crmService');
-const { sendWhatsAppMessage } = require('../utils/messagingService');
+const { sendSms } = require('../utils/smsService');
+const { getNextOrderNumber } = require('../utils/orderCounter');
 
+const DEFAULT_PAYMENT_LINK = "https://secure.cardcom.solutions/EA/EA5/5a2HEfT6E6KH1aSdcinQ/PaymentSP";
+const WA_NUMBER = (process.env.TWILIO_NUMBER || '972533883507').replace(/[^\d]/g, '');
+const OWNER_PHONE_NUMBER = '+972533403449'; 
 
-/**
- * Определение инструментов для Gemini Function Calling
- */
+// --- ВЕРНУЛ РЕКВИЗИТЫ НА МЕСТО ---
+const PAYBOX_PHONE = "053-340-3449";
+const BANK_DETAILS = `
+בנק: יהב (04)
+סניף: 279 (קריית ביאליק)
+חשבון: 129718
+שם: דניאל פלידר (לידר הפלגות)
+`.trim();
+
+// --- ТЕКСТЫ ---
+const CLOSING_DEAL_TEXT = `
+*תהליך סגירת עסקה / שריון מקום* ⚓
+
+כדי לשריין את היאכטה, עלינו לבצע הזמנה מסודרת.
+אשלח לך כעת *אישור הזמנה* הכולל את כל הפרטים וקישור לתשלום מקדמה.
+
+💳 *אפשרויות לתשלום המקדמה:*
+1. כרטיס אשראי (קישור מאובטח).
+2. אפליקציית PayBox.
+3. העברה בנקאית.
+
+לאחר התשלום, חובה לשלוח לנו צילום אסמכתא בווטסאפ.
+*האם לשלוח לך את ההזמנה?*
+`;
+
+const TERMS_PART_1 = `
+*תנאי הזמנה ותנאי ביטול - חלק א'*
+מומלץ להשתמש בכדורים נגד בחילה ללא מרשם כשעה לפני תחילת השייט!
+
+1. *הגעה בזמן:* יש להגיע בשעה הנקובה.
+2. *רחצה בים:* באחריות המתרחץ בלבד. ירידה למים רק באישור סקיפר.
+3. *איחור:* יקוזז מזמן השייט.
+4. *ביטוח:* קיים ביטוח צד ג'.
+5. *ניקיון:* יש להשאיר יאכטה נקייה.
+6. *ליווי:* חובה מלווה מעל גיל 16.
+7. *איסורים:* ללא אלכוהול מתחת לגיל 18. אסור נרגילה/מנגל/קונפטי.
+`;
+
+const TERMS_PART_2 = `
+*תנאי הזמנה ותנאי ביטול - חלק ב'*
+
+8. *מזג אוויר:* במידה וסוער - יידחה למועד אחר.
+9. *ביטול:*
+* עד 14 יום: החזר פחות 300 ₪.
+* 14 יום - 48 שעות: 50% דמי ביטול.
+* פחות מ-48 שעות: תשלום מלא.
+10. *כוח עליון:* דחיית מועד בלבד.
+
+*אישור:* תשלום המקדמה מהווה הסכמה לתנאים.
+`;
+
 const calendarTools = [
     {
         name: 'check_yacht_availability',
-        description: 'Проверяет доступность времени для ДЕМОНСТРАЦИИ товара в офисе компании Leader на указанную дату. Возвращает список свободных временных слотов.',
+        description: 'Check available slots',
         parameters: {
-            type: 'object',
+            type: 'OBJECT',
             properties: {
-                date: {
-                    type: 'string',
-                    description: 'Дата в формате YYYY-MM-DD, обязательно 2026 год. Например, 2026-06-15',
-                },
-                duration: {
-                    type: 'string',
-                    description: 'Длительность встречи в часах. По умолчанию "1"',
-                    enum: ['1', '2'],
-                },
+                date: { type: 'STRING' },
+                duration: { type: 'NUMBER' },
+                yachtName: { type: 'STRING' }
             },
-            required: ['date', 'duration'],
-        },
-    },
-    {
-        name: 'book_yacht',
-        description: 'Записывает клиента на демонстрацию товара в офисе Leader. Требует подтверждения времени, имени и телефона.',
-        parameters: {
-            type: 'object',
-            properties: {
-                startDateTime: {
-                    type: 'string',
-                    description: 'Начало встречи в формате ISO 8601, обязательно 2026 год. Например, 2026-06-15T10:00:00+03:00',
-                },
-                endDateTime: {
-                    type: 'string',
-                    description: 'Конец встречи в формате ISO 8601, обязательно 2026 год. Например, 2026-06-15T11:00:00+03:00',
-                },
-                clientName: {
-                    type: 'string',
-                    description: 'Имя клиента',
-                },
-                clientPhone: {
-                    type: 'string',
-                    description: 'Телефон клиента',
-                },
-                duration: {
-                    type: 'string',
-                    description: 'Длительность ("1" или "2")',
-                    enum: ['1', '2'],
-                },
-                clientEmail: {
-                    type: 'string',
-                    description: 'Email клиента (опционально)',
-                },
-                has_terminal: {
-                    type: 'string',
-                    description: 'Ответ на вопрос "У вас уже есть терминал?" (да/нет)',
-                },
-                business_type: {
-                    type: 'string',
-                    description: 'Ответ на вопрос "Для какого бизнеса вы ищете решение?"',
-                },
-                city: {
-                    type: 'string',
-                    description: 'Ответ на вопрос "В каком городе вы находитесь?"',
-                },
-                monthly_turnover: {
-                    type: 'string',
-                    description: 'Примерный месячный оборот по картам',
-                },
-                current_provider: {
-                    type: 'string',
-                    description: 'Текущий провайдер эквайринга/терминала',
-                },
-                points_count: {
-                    type: 'string',
-                    description: 'Количество необходимых кассовых точек',
-                },
-                urgency: {
-                    type: 'string',
-                    description: 'Как срочно требуется установка',
-                },
-            },
-            required: ['startDateTime', 'endDateTime', 'clientName', 'clientPhone', 'duration'],
-        },
-    },
-    {
-        name: 'send_order_to_operator',
-        description: 'Сохраняет предварительный заказ и отправляет его оператору для подтверждения. Использовать, когда клиент хочет заказать, но точное время еще не согласовано или требуется ручная проверка.',
-        parameters: {
-            type: 'object',
-            properties: {
-                clientName: {
-                    type: 'string',
-                    description: 'Имя клиента',
-                },
-                clientPhone: {
-                    type: 'string',
-                    description: 'Телефон клиента',
-                },
-                date: {
-                    type: 'string',
-                    description: 'Желаемая дата (YYYY-MM-DD). Всегда используй 2026 год.',
-                },
-                time: {
-                    type: 'string',
-                    description: 'Желаемое время (например, "14:00")',
-                },
-                duration: {
-                    type: 'string',
-                    description: 'Длительность в часах',
-                },
-                has_terminal: {
-                    type: 'string',
-                    description: 'Ответ на вопрос "У вас уже есть терминал?" (да/нет)',
-                },
-                business_type: {
-                    type: 'string',
-                    description: 'Ответ на вопрос "Для какого бизнеса вы ищете решение?"',
-                },
-                city: {
-                    type: 'string',
-                    description: 'Ответ на вопрос "В каком городе вы находитесь?"',
-                },
-                monthly_turnover: {
-                    type: 'string',
-                    description: 'Примерный месячный оборот по картам',
-                },
-                current_provider: {
-                    type: 'string',
-                    description: 'Текущий провайдер эквайринга/терминала',
-                },
-                points_count: {
-                    type: 'string',
-                    description: 'Количество необходимых кассовых точек',
-                },
-                urgency: {
-                    type: 'string',
-                    description: 'Как срочно требуется установка',
-                },
-            },
-            required: ['clientName', 'clientPhone', 'date'],
-        },
+            required: ['date', 'duration', 'yachtName']
+        }
     },
     {
         name: 'transfer_to_support',
-        description: 'Переводит звонок на живого оператора/человека. Используй это, когда пользователь явно просит поговорить с человеком или когда ты не можешь помочь.',
-        parameters: {
-            type: 'object',
-            properties: {},
-        },
+        description: 'Transfer call',
+        parameters: { type: 'OBJECT', properties: {} }
     },
     {
         name: 'save_client_data',
-        description: 'Сохраняет данные о клиенте (имя, телефон, наличие терминала, тип бизнеса, город) в CRM систему. Использовать после того, как удалось собрать информацию по ходу диалога.',
+        description: 'Save details',
         parameters: {
-            type: 'object',
-            properties: {
-                name: {
-                    type: 'string',
-                    description: 'Имя и фамилия клиента',
-                },
-                phone: {
-                    type: 'string',
-                    description: 'Номер телефона клиента',
-                },
-                has_terminal: {
-                    type: 'string',
-                    description: 'Ответ на вопрос "У вас уже есть терминал?" (да/нет)',
-                },
-                business_type: {
-                    type: 'string',
-                    description: 'Ответ на вопрос "Для какого бизнеса вы ищете решение?"',
-                },
-                city: {
-                    type: 'string',
-                    description: 'Ответ на вопрос "В каком городе вы находитесь?"',
-                },
-                monthly_turnover: {
-                    type: 'string',
-                    description: 'Примерный месячный оборот по картам',
-                },
-                current_provider: {
-                    type: 'string',
-                    description: 'Текущий провайдер эквайринга/терминала',
-                },
-                points_count: {
-                    type: 'string',
-                    description: 'Количество необходимых кассовых точек',
-                },
-                urgency: {
-                    type: 'string',
-                    description: 'Как срочно требуется установка',
-                },
-            },
-            required: ['name', 'phone'],
-        },
+            type: 'OBJECT',
+            properties: { name: { type: 'STRING' }, phone: { type: 'STRING' } },
+            required: ['name', 'phone']
+        }
     },
     {
         name: 'send_whatsapp_message',
-        description: 'Отправляет сообщение WhatsApp клиенту. Использовать, когда нужно отправить клиенту информацию в текстовом виде.',
+        description: 'Send WhatsApp',
         parameters: {
-            type: 'object',
+            type: 'OBJECT',
+            properties: { messageBody: { type: 'STRING' }, clientPhone: { type: 'STRING' } },
+            required: ['messageBody', 'clientPhone']
+        }
+    },
+    {
+        name: 'send_closing_process_info',
+        description: 'Send payment explanation via WhatsApp. Use BEFORE booking.',
+        parameters: {
+            type: 'OBJECT',
+            properties: { clientPhone: { type: 'STRING' } },
+            required: ['clientPhone']
+        }
+    },
+    {
+        name: 'request_cancellation',
+        description: 'Handle booking cancellation request.',
+        parameters: {
+            type: 'OBJECT',
+            properties: { orderId: { type: 'STRING' }, clientPhone: { type: 'STRING' } },
+            required: ['orderId', 'clientPhone']
+        }
+    },
+    {
+        name: 'send_booking_confirmation',
+        description: 'Finalize booking: Calendar, WhatsApp, Email.',
+        parameters: {
+            type: 'OBJECT',
             properties: {
-                clientPhone: {
-                    type: 'string',
-                    description: 'Номер телефона клиента в формате E.164 (например, +972533403449).',
-                },
-                messageBody: {
-                    type: 'string',
-                    description: 'Текст сообщения для отправки.',
-                },
+                clientName: { type: 'STRING' },
+                clientPhone: { type: 'STRING' },
+                date: { type: 'STRING' },
+                startTime: { type: 'STRING' },
+                duration: { type: 'NUMBER' },
+                yachtName: { type: 'STRING' },
+                participants: { type: 'STRING' }, 
+                locationLink: { type: 'STRING' },
+                locationDesc: { type: 'STRING' },
+                totalPrice: { type: 'NUMBER' },
+                paymentLink: { type: 'STRING' },
+                guideLink: { type: 'STRING' }
             },
-            required: ['clientPhone', 'messageBody'],
-        },
+            required: ['clientName', 'clientPhone', 'date', 'startTime', 'duration', 'yachtName', 'totalPrice']
+        }
     }
 ];
 
-/**
- * Вспомогательная функция для принудительной установки 2026 года в строке даты
- */
 function forceYear2026(dateStr) {
     if (!dateStr) return dateStr;
-    // Заменяем любой год (например, 2024 или 2025) на 2026
-    return dateStr.replace(/^202[0-9]/, '2026');
+    let cleanDate = dateStr.replace(/[./]/g, '-');
+    if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(cleanDate)) {
+        const parts = cleanDate.split('-');
+        cleanDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    return cleanDate.replace(/^\d{4}/, '2026');
 }
 
 /**
- * Обработчик вызовов функций от Gemini
- * @param {string} functionName - Имя вызываемой функции
- * @param {Object} args - Аргументы функции
- * @returns {Promise<Object>} - Результат выполнения функции
+ * Умная отправка: WhatsApp + SMS-страховка с правильным текстом
  */
-async function handleFunctionCall(functionName, args) {
-    console.log(`🔧 Function call: ${functionName}`, args);
+async function trySendWithFallback(phone, text) {
+    // 1. Пробуем отправить WhatsApp
+    await sendWhatsAppMessage(phone, text);
+    
+    // 2. ОТПРАВЛЯЕМ SMS ВСЕГДА (СТРАХОВКА)
+    console.log(`📨 Sending Safety SMS to ${phone}...`);
+    
+    // Текст, который появится у клиента в WhatsApp автоматически
+    const preFilledText = "שלום, אשמח לקבל פרטים ותמונות"; 
+    // Кодируем иврит для ссылки
+    const waLink = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(preFilledText)}`;
+    
+    // Текст самого SMS
+    // "Leader: Чтобы мы могли выслать фото и детали в WhatsApp, нажмите на ссылку и отправьте сообщение:"
+    const smsBody = `Leader: כדי שנוכל לשלוח לך תמונות ופרטים לווטסאפ, לחץ על הקישור ושלח את ההודעה: ${waLink}`;
+    
+    await sendSms(phone, smsBody);
+
+    return { result: "Message sent (with SMS backup)." };
+}
+
+async function handleFunctionCall(name, args) {
+    console.log(`🔧 Function call: ${name}`, args);
 
     try {
-        switch (functionName) {
+        switch (name) {
             case 'check_yacht_availability': {
-                let { date, duration } = args;
-                date = forceYear2026(date);
-                // Конвертируем duration из строки в число
-                const durationNum = parseInt(duration, 10);
-                const availableSlots = await checkAvailability(date, durationNum);
-
-                if (availableSlots.length === 0) {
-                    return {
-                        success: true,
-                        message: `На ${date} нет свободных слотов для ${durationNum} час(а) аренды.`,
-                        availableSlots: [],
-                    };
-                }
-
-                return {
-                    success: true,
-                    message: `Найдено ${availableSlots.length} свободных слотов на ${date} для встречи (демонстрация товара). Сверься со списком. Если время подходит, спрашивай имя и телефон для записи.`,
-                    availableSlots: availableSlots,
-                    date: date,
-                    duration: durationNum,
-                };
+                const date = forceYear2026(args.date);
+                const { checkAvailability } = require('./calendarService');
+                const slots = await checkAvailability(date, args.duration, args.yachtName);
+                if (slots.length === 0) return { result: "אין שעות פנויות." };
+                return { result: `שעות פנויות: ${slots.map(s => s.displayText).join(', ')}` };
             }
 
-            case 'book_yacht': {
-                let { startDateTime, endDateTime, clientName, clientPhone, duration, clientEmail, has_terminal, business_type, city, monthly_turnover, current_provider, points_count, urgency } = args;
-                startDateTime = forceYear2026(startDateTime);
-                endDateTime = forceYear2026(endDateTime);
+            case 'transfer_to_support':
+                return { transferToOperator: true };
 
-                // Конвертируем duration из строки в число
-                const durationNum = parseInt(duration, 10);
+            case 'send_whatsapp_message':
+                return await trySendWithFallback(args.clientPhone, args.messageBody);
 
-                const clientInfo = {
-                    name: clientName,
-                    phone: clientPhone,
-                    duration: durationNum,
-                    email: clientEmail,
-                    has_terminal: has_terminal,
-                    business_type: business_type,
-                    city: city,
-                    monthly_turnover: monthly_turnover,
-                    current_provider: current_provider,
-                    points_count: points_count,
-                    urgency: urgency,
-                };
+            case 'send_closing_process_info':
+                return await trySendWithFallback(args.clientPhone, CLOSING_DEAL_TEXT);
 
-                // 1. Создаем событие в Google Calendar
-                console.log('📅 Попытка создания события в Google Calendar...');
-                const booking = await createBooking(startDateTime, endDateTime, clientInfo);
+            case 'send_booking_confirmation':
+                return await handleBookingConfirmation(args);
+            
+            case 'request_cancellation':
+                const cancelMsg = `🚫 בקשה לביטול הזמנה ${args.orderId} התקבלה.`;
+                await trySendWithFallback(args.clientPhone, cancelMsg);
+                const adminMsg = `❌ БИТУЛЬ! Клиент ${args.clientPhone} хочет отменить заказ #${args.orderId}`;
+                await sendWhatsAppMessage(OWNER_PHONE_NUMBER, adminMsg);
+                await sendOrderEmail({ clientName: 'CANCEL REQUEST', date: 'N/A', status: adminMsg });
+                return { result: "Cancellation request sent." };
 
-                // 2. Также сохраняем заказ в локальный файл
-                const orderDetails = {
-                    clientName: clientName,
-                    clientPhone: clientPhone,
-                    date: startDateTime.split('T')[0],
-                    time: startDateTime.split('T')[1].substring(0, 5),
-                    duration: durationNum,
-                    has_terminal: has_terminal,
-                    business_type: business_type,
-                    city: city,
-                    monthly_turnover: monthly_turnover,
-                    current_provider: current_provider,
-                    points_count: points_count,
-                    urgency: urgency,
-                };
-
-                const filePath = await saveOrderToFile(orderDetails);
-
-                // 3. Отправляем уведомление на Email
-                console.log('📧 Отправка уведомления на Email...');
-                await sendOrderEmail({
-                    ...orderDetails,
-                    status: 'Confirmed in Calendar'
-                });
-
-                return {
-                    success: true,
-                    message: `Встреча для демонстрации успешно назначена в Google Calendar (Ссылка: ${booking.htmlLink}) И сохранена в файл (${filePath}). ОБЯЗАТЕЛЬНО скажи клиенту: "Я записала вас на демонстрацию товара на ${orderDetails.date} в ${orderDetails.time}. Мы находимся в офисе компании Leader. Будем рады вас видеть!"`,
-                    booking: {
-                        id: booking.id,
-                        summary: booking.summary,
-                        start: booking.start.dateTime,
-                        end: booking.end.dateTime,
-                        client: clientName,
-                        phone: clientPhone,
-                        link: booking.htmlLink,
-                        localFile: filePath
-                    },
-                };
-            }
-
-            case 'send_order_to_operator': {
-                let { clientName, clientPhone, date, time, duration, has_terminal, business_type, city, monthly_turnover, current_provider, points_count, urgency } = args;
-                date = forceYear2026(date);
-
-                const orderDetails = {
-                    clientName,
-                    clientPhone,
-                    date,
-                    time,
-                    duration,
-                    has_terminal,
-                    business_type,
-                    city,
-                    monthly_turnover,
-                    current_provider,
-                    points_count,
-                    urgency
-                };
-
-                const filePath = await saveOrderToFile(orderDetails);
-
-                // Отправляем уведомление на Email
-                console.log('📧 Отправка уведомления на Email (предзаказ)...');
-                await sendOrderEmail(orderDetails);
-
-                return {
-                    success: true,
-                    message: `Заказ успешно сформирован. ОБЯЗАТЕЛЬНО скажи клиенту следующую фразу: "Ваш заказ принят. Наш оператор свяжется с вами по этому номеру телефона в ближайшее время."`,
-                };
-            }
-
-            case 'transfer_to_support': {
-                return {
-                    success: true,
-                    shouldTransfer: true,
-                    message: 'Перевод звонка на оператора инициирован.',
-                };
-            }
-
-            case 'save_client_data': {
-                return await saveClientData(args);
-            }
-
-            case 'send_whatsapp_message': {
-                const { clientPhone, messageBody } = args;
-                return await sendWhatsAppMessage(clientPhone, messageBody);
-            }
+            case 'save_client_data':
+                return { result: `Saved: ${args.name}` };
 
             default:
-                return {
-                    success: false,
-                    error: `Unknown function: ${functionName}`,
-                };
+                return { error: "Function not implemented." };
         }
     } catch (error) {
-        console.error(`❌ Error in ${functionName}:`, error);
-        return {
-            success: false,
-            error: error.message,
-        };
+        console.error(`❌ Error in ${name}:`, error);
+        return { error: "Error executing tool." };
     }
 }
 
-/**
- * Форматирование результата функции для отправки обратно в Gemini
- * @param {Object} result - Результат выполнения функции
- * @returns {string} - Форматированный текст для Gemini
- */
-function formatFunctionResult(result) {
-    if (!result.success) {
-        return `Ошибка: ${result.error}`;
+async function handleBookingConfirmation(args) {
+    const { clientName, clientPhone, date, startTime, duration, yachtName, participants, locationLink, locationDesc, totalPrice, paymentLink, guideLink } = args;
+
+    const isoDate = forceYear2026(date);
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const endHours = hours + duration;
+    const endTimeStr = `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    const startTimeISO = `${isoDate}T${startTime}:00`;
+    const endTimeISO = `${isoDate}T${endTimeStr}:00`;
+
+    // --- ЗАЩИТА ОТ ДВОЙНОГО ЗАКАЗА ---
+    const { isSlotAvailable } = require('./calendarService');
+    const isFree = await isSlotAvailable(startTimeISO, endTimeISO, yachtName);
+    if (!isFree) {
+        return { result: "שגיאה: הזמן הזה נתפס הרגע על ידי לקוח אחר. אנא נסה שעה אחרת." };
     }
 
-    // Форматируем результат в читаемый текст
-    return JSON.stringify(result, null, 2);
+    const orderId = getNextOrderNumber(); 
+    const deposit = 500;
+    const balance = totalPrice - deposit;
+
+    let bonuses = "✅ בלונים בתוך היאכטה\n✅ שלט \"מזל טוב\"\n✅ מים";
+    let swimmingText = "";
+    if (duration >= 3) {
+        bonuses = "🍾 בקבוק שמפניה (מתנה!)\n" + bonuses;
+        swimmingText = "🏊 אפשרות לירידה למים (באישור סקיפר)";
+    }
+
+    try {
+        await createBooking(startTimeISO, endTimeISO, { name: `${clientName} (#${orderId})`, phone: clientPhone, yachtName: yachtName, duration: duration });
+    } catch (calError) {
+        console.error("⚠️ Calendar Error:", calError);
+    }
+
+    const msgBooking = `
+לכבוד: ${clientName}
+*אישור הזמנת שייט ביאכטה* ⚓
+מספר הזמנה: *${orderId}*
+
+פרטי ההזמנה:
+📅 *תאריך:* ${isoDate.split('-').reverse().join('.')}
+⏰ *שעה:* ${startTime} - ${endTimeStr} (סה"כ ${duration} שעות)
+⛵ *יאכטה:* ${yachtName}
+👥 *משתתפים:* עד ${participants || '13'} איש
+
+📍 *מקום מפגש:*
+${locationDesc || 'מרינה'}
+
+🎁 *החבילה כוללת:*
+${bonuses}
+${swimmingText}
+    `.trim();
+
+    const msgPayment = `
+💰 *הסדרת תשלום עבור הזמנה #${orderId}*
+
+סה"כ לתשלום: ${totalPrice} ₪
+*מקדמה נדרשת כעת: ${deposit} ₪*
+
+אנא בחרו את דרך התשלום הנוחה לכם:
+
+1️⃣ *כרטיס אשראי (מומלץ):*
+${paymentLink || DEFAULT_PAYMENT_LINK}
+
+2️⃣ *PayBox:*
+למספר: ${PAYBOX_PHONE}
+
+3️⃣ *העברה בנקאית:*
+${BANK_DETAILS}
+
+${guideLink ? `(מצורף מדריך: ${guideLink})` : ''}
+
+*היתרה (${balance} ₪) תשולם במועד ההפלגה.*
+
+⚠️ *שים לב:* תשלום המקדמה מהווה אישור לתנאי ההזמנה.
+נא לשלוח צילום אסמכתא לאחר התשלום.
+    `.trim();
+
+    const msgLocation = `
+📍 *הוראות הגעה:*
+${locationDesc || 'מרינה'}
+
+לניווט בוייז:
+${locationLink || ''}
+    `.trim();
+
+    await trySendWithFallback(clientPhone, msgBooking);
+    await new Promise(r => setTimeout(r, 1000));
+    await trySendWithFallback(clientPhone, msgPayment);
+    await new Promise(r => setTimeout(r, 1000));
+    if (locationLink) {
+        await trySendWithFallback(clientPhone, msgLocation);
+        await new Promise(r => setTimeout(r, 1000));
+    }
+    await trySendWithFallback(clientPhone, TERMS_PART_1);
+    await new Promise(r => setTimeout(r, 1000));
+    await trySendWithFallback(clientPhone, TERMS_PART_2);
+
+    const ownerMsg = `💰 *הזמנה חדשה #${orderId}*
+${clientName}, ${yachtName}, ${isoDate}`;
+    await sendWhatsAppMessage(OWNER_PHONE_NUMBER, ownerMsg);
+    
+    await sendOrderEmail({ ...args, orderId: orderId });
+    
+    return { result: `הזמנה #${orderId} נוצרה בהצלחה.` };
 }
 
-module.exports = {
-    calendarTools,
-    handleFunctionCall,
-    formatFunctionResult,
-};
+module.exports = { calendarTools, handleFunctionCall };

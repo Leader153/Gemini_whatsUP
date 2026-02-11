@@ -2,6 +2,37 @@
 
 **Номер Twilio:** +972 53-388-3507
 
+---
+
+## 💡 Когда и зачем нужно менять веб-хуки?
+
+Вам нужно менять URL веб-хуков в Twilio каждый раз, когда вы переключаетесь между **локальной разработкой** и **рабочим сервером (VPS)**. Это нужно потому, что Twilio должен знать, на какой адрес отправлять события (входящий звонок, новое сообщение).
+
+#### 1. При работе в локальной среде (ветка `testWatsapLocal5307`)
+- **Цель:** Twilio должен отправлять запросы на ваш локальный компьютер.
+- **Как это работает:** Ваш локальный сервер доступен через домен `https://api.leadertechnology.shop` благодаря Cloudflare туннелю.
+- **Действие:** Убедитесь, что веб-хуки в Twilio указывают на этот домен:
+    - **Голос:** `https://api.leadertechnology.shop/voice`
+    - **WhatsApp:** `https://api.leadertechnology.shop/whatsapp`
+    - **SMS (входящие):** `https://api.leadertechnology.shop/sms`
+    - **SMS (статус доставки):** `https://api.leadertechnology.shop/sms/status`
+очисти задачи локального сервера -- taskkill /F /IM node.exe /T
+база знаний, надо загружать -- node scripts/loadDocuments.js
+
+ Найдите Docker Desktop у себя на компьютере и запустите его !!!  
+pm2 start config/ecosystem.config.js
+
+#### 2. При развертывании на VPS (ветка `to-VPC`)
+- **Цель:** Twilio должен отправлять запросы на ваш публичный сервер.
+- **Как это работает:** На VPS ваш сервер доступен через основной домен (например, `assistantbot.online`).
+- **Действие:** Убедитесь, что веб-хуки в Twilio указывают на домен вашего VPS:
+    - **Голос:** `https://assistantbot.online:1337/voice`
+    - **WhatsApp:** `https://assistantbot.online:1337/whatsapp`
+    - **SMS (входящие):** `https://assistantbot.online:1337/sms`
+    - **SMS (статус доставки):** `https://assistantbot.online:1337/sms/status`
+
+---
+
 ## Шаг 1: Настройка SMS
 
 1. Открой [Twilio Console → Phone Numbers](https://console.twilio.com/us1/develop/phone-numbers/manage/incoming)

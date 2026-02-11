@@ -40,6 +40,17 @@ async function loadDocument(filePath) {
                 text = result.value;
                 break;
 
+            case '.csv':
+                // CSV файлы
+                const csvText = await fs.readFile(filePath, 'utf-8');
+                const parsedData = parseCSV(csvText);
+                text = parsedData.map(row =>
+                    Object.entries(row)
+                        .map(([key, value]) => `${key}: ${value}`)
+                        .join('\n')
+                ).join('\n\n---\n\n');
+                break;
+
             default:
                 throw new Error(`Неподдерживаемый формат файла: ${ext}`);
         }
@@ -70,7 +81,7 @@ async function loadDocument(filePath) {
  */
 async function loadDocumentsFromFolder(folderPath) {
     const entries = await fs.readdir(folderPath, { withFileTypes: true });
-    const supportedExts = ['.txt', '.md', '.pdf', '.docx'];
+    const supportedExts = ['.txt', '.md', '.pdf', '.docx', '.csv'];
     const allDocs = [];
 
     for (const entry of entries) {
@@ -97,4 +108,75 @@ async function loadDocumentsFromFolder(folderPath) {
     return allDocs;
 }
 
-module.exports = { loadDocument, loadDocumentsFromFolder };
+/**
+ * Парсер CSV (с поддержкой кавычек и запятых внутри)
+ * @param {string} text - Содержимое CSV файла
+ * @returns {Array<Object>} Массив объектов, где ключи - заголовки
+ */
+function parseCSV(text) {
+    const lines = [];
+    let currentRow = [];
+    let currentField = '';
+    let inQuotes = false;
+
+    // Нормализация переносов строк
+    const normalizedText = text.replace(/\r\n/g, '\n');
+
+    for (let i = 0; i < normalizedText.length; i++) {
+        const char = normalizedText[i];
+        const nextChar = normalizedText[i + 1];
+
+        if (inQuotes) {
+            if (char === '"' && nextChar === '"') {
+                // Экранированная кавычка
+                currentField += '"';
+                i++; // Пропускаем следующую кавычку
+            } else if (char === '"') {
+                // Конец кавычек
+                inQuotes = false;
+            } else {
+                currentField += char;
+            }
+        } else {
+            if (char === '"') {
+                inQuotes = true;
+            } else if (char === ',') {
+                // Конец поля
+                currentRow.push(currentField.trim());
+                currentField = '';
+            } else if (char === '\n') {
+                // Конец строки
+                currentRow.push(currentField.trim());
+                lines.push(currentRow);
+                currentRow = [];
+                currentField = '';
+            } else {
+                currentField += char;
+            }
+        }
+    }
+    // Добавляем последнее поле/строку если есть
+    if (currentField || currentRow.length > 0) {
+        currentRow.push(currentField.trim());
+        lines.push(currentRow);
+    }
+
+    if (lines.length < 2) return [];
+
+    const headers = lines[0];
+    const data = [];
+
+    for (let i = 1; i < lines.length; i++) {
+        const row = lines[i];
+        if (row.length === headers.length) {
+            const obj = {};
+            headers.forEach((header, index) => {
+                obj[header] = row[index];
+            });
+            data.push(obj);
+        }
+    }
+    return data;
+}
+
+module.exports = { loadDocument, loadDocumentsFromFolder, parseCSV };

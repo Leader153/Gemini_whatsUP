@@ -1,417 +1,305 @@
 const express = require('express');
 const VoiceResponse = require('twilio').twiml.VoiceResponse;
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { getContextForPrompt } = require('../rag/retriever');
-const { calendarTools, handleFunctionCall, formatFunctionResult } = require('../calendar/calendarTools');
+const conversationEngine = require('../utils/conversationEngine');
 const sessionManager = require('../memory/sessionManager');
 const botBehavior = require('../data/botBehavior');
-const crmService = require('../utils/crmService');
-const messagingRoutes = require('./messaging_handler'); // Роуты для WhatsApp и SMS
-
-require('dotenv').config();
+const messageFormatter = require('../utils/messageFormatter');
+const messagingRoutes = require('./messaging_handler');
+const path = require('path');
+const fs = require('fs');
+const http = require('http');
+const https = require('https');
+const WebSocket = require('ws');
+const TwilioMediaStreamHandler = require('./mediaStreamHandler');
 
 const app = express();
-// Middleware для парсинга данных, отправленных Twilio (включая SpeechResult)
+const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+// Ссылка на музыку
+const HOLD_MUSIC_URL = process.env.HOLD_MUSIC_URL || 'https://mabotmusik-2585.twil.io/mb.mp3';
+
+console.log('[STARTUP] Answer Phone Handler Loaded (Production Ready)');
+
 app.use(express.urlencoded({ extended: true }));
+app.use('/music', express.static(path.join(__dirname, '../public/music')));
 
-// Подключаем роуты для WhatsApp и SMS
-app.use('/', messagingRoutes);
+// Подключение WhatsApp/SMS маршрутов
+if (messagingRoutes && typeof messagingRoutes === 'function') {
+    app.use('/', messagingRoutes);
+} else {
+    console.error('[CRITICAL_ERROR] messagingRoutes failed to load.');
+}
 
-// Инициализация Gemini API с ключом из .env
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const pendingAITasks = new Map();
 
-// ----------------------------------------------------------------------
-// МАРШРУТ /voice: Начало звонка и сбор речи пользователя
-// ----------------------------------------------------------------------
+// 1. ВХОДЯЩИЙ ЗВОНОК
 app.post('/voice', (request, response) => {
-    // Приветствие на иврите с использованием SSML
-    const initialGreeting = botBehavior.getMessage('initial');
-    const voice = botBehavior.voiceSettings.he.ttsVoice;
-    const lang = botBehavior.voiceSettings.he.language;
-    const sttLang = botBehavior.voiceSettings.sttLanguage;
+    const twiml = new VoiceResponse();
+    const initialGreeting = messageFormatter.getGreeting('voice');
 
-    // Формируем XML вручную, без тега <speak> для Google голосов
-    const twimlXml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say voice="${voice}">${initialGreeting}</Say>
-    <Gather input="speech" action="/respond" speechTimeout="auto" language="${botBehavior.voiceSettings.he.sttLanguage}" />
-    <Redirect method="POST">/voice</Redirect>
-</Response>`;
+    // Оптимизация: Сразу говорим и слушаем
+    twiml.say({ voice: botBehavior.voiceSettings.he.ttsVoice }, initialGreeting);
+
+    twiml.gather({
+        input: 'speech',
+        action: '/respond',
+        speechTimeout: 'auto',
+        language: botBehavior.voiceSettings.he.sttLanguage,
+    });
+
+    twiml.redirect({ method: 'POST' }, '/reprompt');
 
     response.type('text/xml');
-    response.send(twimlXml);
-    return;
+    response.send(twiml.toString());
 });
 
-// ----------------------------------------------------------------------
-// МАРШРУТ /respond: Обработка распознанной речи и получение ответа от Gemini
-// ----------------------------------------------------------------------
-app.post('/respond', async (request, response) => {
-    const speechResult = request.body.SpeechResult; // Распознанный текст от Twilio
+// 2. ОБРАБОТКА (ОПТИМИЗИРОВАНО ДЛЯ СКОРОСТИ)
+app.post('/respond', (request, response) => {
+    const speechResult = request.body.SpeechResult;
+    const callSid = request.body.CallSid;
 
+    // --- УСКОРЕНИЕ: МОМЕНТАЛЬНЫЙ ОТВЕТ ---
     if (speechResult) {
-        try {
-            // ОТЛАДКА: Выводим в консоль, что сказал пользователь
-            console.log('User said:', speechResult);
-            console.time(`⏱️ Total Response Time [${speechResult.substring(0, 15)}...]`);
+        const twiml = new VoiceResponse();
+        twiml.play({ loop: 10 }, HOLD_MUSIC_URL);
 
-            const callSid = request.body.CallSid || 'default';
-            const clientPhone = request.body.From || 'unknown';
-            sessionManager.initSession(callSid);
-
-            // ПАРАЛЛЕЛИЗАЦИЯ: Запускаем RAG и CRM одновременно
-            console.log('🚀 Запуск параллельных задач (RAG + CRM)...');
-            console.time('⏱️ RAG + CRM Task');
-
-            const [context, customerData] = await Promise.all([
-                getContextForPrompt(speechResult, 3),
-                !sessionManager.getGender(callSid) ? crmService.getCustomerData(clientPhone) : Promise.resolve(null)
-            ]);
-
-            console.timeEnd('⏱️ RAG + CRM Task');
-
-            // CRM: Применяем данные о клиенте, если они получены
-            if (customerData && customerData.gender) {
-                sessionManager.setGender(callSid, customerData.gender);
-                console.log(`👤 Данные из CRM для ${clientPhone}: ${customerData.name} (${customerData.gender})`);
-            }
-
-            const currentGender = sessionManager.getGender(callSid);
-            const currentDate = new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' });
-
-            // DEBUG: Проверяем, что передаётся в промпт
-            console.log('📚 RAG Context length:', context.length, 'chars');
-            if (context) {
-                console.log('📚 RAG Context preview:', context.substring(0, 200) + '...');
-            }
-
-            const systemPrompt = botBehavior.getSystemPrompt(context, currentGender, currentDate);
-
-            // Добавляем текущее сообщение пользователя в историю
-            // НО! Мы не добавляем его сразу в массив истории для отправки, так как нам нужна структура для Gemini API
-            // История для Gemini API: [ {role: 'user', parts...}, {role: 'model', parts...} ]
-            // Мы добавим текущий запрос в конец этого массива при вызове.
-
-            const history = sessionManager.getHistory(callSid);
-
-            // Собираем полный контекст для отправки
-            // Вариант А: Использовать systemInstruction (доступно в новых моделях)
-            // Вариант Б: Добавить system prompt как первое сообщение user (стабильнее)
-
-            let contentsForGemini = [];
-
-            // Если история пуста, добавляем системный промпт первым
-            // Если не пуста, системный промпт лучше обновлять (так как RAG контекст меняется), 
-            // поэтому мы можем отправлять его как systemInstruction при инициализации модели,
-            // или добавлять в текущий запрос пользователя.
-            // ЛУЧШИЙ ВАРИАНТ ЗДЕСЬ: System Instruction в модели.
-
-            const model = genAI.getGenerativeModel({
-                model: botBehavior.geminiSettings.model,
-                systemInstruction: systemPrompt, // Используем нативный systemInstruction
-                tools: [{
-                    functionDeclarations: calendarTools.map(tool => ({
-                        name: tool.name,
-                        description: tool.description,
-                        parameters: tool.parameters,
-                    })),
-                }],
-            });
-
-            // Формируем contents из истории + текущее сообщение
-            contentsForGemini = [...history];
-            contentsForGemini.push({ role: 'user', parts: [{ text: speechResult }] });
-
-            console.log('📤 Отправка в Gemini истории длиной:', contentsForGemini.length);
-            console.time('⏱️ Gemini API Call');
-
-            // Отправляем промпт с инструментами в Gemini
-            const result = await model.generateContent({ contents: contentsForGemini });
-            console.timeEnd('⏱️ Gemini API Call');
-            const geminiResponse = result.response;
-
-            // Сохраняем запрос пользователя в историю (теперь, когда мы знаем, что ошибки нет)
-            sessionManager.addToHistory(callSid, 'user', speechResult);
-
-            // Проверяем, вызвала ли модель функцию
-            const functionCalls = geminiResponse.functionCalls();
-
-            if (functionCalls && functionCalls.length > 0) {
-                console.log('🔧 Gemini запрашивает вызов функции. Перенаправление на /process_tool...');
-
-                // Сохраняем вызовы функций в сессию, чтобы выполнить их после редиректа
-                sessionManager.setPendingFunctionCalls(callSid, functionCalls);
-
-                // Обычный ответ (до поиска инструментов)
-                const intermediateText = botBehavior.cleanTextForTTS(botBehavior.getMessage('checking'));
-                const langCode = botBehavior.detectLanguage(intermediateText);
-                const v_check = botBehavior.voiceSettings[langCode].ttsVoice;
-                const l_check = botBehavior.voiceSettings[langCode].language;
-
-                // Формируем XML вручную
-                const intermediateXml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say voice="${v_check}">${intermediateText}</Say>
-    <Redirect method="POST">/process_tool?CallSid=${callSid}</Redirect>
-</Response>`;
-
-                response.type('text/xml');
-                response.send(intermediateXml);
-                return; // Важно прервать выполнение, чтобы не отправлять ответ дважды
-
-            } else {
-                // Обычный ответ (без вызова функций)
-                let text = geminiResponse.text();
-
-                // ИЗВЛЕЧЕНИЕ ГЕНДЕРА: Если Gemini прислал тег [GENDER: ...], сохраняем его
-                const genderMatch = text.match(/\[GENDER:\s*(male|female)\]/i);
-                if (genderMatch) {
-                    const detectedGender = genderMatch[1].toLowerCase();
-                    sessionManager.setGender(callSid, detectedGender);
-                    // Удаляем тег из текста
-                    text = text.replace(/\[GENDER:\s*(male|female)\]/i, '').trim();
-                }
-
-                // Добавляем ответ модели в историю
-                sessionManager.addToHistory(callSid, 'model', text);
-
-                // Проверка на пустой ответ и озвучка
-                if (!text || text.trim() === "") {
-                    const langCode = 'he'; // Default
-                    const v = botBehavior.voiceSettings[langCode].ttsVoice;
-                    const sttL = botBehavior.voiceSettings[langCode].sttLanguage;
-
-                    const finalXml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say voice="${v}">${botBehavior.getMessage('emptyResponse')}</Say>
-    <Gather input="speech" action="/respond" speechTimeout="auto" language="${sttL}" />
-</Response>`;
-                    response.type('text/xml');
-                    response.send(finalXml);
-                    return;
-                } else {
-                    const cleanedText = botBehavior.cleanTextForTTS(text);
-                    const langCode = botBehavior.detectLanguage(cleanedText);
-                    const v = botBehavior.voiceSettings[langCode].ttsVoice;
-                    const sttL = botBehavior.voiceSettings[langCode].sttLanguage;
-
-                    // Формируем финальный XML
-                    const finalXml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say voice="${v}">${cleanedText}</Say>
-    <Gather input="speech" action="/respond" speechTimeout="auto" language="${sttL}" />
-</Response>`;
-
-                    response.type('text/xml');
-                    response.send(finalXml);
-                    console.timeEnd(`⏱️ Total Response Time [${speechResult.substring(0, 15)}...]`);
-                    return;
-                }
-            }
-
-        } catch (error) {
-            console.error('Error with Gemini API:', error);
-            const msg = botBehavior.getMessage('apiError');
-            const v = botBehavior.voiceSettings.he.ttsVoice;
-            const finalXml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say voice="${v}">${msg}</Say>
-    <Gather input="speech" action="/respond" speechTimeout="auto" language="${botBehavior.voiceSettings.he.sttLanguage}" />
-</Response>`;
-            response.type('text/xml');
-            response.send(finalXml);
-            return;
-        }
-    } else {
-        const msg = botBehavior.getMessage('noSpeech');
-        const v = botBehavior.voiceSettings.he.ttsVoice;
-        const finalXml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say voice="${v}">${msg}</Say>
-    <Gather input="speech" action="/respond" speechTimeout="auto" language="${botBehavior.voiceSettings.he.sttLanguage}" />
-</Response>`;
         response.type('text/xml');
-        response.send(finalXml);
-        return;
-    }
-});
+        response.send(twiml.toString()); 
 
-// ----------------------------------------------------------------------
-// МАРШРУТ /process_tool: Выполнение функций после сообщения "Я проверяю..."
-// ----------------------------------------------------------------------
-app.post('/process_tool', async (request, response) => {
-    const callSid = request.body.CallSid || request.query.CallSid;
+        // --- АСИНХРОННАЯ ЛОГИКА ---
+        const clientPhone = request.body.From;
+        const domain = process.env.DOMAIN_NAME || request.headers.host;
+        const protocol = process.env.DOMAIN_NAME ? 'https' : 'http';
+        const baseUrl = `${protocol}://${domain}`;
 
-    console.log(`⚙️ Обработка инструментов для callSid: ${callSid}`);
+        console.log(`🎙️ [VOICE] Распознано: "${speechResult}"`);
+        sessionManager.setUserPhone(callSid, clientPhone);
 
-    try {
-        // Получаем сохраненные вызовы функций
-        const functionCalls = sessionManager.getAndClearPendingFunctionCalls(callSid);
+        const task = {
+            status: 'processing',
+            queue: [],
+            result: null,
+            interrupted: false,
+            startTime: Date.now()
+        };
+        pendingAITasks.set(callSid, task);
 
-        if (!functionCalls || functionCalls.length === 0) {
-            console.error('❌ Нет ожидающих вызовов функций для', callSid);
-            const v = botBehavior.voiceSettings.he.ttsVoice;
-            const sttL = botBehavior.voiceSettings.he.sttLanguage;
-            const finalXml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say voice="${v}">${botBehavior.getMessage('noFunctionCalls')}</Say>
-    <Redirect method="POST">/respond</Redirect>
-</Response>`;
-            response.type('text/xml');
-            response.send(finalXml);
-            return;
-        }
+        const streamingEngine = require('../utils/streamingEngine');
 
-        // Инициализируем модель снова (нам нужно сделать второй вызов)
-        // Для этого нужно восстановить System Instruction
-        const context = await getContextForPrompt('', 3); // Контекст может быть не актуален, но нужен для промпта
-        const currentGender = sessionManager.getGender(callSid);
+        setImmediate(async () => {
+            const interruptMusic = () => {
+                if (!task.interrupted) {
+                    task.interrupted = true;
+                    const elapsed = Date.now() - task.startTime;
+                    const minDuration = 2000;
+                    const delay = Math.max(0, minDuration - elapsed);
 
-        const currentDateFix = new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' });
-        const model = genAI.getGenerativeModel({
-            model: botBehavior.geminiSettings.model,
-            systemInstruction: botBehavior.getSystemPrompt(context, currentGender, currentDateFix),
-            tools: [{
-                functionDeclarations: calendarTools.map(tool => ({
-                    name: tool.name, description: tool.description, parameters: tool.parameters,
-                })),
-            }],
+                    console.log(`⚡ [INTERRUPT] Ответ готов. Прерывание через ${delay}мс...`);
+
+                    setTimeout(() => {
+                        const updateTwiml = new VoiceResponse();
+                        updateTwiml.redirect({ method: 'POST' }, `${baseUrl}/check_ai?CallSid=${callSid}`);
+
+                        client.calls(callSid)
+                            .update({ twiml: updateTwiml.toString() })
+                            .then(() => console.log(`✅ [INTERRUPT] Успешный редирект.`))
+                            .catch(err => console.error(`❌ Ошибка прерывания:`, err));
+                    }, delay);
+                }
+            };
+
+            await streamingEngine.processMessageStream(
+                speechResult, callSid, clientPhone,
+                (chunk) => { if (task.queue) task.queue.push(chunk); interruptMusic(); },
+                (res) => { task.status = 'completed'; task.result = res; interruptMusic(); },
+                (err) => { console.error('Streaming error:', err); task.status = 'error'; interruptMusic(); }
+            );
         });
 
-        // Обрабатываем каждый вызов функции (обычно один)
-        for (const functionCall of functionCalls) {
-            console.log('🔧 Выполнение функции:', functionCall.name);
-            const functionResult = await handleFunctionCall(functionCall.name, functionCall.args);
-            console.log('✅ Результат:', functionResult);
-
-            // Добавляем в историю
-            sessionManager.addFunctionInteractionToHistory(callSid, functionCall, functionResult);
-
-            // SPECIAL LOGIC FOR TRANSFER
-            if (functionCall.name === 'transfer_to_support') {
-                console.log('📞 Initiating call transfer to operator...');
-
-                const v = botBehavior.voiceSettings.he.ttsVoice;
-                const transferXml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say voice="${v}">${botBehavior.getMessage('transferring')}</Say>
-    <Dial timeout="${botBehavior.operatorSettings.timeout}" action="${botBehavior.operatorSettings.callbackUrl}">${botBehavior.operatorSettings.phoneNumber}</Dial>
-</Response>`;
-
-                response.type('text/xml');
-                response.send(transferXml);
-                return; // STOP EXECUTION HERE
-            }
-        }
-
-
-        // Отправляем обновленную историю обратно в Gemini
-        const history = sessionManager.getHistory(callSid);
-        const result = await model.generateContent({ contents: history });
-        let text = result.response.text();
-
-        // ИЗВЛЕЧЕНИЕ ГЕНДЕРА (на всякий случай, если он определился после вызова инструмента)
-        const genderMatch = text.match(/\[GENDER:\s*(male|female)\]/i);
-        if (genderMatch) {
-            const detectedGender = genderMatch[1].toLowerCase();
-            sessionManager.setGender(callSid, detectedGender);
-            text = text.replace(/\[GENDER:\s*(male|female)\]/i, '').trim();
-        }
-
-        // Сохраняем и озвучиваем ответ
-        sessionManager.addToHistory(callSid, 'model', text);
-        console.log('Gemini post-tool response:', text);
-
-        const cleanedText = botBehavior.cleanTextForTTS(text);
-        const langCode = botBehavior.detectLanguage(cleanedText);
-        const v_post = botBehavior.voiceSettings[langCode].ttsVoice;
-        const sttL = botBehavior.voiceSettings[langCode].sttLanguage;
-
-        const finalXml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say voice="${v_post}">${cleanedText}</Say>
-    <Gather input="speech" action="/respond" speechTimeout="auto" language="${sttL}" />
-</Response>`;
-
+    } else {
+        const twiml = new VoiceResponse();
+        twiml.redirect({ method: 'POST' }, '/reprompt');
         response.type('text/xml');
-        response.send(finalXml);
-        return;
-
-    } catch (error) {
-        console.error('Error in /process_tool:', error);
-        const v = botBehavior.voiceSettings.he.ttsVoice;
-        const msg = 'אירעה שגיאה בעיבוד הבקשה';
-        const sttL = botBehavior.voiceSettings.sttLanguage;
-
-        const errorXml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say voice="${v}">${msg}</Say>
-    <Gather input="speech" action="/respond" speechTimeout="auto" language="${botBehavior.voiceSettings.he.sttLanguage}" />
-</Response>`;
-        response.type('text/xml');
-        response.send(errorXml);
-        return;
+        response.send(twiml.toString());
     }
 });
 
-// ----------------------------------------------------------------------
-// МАРШРУТ /handle-dial-status: Обработка статуса звонка после попытки перевода
-// ----------------------------------------------------------------------
-app.post('/handle-dial-status', (request, response) => {
+// 3. ЧТЕНИЕ ОТВЕТА
+app.post('/check_ai', (request, response) => {
+    const callSid = request.query.CallSid || request.body.CallSid;
+    const task = pendingAITasks.get(callSid);
     const twiml = new VoiceResponse();
-    const dialStatus = request.body.DialCallStatus;
+    const voice = botBehavior.voiceSettings.he.ttsVoice;
 
-    console.log(`📞 Dial Status: ${dialStatus}`);
+    if (!task) {
+        twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
+        return response.send(twiml.toString());
+    }
 
-    if (dialStatus === 'busy' || dialStatus === 'no-answer' || dialStatus === 'failed') {
-        // Оператор не ответил или занят
-        twiml.say(
-            { voice: 'Google.he-IL-Standard-A', language: 'he-IL' },
-            'מצטער, הנציג אינו זמין כרגע. איך אוכל לעזור לך בנושא אחר?' // Sorry, the representative is not available right now. How else can I help you?
-        );
+    if (task.status === 'error') {
+        pendingAITasks.delete(callSid);
+        twiml.say({ voice: voice }, messageFormatter.getMessage('apiError', 'voice'));
+        twiml.redirect({ method: 'POST' }, '/reprompt');
+        return response.send(twiml.toString());
+    }
 
-        // Возвращаемся к сбору речи (возврат к боту)
-        twiml.gather({
-            input: 'speech',
-            action: '/respond',
-            speechTimeout: 'auto',
-            language: 'iw-IL',
-        });
-    } else {
-        // Звонок был успешным (completed) или другой статус
-        // Просто завершаем, так как разговор с оператором состоялся
-        twiml.hangup();
+    if (task.queue && task.queue.length > 0) {
+        let combinedText = "";
+        while (task.queue.length > 0) combinedText += task.queue.shift() + " ";
+
+        twiml.say({ voice: voice }, combinedText);
+        twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
+        return response.send(twiml.toString());
+    }
+
+    if (task.status === 'processing') {
+        twiml.pause({ length: 1 });
+        twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
+        return response.send(twiml.toString());
+    }
+
+    if (task.status === 'completed') {
+        const result = task.result;
+        pendingAITasks.delete(callSid);
+
+        if (result && result.requiresToolCall) {
+            sessionManager.setPendingFunctionCalls(callSid, result.functionCalls);
+            twiml.redirect({ method: 'POST' }, `/process_tool?CallSid=${callSid}`);
+        } else {
+            twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
+            twiml.redirect({ method: 'POST' }, '/reprompt');
+        }
+        return response.send(twiml.toString());
     }
 
     response.type('text/xml');
     response.send(twiml.toString());
 });
 
-// ----------------------------------------------------------------------
-// ЗАПУСК СЕРВЕРА
-// ----------------------------------------------------------------------
-const https = require('https');
-const fs = require('fs');
+// 4. ИНСТРУМЕНТЫ (Перевод на оператора)
+app.post('/process_tool', async (request, response) => {
+    const callSid = request.body.CallSid || request.query.CallSid;
+    try {
+        const pendingData = sessionManager.getAndClearPendingFunctionCalls(callSid);
+        if (!pendingData) throw new Error('No pending calls');
 
-// Генерируем самоподписанный сертификат
-const privateKey = fs.readFileSync('/etc/letsencrypt/live/assistantbot.online/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/assistantbot.online/fullchain.pem', 'utf8');
+        const { functionCalls, context } = pendingData;
+        const userPhone = sessionManager.getUserPhone(callSid);
 
+        const toolResult = await conversationEngine.handleToolCalls(
+            functionCalls, callSid, 'voice', userPhone, context, true
+        );
 
-const credentials = { key: privateKey, cert: certificate };
+        const twiml = new VoiceResponse();
+        const voice = botBehavior.voiceSettings.he.ttsVoice;
 
-// Создаем HTTPS сервер
-const server = https.createServer(credentials, app);
+        if (toolResult.transferToOperator) {
+            console.log(`📞 Попытка перевода на оператора: ${botBehavior.operatorSettings.phoneNumber}`);
+            twiml.say({ voice: voice }, toolResult.text);
+            
+// ВАЖНО: Указываем action, чтобы вернуть звонок, если не ответят
+            twiml.dial({ 
+                timeout: botBehavior.operatorSettings.timeout, 
+                action: '/handle-dial-status' 
+            }, botBehavior.operatorSettings.phoneNumber);
+        } else {
+            // --- ЗАЩИТА ОТ ПУСТОГО ТЕКСТА ---
+            if (toolResult.text) {
+                const cleanText = botBehavior.cleanTextForTTS(toolResult.text);
+                // Говорим только если текст не пустой
+                if (cleanText && cleanText.trim().length > 0) {
+                    twiml.say({ voice: voice }, cleanText);
+                }
+            }
+            // --------------------------------
 
-server.listen(1337, () => {
-    console.log('TwiML HTTPS server running at https://assistantbot.online:1337/');
-    // Дополнительная проверка статуса ключа
-    console.log('API Key Status: ' + (process.env.GEMINI_API_KEY ? 'Loaded and Ready' : 'ERROR: API Key Missing'));
+            twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
+            twiml.redirect({ method: 'POST' }, '/reprompt');
+        }
+        response.type('text/xml');
+        response.send(twiml.toString());
+    } catch (error) {
+        const twiml = new VoiceResponse();
+        twiml.say(messageFormatter.getMessage('apiError', 'voice'));
+        twiml.redirect('/reprompt');
+        response.type('text/xml').send(twiml.toString());
+    }
 });
 
-//change twilio https - https://api.leadertechnology.shop/voice 
-//node answer_phone.js
-//split terminal and -
-//pm2 start ecosystem.config.js
-// stop tunel cloudflare - pm2 delete all
-//pm2 restart all
+// --- НОВЫЙ МАРШРУТ: ВОЗВРАТ ЗВОНКА ОТ ОПЕРАТОРА ---
+// Именно это сохраняет память и возвращает бота
+app.post('/handle-dial-status', (request, response) => {
+    const dialStatus = request.body.DialCallStatus;
+    const voice = botBehavior.voiceSettings.he.ttsVoice;
+
+    console.log(`🔄 Статус звонка оператору: ${dialStatus}`);
+
+    const twiml = new VoiceResponse();
+
+    if (dialStatus === 'completed' || dialStatus === 'answered') {
+        // Успех, кладем трубку
+        twiml.hangup();
+    } else {
+        // Не дозвонились (busy, no-answer, failed)
+        // Говорим сообщение и снова слушаем клиента
+        // Память (sessionManager) жива, так как CallSid тот же!
+        
+        twiml.say({ voice: voice }, "מצטערת, הנציג אינו זמין כרגע. איך אוכל לעזור לך בנושא אחר?");
+        // (Извините, представитель сейчас недоступен. Чем еще могу помочь?)
+
+        twiml.gather({ 
+            input: 'speech', 
+            action: '/respond', 
+            speechTimeout: 'auto', 
+            language: botBehavior.voiceSettings.he.sttLanguage 
+        });
+        
+        twiml.redirect({ method: 'POST' }, '/reprompt');
+    }
+
+    response.type('text/xml');
+    response.send(twiml.toString());
+});
+
+// 5. ПЕРЕСПРОС
+// 6. ПЕРЕСПРОС (С ОГРАНИЧЕНИЕМ)
+app.post('/reprompt', (request, response) => {
+    const twiml = new VoiceResponse();
+    
+    // Получаем номер попытки из ссылки (если нет, то 0)
+    const retryCount = parseInt(request.query.retry || '0');
+
+    console.log(`🎵 [REPROMPT] Тишина. Попытка №${retryCount + 1}`);
+
+    // Если мы уже ждали 2 раза и клиент все еще молчит -> ВЕШАЕМ ТРУБКУ
+    if (retryCount >= 2) {
+        console.log('🛑 [HANGUP] Клиент не отвечает. Завершаем звонок.');
+        twiml.say({ voice: botBehavior.voiceSettings.he.ttsVoice }, "תודה, נתראה!"); // "Спасибо, увидимся!"
+        twiml.hangup();
+    } else {
+        // Если это 1-я или 2-я попытка -> Ждем еще
+        twiml.play({ loop: 1 }, HOLD_MUSIC_URL); 
+        
+        twiml.gather({ 
+            input: 'speech', 
+            action: '/respond', 
+            speechTimeout: 'auto', 
+            language: botBehavior.voiceSettings.he.sttLanguage 
+        });
+
+        // Перезапускаем reprompt, но увеличиваем счетчик (+1)
+        twiml.redirect({ method: 'POST' }, `/reprompt?retry=${retryCount + 1}`);
+    }
+
+    response.type('text/xml');
+    response.send(twiml.toString());
+});
+
+// SERVER
+const port = process.env.PORT || 1337;
+const httpServer = http.createServer(app);
+const wss = new WebSocket.Server({ server: httpServer, path: '/ws' });
+const mediaStreamHandler = new TwilioMediaStreamHandler(wss);
+
+httpServer.listen(port, () => console.log(`✅ Server running on ${port}`));
+module.exports.mediaStreamHandler = mediaStreamHandler;

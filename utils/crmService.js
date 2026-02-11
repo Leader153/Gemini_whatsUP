@@ -39,27 +39,44 @@ function getCustomerData(phone) {
 /**
  * Сохраняет данные клиента в текстовый файл.
  * @param {object} clientData - Данные клиента.
+ * @param {string} [clientData.product_type] - Тип продукта (яхты/терминалы/кассы/FAQ).
+ * @param {string} [clientData.participants_count] - Количество участников (для яхт).
+ * @param {string} [clientData.hours_count] - Количество часов аренды (для яхт).
+ * @param {string} [clientData.date] - Дата бронирования (для яхт/встреч).
+ * @param {string} [clientData.has_terminal] - Есть ли терминал? (для терминалов/касс).
+ * @param {string} [clientData.business_type] - Тип бизнеса (для терминалов/касс).
+ * @param {string} [clientData.current_provider] - Текущий провайдер (для терминалов/касс).
+ * @param {string} [clientData.points_count] - Кол-во касс (для терминалов/касс).
+ * @param {string} [clientData.urgency] - Срочность (для терминалов/касс).
+ * @param {string} [clientData.city] - Город (универсально).
  * @param {string} [clientData.name] - Имя и фамилия клиента.
  * @param {string} [clientData.phone] - Номер телефона.
- * @param {string} [clientData.has_terminal] - Есть ли терминал?
- * @param {string} [clientData.business_type] - Тип бизнеса.
- * @param {string} [clientData.city] - Город.
  */
 function saveClientData(clientData) {
     const txtPath = path.join(__dirname, '..', 'data', 'clientData.txt');
     const now = new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' });
 
-    // Формируем читаемую строку
+    // Формируем читаемую строку (только заполненные поля)
     let content = `Дата и время: ${now}\n`;
-    content += `Имя и фамилия: ${clientData.name || ''}\n`;
-    content += `Номер телефона: ${clientData.phone || ''}\n`;
-    content += `Есть ли терминал: ${clientData.has_terminal || ''}\n`;
-    content += `Тип бизнеса: ${clientData.business_type || ''}\n`;
-    content += `Город: ${clientData.city || ''}\n`;
-    content += `Месячный оборот: ${clientData.monthly_turnover || ''}\n`;
-    content += `Текущий провайдер: ${clientData.current_provider || ''}\n`;
-    content += `Кол-во касс: ${clientData.points_count || ''}\n`;
-    content += `Срочность: ${clientData.urgency || ''}\n`;
+    content += `Тип продукта: ${clientData.product_type || ''}\n`;
+
+    // Поля для яхт
+    if (clientData.participants_count) content += `Количество участников: ${clientData.participants_count}\n`;
+    if (clientData.hours_count) content += `Количество часов: ${clientData.hours_count}\n`;
+    if (clientData.date) content += `Дата бронирования: ${clientData.date}\n`;
+
+    // Поля для терминалов/касс
+    if (clientData.has_terminal) content += `Есть ли терминал: ${clientData.has_terminal}\n`;
+    if (clientData.business_type) content += `Тип бизнеса: ${clientData.business_type}\n`;
+    if (clientData.current_provider) content += `Текущий провайдер: ${clientData.current_provider}\n`;
+    if (clientData.points_count) content += `Кол-во касс: ${clientData.points_count}\n`;
+    if (clientData.urgency) content += `Срочность: ${clientData.urgency}\n`;
+
+    // Универсальные поля
+    if (clientData.city) content += `Город: ${clientData.city}\n`;
+    if (clientData.name) content += `Имя и фамилия: ${clientData.name}\n`;
+    if (clientData.phone) content += `Номер телефона: ${clientData.phone}\n`;
+
     content += '----------------------------------------\n';
 
     try {

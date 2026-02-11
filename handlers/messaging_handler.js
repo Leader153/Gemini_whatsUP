@@ -1,134 +1,107 @@
 const express = require('express');
-const VoiceResponse = require('twilio').twiml.VoiceResponse;
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const conversationEngine = require('../utils/conversationEngine');
-const messageFormatter = require('../utils/messageFormatter');
+const { sendWhatsAppMessage } = require('../utils/whatsappService');
 
 const router = express.Router();
+const OWNER_PHONE = '+972533403449'; 
 
-// ----------------------------------------------------------------------
-// МАРШРУТ /whatsapp: Обработка входящих WhatsApp сообщений
-// ----------------------------------------------------------------------
+// Кэш обработанных сообщений (чтобы не отвечать дважды)
+const processedMessages = new Set();
+
+// Очистка кэша каждые 10 минут
+setInterval(() => processedMessages.clear(), 600000);
+
 router.post('/whatsapp', async (request, response) => {
-    const incomingMessage = request.body.Body; // Текст сообщения
-    const fromNumber = request.body.From; // Номер отправителя (формат: whatsapp:+972533403449)
-    const messageSid = request.body.MessageSid; // ID сообщения
+    const incomingMessage = request.body.Body;
+    const fromNumber = request.body.From; 
+    const messageSid = request.body.MessageSid;
+    const numMedia = parseInt(request.body.NumMedia);
+
+    // 1. ЗАЩИТА ОТ ДУБЛЕЙ
+    if (processedMessages.has(messageSid)) {
+        console.warn(`⚠️ [WHATSAPP] Дубликат сообщения ${messageSid}. Игнорируем.`);
+        response.type('text/xml');
+        return response.send('<Response></Response>');
+    }
+    processedMessages.add(messageSid);
+
+    // 2. ФОТО/ФАЙЛЫ (Чек)
+    if (numMedia > 0) {
+        console.log(`📸 Получено медиа от клиента ${fromNumber}`);
+        const mediaUrl = request.body.MediaUrl0;
+        
+        const forwardMsg = `📸 *קבלה/קובץ מלקוח!*
+מאת: ${fromNumber}
+הנה הקובץ: ${mediaUrl}`;
+        
+        await sendWhatsAppMessage(OWNER_PHONE, forwardMsg);
+
+        const twiml = new MessagingResponse();
+        twiml.message("קיבלתי את הקובץ, תודה! אני מעבירה לאישור.");
+        
+        response.type('text/xml');
+        return response.send(twiml.toString());
+    }
+
+    // 3. ТЕКСТ
+    if (!incomingMessage) {
+        response.type('text/xml');
+        return response.send('<Response></Response>');
+    }
 
     console.log('📱 WhatsApp сообщение от:', fromNumber);
-    console.log('📝 Текст:', incomingMessage);
-
-    // Используем номер отправителя как sessionId для WhatsApp
-    const sessionId = fromNumber; // Уже в формате whatsapp:+972...
-    const userPhone = fromNumber.replace('whatsapp:', ''); // Чистый номер для CRM
+    console.log('📨 Текст:', incomingMessage);
+    
+    const sessionId = fromNumber;
+    const userPhone = fromNumber.replace('whatsapp:', ''); 
 
     try {
-        // Если это первое сообщение, отправляем приветствие
-        // (можно проверить по истории сессии, но для простоты отправим всегда)
-
-        // Обрабатываем сообщение через общий движок
         const result = await conversationEngine.processMessage(
-            incomingMessage,
-            sessionId,
-            'whatsapp',
-            userPhone
+            incomingMessage, sessionId, 'whatsapp', userPhone
         );
 
-        // Формируем ответ через Twilio Messaging Response
         const twiml = new MessagingResponse();
-
-        if (result.text) {
-            twiml.message(result.text);
-        } else {
-            // Если текста нет, отправляем сообщение об ошибке
-            twiml.message(messageFormatter.getMessage('apiError', 'whatsapp'));
-        }
+        if (result.text) twiml.message(result.text);
 
         response.type('text/xml');
         response.send(twiml.toString());
 
     } catch (error) {
-        console.error('❌ Ошибка обработки WhatsApp сообщения:', error);
-
-        const twiml = new MessagingResponse();
-        twiml.message(messageFormatter.getMessage('apiError', 'whatsapp'));
-
+        console.error('❌ Ошибка:', error);
+        // Не отправляем ошибку пользователю, чтобы не спамить
         response.type('text/xml');
-        response.send(twiml.toString());
+        response.send(new MessagingResponse().toString());
     }
 });
 
-// ----------------------------------------------------------------------
-// МАРШРУТ /sms: Обработка входящих SMS сообщений
-// ----------------------------------------------------------------------
+// SMS ВХОД
 router.post('/sms', async (request, response) => {
-    const incomingMessage = request.body.Body; // Текст сообщения
-    const fromNumber = request.body.From; // Номер отправителя (формат: +972533403449)
-    const messageSid = request.body.MessageSid; // ID сообщения
+    const incomingMessage = request.body.Body; 
+    const fromNumber = request.body.From; 
+    const messageSid = request.body.MessageSid;
 
-    console.log('📲 SMS сообщение от:', fromNumber);
-    console.log('📝 Текст:', incomingMessage);
+    if (processedMessages.has(messageSid)) return response.status(200).send('<Response></Response>');
+    processedMessages.add(messageSid);
 
-    // Используем номер отправителя как sessionId для SMS
-    const sessionId = `sms:${fromNumber}`; // Добавляем префикс для различения от WhatsApp
-    const userPhone = fromNumber; // Чистый номер для CRM
+    if (!incomingMessage) return response.status(200).send('<Response></Response>');
 
+    const sessionId = `sms:${fromNumber}`; 
     try {
-        // Обрабатываем сообщение через общий движок
         const result = await conversationEngine.processMessage(
-            incomingMessage,
-            sessionId,
-            'sms',
-            userPhone
+            incomingMessage, sessionId, 'sms', fromNumber
         );
-
-        // Формируем ответ через Twilio Messaging Response
         const twiml = new MessagingResponse();
-
-        if (result.text) {
-            twiml.message(result.text);
-        } else {
-            // Если текста нет, отправляем сообщение об ошибке
-            twiml.message(messageFormatter.getMessage('apiError', 'sms'));
-        }
-
+        if (result.text) twiml.message(result.text);
         response.type('text/xml');
         response.send(twiml.toString());
-
     } catch (error) {
-        console.error('❌ Ошибка обработки SMS сообщения:', error);
-
-        const twiml = new MessagingResponse();
-        twiml.message(messageFormatter.getMessage('apiError', 'sms'));
-
         response.type('text/xml');
-        response.send(twiml.toString());
+        response.send(new MessagingResponse().toString());
     }
 });
 
-// ----------------------------------------------------------------------
-// МАРШРУТ /whatsapp/status: Обработка статусов доставки WhatsApp (опционально)
-// ----------------------------------------------------------------------
-router.post('/whatsapp/status', (request, response) => {
-    const messageStatus = request.body.MessageStatus;
-    const messageSid = request.body.MessageSid;
-
-    console.log(`📊 WhatsApp статус для ${messageSid}: ${messageStatus}`);
-
-    // Просто логируем статус, не отправляем ответ
-    response.status(200).send('OK');
-});
-
-// ----------------------------------------------------------------------
-// МАРШРУТ /sms/status: Обработка статусов доставки SMS (опционально)
-// ----------------------------------------------------------------------
-router.post('/sms/status', (request, response) => {
-    const messageStatus = request.body.MessageStatus;
-    const messageSid = request.body.MessageSid;
-
-    console.log(`📊 SMS статус для ${messageSid}: ${messageStatus}`);
-
-    // Просто логируем статус, не отправляем ответ
-    response.status(200).send('OK');
-});
+router.post('/whatsapp/status', (req, res) => res.sendStatus(200));
+router.post('/sms/status', (req, res) => res.sendStatus(200));
 
 module.exports = router;
