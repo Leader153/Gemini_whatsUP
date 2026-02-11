@@ -262,28 +262,34 @@ app.post('/handle-dial-status', (request, response) => {
 });
 
 // 5. ПЕРЕСПРОС
-// 6. ПЕРЕСПРОС (БЕСКОНЕЧНЫЙ ЦИКЛ ОЖИДАНИЯ)
+// 6. ПЕРЕСПРОС (С ОГРАНИЧЕНИЕМ)
 app.post('/reprompt', (request, response) => {
     const twiml = new VoiceResponse();
     
-    // Мы убрали "if (retryCount > 0) hangup".
-    // Теперь бот никогда не сбрасывает сам.
+    // Получаем номер попытки из ссылки (если нет, то 0)
+    const retryCount = parseInt(request.query.retry || '0');
 
-    console.log(`🎵 [REPROMPT] Клиент молчит. Ждем...`);
+    console.log(`🎵 [REPROMPT] Тишина. Попытка №${retryCount + 1}`);
 
-    // 1. Играем музыку (чтобы клиент понял, что связь есть)
-    twiml.play({ loop: 1 }, HOLD_MUSIC_URL); 
-    
-    // 2. Снова включаем микрофон
-    twiml.gather({ 
-        input: 'speech', 
-        action: '/respond', 
-        speechTimeout: 'auto', 
-        language: botBehavior.voiceSettings.he.sttLanguage 
-    });
+    // Если мы уже ждали 2 раза и клиент все еще молчит -> ВЕШАЕМ ТРУБКУ
+    if (retryCount >= 2) {
+        console.log('🛑 [HANGUP] Клиент не отвечает. Завершаем звонок.');
+        twiml.say({ voice: botBehavior.voiceSettings.he.ttsVoice }, "תודה, נתראה!"); // "Спасибо, увидимся!"
+        twiml.hangup();
+    } else {
+        // Если это 1-я или 2-я попытка -> Ждем еще
+        twiml.play({ loop: 1 }, HOLD_MUSIC_URL); 
+        
+        twiml.gather({ 
+            input: 'speech', 
+            action: '/respond', 
+            speechTimeout: 'auto', 
+            language: botBehavior.voiceSettings.he.sttLanguage 
+        });
 
-    // 3. Если опять промолчал — возвращаемся в начало этого блока
-    twiml.redirect({ method: 'POST' }, '/reprompt');
+        // Перезапускаем reprompt, но увеличиваем счетчик (+1)
+        twiml.redirect({ method: 'POST' }, `/reprompt?retry=${retryCount + 1}`);
+    }
 
     response.type('text/xml');
     response.send(twiml.toString());
