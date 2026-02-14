@@ -96,14 +96,22 @@ app.post('/respond', (request, response) => {
 
                     console.log(`⚡ [INTERRUPT] Ответ готов. Прерывание через ${delay}мс...`);
 
-                    setTimeout(() => {
-                        const updateTwiml = new VoiceResponse();
-                        updateTwiml.redirect({ method: 'POST' }, `${baseUrl}/check_ai?CallSid=${callSid}`);
+                    setTimeout(async () => {
+                        try {
+                            // Проверяем статус звонка перед редиректом
+                            const call = await client.calls(callSid).fetch();
+                            if (call.status === 'in-progress') {
+                                const updateTwiml = new VoiceResponse();
+                                updateTwiml.redirect({ method: 'POST' }, `${baseUrl}/check_ai?CallSid=${callSid}`);
 
-                        client.calls(callSid)
-                            .update({ twiml: updateTwiml.toString() })
-                            .then(() => console.log(`✅ [INTERRUPT] Успешный редирект.`))
-                            .catch(err => console.error(`❌ Ошибка прерывания:`, err));
+                                await client.calls(callSid).update({ twiml: updateTwiml.toString() });
+                                console.log(`✅ [INTERRUPT] Успешный редирект.`);
+                            } else {
+                                console.log(`⚠️ [INTERRUPT] Звонок уже завершен (${call.status}). Редирект отменен.`);
+                            }
+                        } catch (err) {
+                            console.error(`❌ Ошибка прерывания:`, err.message || err);
+                        }
                     }, delay);
                 }
             };
@@ -301,11 +309,11 @@ app.post('/reprompt', (request, response) => {
         twiml.play({ loop: 1 }, HOLD_MUSIC_URL);
 
         // Снова слушаем
-        twiml.gather({ 
-            input: 'speech', 
-            action: '/respond', 
-            speechTimeout: 'auto', 
-            language: botBehavior.voiceSettings.he.sttLanguage 
+        twiml.gather({
+            input: 'speech',
+            action: '/respond',
+            speechTimeout: 'auto',
+            language: botBehavior.voiceSettings.he.sttLanguage
         });
 
         // Увеличиваем счетчик
