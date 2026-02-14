@@ -281,7 +281,7 @@ app.post('/reprompt', (request, response) => {
     const retryCount = parseInt(request.query.retry || '0');
     // Важно: берем голос динамически, если вдруг переключились на русский, 
     // но по умолчанию будет иврит
-    const voice = botBehavior.voiceSettings.he.ttsVoice; 
+    const voice = botBehavior.voiceSettings.he.ttsVoice;
 
     console.log(`🎵 [REPROMPT] Тишина. Попытка №${retryCount + 1}`);
 
@@ -298,8 +298,8 @@ app.post('/reprompt', (request, response) => {
         }
 
         // Играем музыку
-        twiml.play({ loop: 1 }, HOLD_MUSIC_URL); 
-        
+        twiml.play({ loop: 1 }, HOLD_MUSIC_URL);
+
         // Снова слушаем
         twiml.gather({ 
             input: 'speech', 
@@ -318,9 +318,29 @@ app.post('/reprompt', (request, response) => {
 
 // SERVER
 const port = process.env.PORT || 1337;
-const httpServer = http.createServer(app);
-const wss = new WebSocket.Server({ server: httpServer, path: '/ws' });
+
+// Проверяем наличие SSL сертификатов для HTTPS
+let server;
+if (process.env.SSL_PRIVATE_KEY_PATH && process.env.SSL_CERTIFICATE_PATH) {
+    try {
+        const sslOptions = {
+            key: fs.readFileSync(process.env.SSL_PRIVATE_KEY_PATH),
+            cert: fs.readFileSync(process.env.SSL_CERTIFICATE_PATH)
+        };
+        server = https.createServer(sslOptions, app);
+        console.log('🔒 HTTPS сервер с SSL сертификатами');
+    } catch (error) {
+        console.error('❌ Ошибка загрузки SSL сертификатов:', error.message);
+        console.log('⚠️ Запуск HTTP сервера (без SSL)');
+        server = http.createServer(app);
+    }
+} else {
+    console.log('⚠️ SSL сертификаты не указаны. Запуск HTTP сервера');
+    server = http.createServer(app);
+}
+
+const wss = new WebSocket.Server({ server: server, path: '/ws' });
 const mediaStreamHandler = new TwilioMediaStreamHandler(wss);
 
-httpServer.listen(port, () => console.log(`✅ Server running on ${port}`));
+server.listen(port, () => console.log(`✅ Server running on ${port}`));
 module.exports.mediaStreamHandler = mediaStreamHandler;
