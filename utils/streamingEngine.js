@@ -10,28 +10,28 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 // --- УМНОЕ ОПРЕДЕЛЕНИЕ ДОМЕНА (ИСПРАВЛЕНО) ---
 function detectDomain(text) {
     const lower = text.toLowerCase();
-    
+
     // 1. ТЕРМИНАЛЫ (Приоритет)
     const terminalKeywords = [
         'מסוף', 'אשראי', 'terminal', 'קופה',
         'חנות', 'עסק', 'לגבות', 'תשלום',
         'סליקה', 'מכשיר', 'pos'
     ];
-    
+
     if (terminalKeywords.some(word => lower.includes(word))) {
         return 'Terminals';
     }
 
     // 2. ЯХТЫ
     const yachtKeywords = [
-        'יאכטה', 'שיט', 'הפלגה', 'yacht', 'סירה', 
+        'יאכטה', 'שיט', 'הפלגה', 'yacht', 'סירה',
         'שייט', 'ים ', ' ים' // Только с пробелами!
     ];
 
     if (yachtKeywords.some(word => lower.includes(word))) {
         return 'Yachts';
     }
-    
+
     return null;
 }
 // --------------------------------
@@ -83,9 +83,35 @@ const streamingEngine = {
             const contents = [...history, { role: 'user', parts: [{ text: userMessage }] }];
 
             console.log('📤 [STREAM] Gemini Request...');
-            const result = await model.generateContentStream({ contents });
 
-            await this._handleStreamResult(result, startTime, sessionId, userMessage, onChunk, onComplete);
+            // Таймаут для стриминга (10 секунд)
+            const streamTimeout = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('STREAM_TIMEOUT')), 10000)
+            );
+
+            try {
+                const result = await Promise.race([
+                    model.generateContentStream({ contents }),
+                    streamTimeout
+                ]);
+
+                await this._handleStreamResult(result, startTime, sessionId, userMessage, onChunk, onComplete);
+            } catch (streamError) {
+                if (streamError.message === 'STREAM_TIMEOUT') {
+                    console.warn('⚠️ [STREAM] Timeout! Fallback to non-streaming...');
+                    // Fallback: обычный запрос без стриминга
+                    const response = await model.generateContent({ contents });
+                    const text = response.response.text();
+                    console.log('✅ [FALLBACK] Got response:', text.substring(0, 50) + '...');
+
+                    if (onChunk) onChunk(text);
+                    if (userMessage) sessionManager.addToHistory(sessionId, 'user', userMessage);
+                    sessionManager.addToHistory(sessionId, 'model', text);
+                    if (onComplete) onComplete({ text, requiresToolCall: false, functionCalls: null });
+                } else {
+                    throw streamError;
+                }
+            }
 
         } catch (error) {
             console.error('❌ [STREAM] Error:', error);
@@ -135,7 +161,7 @@ const streamingEngine = {
                 if (fc && fc.length > 0) { functionCalls.push(...fc); continue; }
 
                 let text = '';
-                try { text = chunk.text(); } catch (e) {}
+                try { text = chunk.text(); } catch (e) { }
                 if (!text) continue;
 
                 if (text.match(/\[GENDER:/)) {
