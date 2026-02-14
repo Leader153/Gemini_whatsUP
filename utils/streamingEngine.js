@@ -146,12 +146,8 @@ const streamingEngine = {
         let functionCalls = [];
 
         const sendSafe = (text) => {
-            let clean = text;
-            // Удаляем все теги [GENDER:...] (включая вложенные)
-            while (clean.match(/\[GENDER:/i)) {
-                clean = clean.replace(/\[GENDER:.*?\]/gi, '');
-            }
-            clean = clean.trim();
+            // Удаляем только полностью закрытые теги [GENDER:...]
+            const clean = text.replace(/\[GENDER:.*?\]/gi, '').trim();
             if (clean.length > 0 && onChunk) onChunk(clean);
         };
 
@@ -164,12 +160,8 @@ const streamingEngine = {
                 try { text = chunk.text(); } catch (e) { }
                 if (!text) continue;
 
-                if (text.match(/\[GENDER:/)) {
-                    fullText += text;
-                    // Удаляем все теги [GENDER:...] (включая вложенные)
-                    while (text.match(/\[GENDER:/i)) {
-                        text = text.replace(/\[GENDER:.*?\]/gi, '');
-                    }
+                if (text.includes('[GENDER:')) {
+                    text = text.replace(/\[GENDER:.*?\]/gi, '');
                 }
                 if (!text) continue;
 
