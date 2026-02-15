@@ -229,5 +229,32 @@ app.post('/reprompt', (request, response) => {
 });
 
 const port = process.env.PORT || 1337;
-let server = http.createServer(app);
+// Проверяем наличие SSL сертификатов для HTTPS
+let server;
+if (process.env.SSL_PRIVATE_KEY_PATH && process.env.SSL_CERTIFICATE_PATH) {
+    try {
+        const fs = require('fs');
+        const https = require('https');
+        const sslOptions = {
+            key: fs.readFileSync(process.env.SSL_PRIVATE_KEY_PATH),
+            cert: fs.readFileSync(process.env.SSL_CERTIFICATE_PATH)
+        };
+        server = https.createServer(sslOptions, app);
+        console.log('🔒 HTTPS сервер с SSL сертификатами');
+    } catch (error) {
+        console.error('❌ Ошибка загрузки SSL сертификатов:', error.message);
+        console.log('⚠️ Запуск HTTP сервера (без SSL)');
+        server = http.createServer(app);
+    }
+} else {
+    console.log('⚠️ SSL сертификаты не указаны. Запуск HTTP сервера');
+    server = http.createServer(app);
+}
+
+const WebSocket = require('ws');
+const TwilioMediaStreamHandler = require('./utils/twilioMediaStreamHandler');
+const wss = new WebSocket.Server({ server: server, path: '/ws' });
+const mediaStreamHandler = new TwilioMediaStreamHandler(wss);
+
 server.listen(port, () => console.log(`✅ [HYBRID_READY] Server running on ${port}`));
+module.exports.mediaStreamHandler = mediaStreamHandler;
