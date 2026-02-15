@@ -8,7 +8,7 @@ const DEFAULT_PAYMENT_LINK = "https://secure.cardcom.solutions/EA/EA5/5a2HEfT6E6
 const WA_NUMBER = (process.env.TWILIO_NUMBER || '972533883507').replace(/[^\d]/g, '');
 const OWNER_PHONE_NUMBER = '+972533403449';
 
-// --- ВЕРНУЛ РЕКВИЗИТЫ НА МЕСТО ---
+// --- РЕКВИЗИТЫ ---
 const PAYBOX_PHONE = "053-340-3449";
 const BANK_DETAILS = `
 בנק: יהב (04)
@@ -22,10 +22,10 @@ const CLOSING_DEAL_TEXT = `
 *תהליך סגירת עסקה / שריון מקום* ⚓
 
 כדי לשריין את היאכטה, עלינו לבצע הזמנה מסודרת.
-אשלח לך כעת *אישור הזמנה* הכולל את כל הפרטים וקישור לתשלום מקדמה.
+אשלח לך כעת *אישור הזמנה* הכולל את כל הפרטים и קישור לתשלום מקדמה.
 
 💳 *אפשרויות לתשלום המקדמה:*
-1. כרטיס אשראי (קישור מאובטח).
+1. כרטיס אשראи (קישור מאובטח).
 2. אפליקציית PayBox.
 3. העברה בנקאית.
 
@@ -75,12 +75,12 @@ const calendarTools = [
     },
     {
         name: 'transfer_to_support',
-        description: 'Transfer call',
+        description: 'Transfer call to human operator',
         parameters: { type: 'OBJECT', properties: {} }
     },
     {
         name: 'save_client_data',
-        description: 'Save details',
+        description: 'Save client name and phone',
         parameters: {
             type: 'OBJECT',
             properties: { name: { type: 'STRING' }, phone: { type: 'STRING' } },
@@ -89,7 +89,7 @@ const calendarTools = [
     },
     {
         name: 'send_whatsapp_message',
-        description: 'Send WhatsApp',
+        description: 'Send plain WhatsApp message',
         parameters: {
             type: 'OBJECT',
             properties: { messageBody: { type: 'STRING' }, clientPhone: { type: 'STRING' } },
@@ -148,34 +148,20 @@ function forceYear2026(dateStr) {
     return cleanDate.replace(/^\d{4}/, '2026');
 }
 
-
 /**
- * Отправка WhatsApp с проверкой на SMS (для одиночных сообщений)
+ * Стабильная отправка: WhatsApp (как в 03d7f0b)
  */
 async function trySendWithFallback(phone, text) {
-    const waResult = await sendWhatsAppMessage(phone, text);
-    
-    // Если WhatsApp не прошел (например, при запросе фото) -> шлем SMS
-    if (!waResult.success) {
-        console.log(`⚠️ WhatsApp failed. Sending SMS fallback.`);
-        const preFilledText = "היי, דיברנו עכשיו בטלפון. אשמח לקבל את הפרטים."; 
-        const waLink = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(preFilledText)}`;
-        const smsBody = `Leader: שלחנו לך פרטים בוואטסאפ. אם לא קיבלת, לחץ כאן: ${waLink}`;
-        
-        await sendSms(phone, smsBody);
-    }
-    
-    return { result: "Message sent." };
+    return await sendWhatsAppMessage(phone, text);
 }
 
 async function handleFunctionCall(name, args) {
-    console.log(`🔧 Function call: ${name}`, args);
+    console.log(`🔧 [STABLE_HYBRID] Tool Call: ${name}`, args);
 
     try {
         switch (name) {
             case 'check_yacht_availability': {
                 const date = forceYear2026(args.date);
-                const { checkAvailability } = require('./calendarService');
                 const slots = await checkAvailability(date, args.duration, args.yachtName);
                 if (slots.length === 0) return { result: "אין שעות פנויות." };
                 return { result: `שעות פנויות: ${slots.map(s => s.displayText).join(', ')}` };
@@ -198,7 +184,6 @@ async function handleFunctionCall(name, args) {
                 await trySendWithFallback(args.clientPhone, cancelMsg);
                 const adminMsg = `❌ БИТУЛЬ! Клиент ${args.clientPhone} хочет отменить заказ #${args.orderId}`;
                 await sendWhatsAppMessage(OWNER_PHONE_NUMBER, adminMsg);
-                await sendOrderEmail({ clientName: 'CANCEL REQUEST', date: 'N/A', status: adminMsg });
                 return { result: "Cancellation request sent." };
 
             case 'save_client_data':
@@ -223,12 +208,9 @@ async function handleBookingConfirmation(args) {
     const startTimeISO = `${isoDate}T${startTime}:00`;
     const endTimeISO = `${isoDate}T${endTimeStr}:00`;
 
-    // --- ЗАЩИТА ОТ ДВОЙНОГО ЗАКАЗА ---
-    const { isSlotAvailable } = require('./calendarService');
+    // --- БЛОКИРОВКА ПОВТОРОВ ---
     const isFree = await isSlotAvailable(startTimeISO, endTimeISO, yachtName);
-    if (!isFree) {
-        return { result: "שגיאה: הזמן הזה נתפס הרגע על ידי לקוח אחר. אנא נסה שעה אחרת." };
-    }
+    if (!isFree) return { result: "שגיאה: הזמן הזה נתפס הרגע." };
 
     const orderId = getNextOrderNumber();
     const deposit = 500;
@@ -243,9 +225,7 @@ async function handleBookingConfirmation(args) {
 
     try {
         await createBooking(startTimeISO, endTimeISO, { name: `${clientName} (#${orderId})`, phone: clientPhone, yachtName: yachtName, duration: duration });
-    } catch (calError) {
-        console.error("⚠️ Calendar Error:", calError);
-    }
+    } catch (e) { console.error("Calendar Error", e); }
 
     const msgBooking = `
 לכבוד: ${clientName}
@@ -258,7 +238,7 @@ async function handleBookingConfirmation(args) {
 ⛵ *יאכטה:* ${yachtName}
 👥 *משתתפים:* עד ${participants || '13'} איש
 
-📍 *מקום מפגש:*
+📍 *מקום מפгש:*
 ${locationDesc || 'מרינה'}
 
 🎁 *החבילה כוללת:*
@@ -268,76 +248,41 @@ ${swimmingText}
 
     const msgPayment = `
 💰 *הסדרת תשלום עבור הזמנה #${orderId}*
+סה"כ لتשלום: ${totalPrice} ₪
+*מקדמה נדרשת: ${deposit} ₪*
 
-סה"כ לתשלום: ${totalPrice} ₪
-*מקדמה נדרשת כעת: ${deposit} ₪*
-
-אנא בחרו את דרך התשלום הנוחה לכם:
-
-1️⃣ *כרטיס אשראי (מומלץ):*
+1️⃣ *כרטיס אשראי:*
 ${paymentLink || DEFAULT_PAYMENT_LINK}
 
 2️⃣ *PayBox:*
-למספר: ${PAYBOX_PHONE}
+${PAYBOX_PHONE}
 
 3️⃣ *העברה בנקאית:*
 ${BANK_DETAILS}
 
-${guideLink ? `(מצורף מדריך: ${guideLink})` : ''}
-
-*היתרה (${balance} ₪) תשולם במועד ההפלגה.*
-
-⚠️ *שים לב:* תשלום המקדמה מהווה אישור לתנאי ההזמנה.
-נא לשלוח צילום אסמכתא לאחר התשלום.
+היתרה (${balance} ₪) תשולם במועד ההפלגה.
     `.trim();
 
-    const msgLocation = `
-📍 *הוראות הגעה:*
-${locationDesc || 'מרינה'}
+    // ПОСЛЕДОВАТЕЛЬНАЯ ОТПРАВКА (Работало в 03d7f0b)
+    await trySendWithFallback(clientPhone, msgBooking);
+    await new Promise(r => setTimeout(r, 1200));
+    await trySendWithFallback(clientPhone, msgPayment);
+    await new Promise(r => setTimeout(r, 1200));
 
-לניווט בוייז:
-${locationLink || ''}
-    `.trim();
-
-    // --- ЛОГИКА ОТПРАВКИ (ИЗМЕНЕНА!) ---
-    console.log(`📤 Sending Booking Sequence to ${clientPhone}`);
-
-    // А) Отправляем первое, самое важное сообщение (Детали)
-    const firstResult = await sendWhatsAppMessage(clientPhone, msgBooking);
-
-    // Б) ЕСЛИ WHATSAPP ЗАКРЫТ -> ШЛЕМ ОДНУ СПАСАТЕЛЬНУЮ СМС
-    if (!firstResult.success) {
-        console.log(`⚠️ WhatsApp closed. Sending ONE rescue SMS.`);
-        const preFilledText = "היי, דיברנו עכשיו בטלפון. אשמח לקבל את אישור ההזמנה.";
-        const waLink = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(preFilledText)}`;
-        const smsBody = `Leader: הזמנה #${orderId} נוצרה! לא הצלחנו לשלוח וואטסאפ. לקבלת הפרטים לחץ כאן: ${waLink}`;
-
-        await sendSms(clientPhone, smsBody);
+    if (locationLink) {
+        const msgLoc = `📍 *הוראות הגעה:*\n${locationDesc || 'מרינה'}\nוייז: ${locationLink}`;
+        await trySendWithFallback(clientPhone, msgLoc);
+        await new Promise(r => setTimeout(r, 1200));
     }
 
-    // В) Отправляем остальные сообщения "вдогонку"
-    // (Если WhatsApp был закрыт, они не дойдут, пока клиент не нажмет на ссылку в SMS)
-    await new Promise(r => setTimeout(r, 1000));
-    await sendWhatsAppMessage(clientPhone, msgPayment);
+    await trySendWithFallback(clientPhone, TERMS_PART_1);
+    await new Promise(r => setTimeout(r, 1200));
+    await trySendWithFallback(clientPhone, TERMS_PART_2);
 
-    await new Promise(r => setTimeout(r, 1000));
-    if (locationLink) await sendWhatsAppMessage(clientPhone, msgLocation);
+    // Уведомление владельцу
+    sendWhatsAppMessage(OWNER_PHONE_NUMBER, `💰 הזמנה חדשה #${orderId}\n${clientName}, ${yachtName}`).catch(e => { });
 
-    await new Promise(r => setTimeout(r, 1000));
-    await sendWhatsAppMessage(clientPhone, TERMS_PART_1);
-
-    await new Promise(r => setTimeout(r, 1000));
-    await sendWhatsAppMessage(clientPhone, TERMS_PART_2);
-
-    // ----------------------------------------------------
-
-    const ownerMsg = `💰 *הזמנה חדשה #${orderId}*
-${clientName}, ${yachtName}, ${isoDate}`;
-    await sendWhatsAppMessage(OWNER_PHONE_NUMBER, ownerMsg);
-
-    await sendOrderEmail({ ...args, orderId: orderId });
-
-    return { result: `הזמנה #${orderId} נוצרה בהצלחה.` };
+    return { result: `הזמנה #${orderId} נוצרה בהצלחה. כל הפרטים נשלחו לוואטסאפ.` };
 }
 
 module.exports = { calendarTools, handleFunctionCall };
