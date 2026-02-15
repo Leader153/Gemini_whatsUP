@@ -233,14 +233,11 @@ const port = process.env.PORT || 1337;
 let server;
 if (process.env.SSL_PRIVATE_KEY_PATH && process.env.SSL_CERTIFICATE_PATH) {
     try {
-        const fs = require('fs');
-        const https = require('https');
         const sslOptions = {
             key: fs.readFileSync(process.env.SSL_PRIVATE_KEY_PATH),
             cert: fs.readFileSync(process.env.SSL_CERTIFICATE_PATH)
         };
         server = https.createServer(sslOptions, app);
-        console.log('🔒 HTTPS сервер с SSL сертификатами');
     } catch (error) {
         console.error('❌ Ошибка загрузки SSL сертификатов:', error.message);
         console.log('⚠️ Запуск HTTP сервера (без SSL)');
