@@ -281,7 +281,7 @@ app.post('/reprompt', (request, response) => {
     const retryCount = parseInt(request.query.retry || '0');
     // Важно: берем голос динамически, если вдруг переключились на русский, 
     // но по умолчанию будет иврит
-    const voice = botBehavior.voiceSettings.he.ttsVoice; 
+    const voice = botBehavior.voiceSettings.he.ttsVoice;
 
     console.log(`🎵 [REPROMPT] Тишина. Попытка №${retryCount + 1}`);
 
@@ -298,14 +298,14 @@ app.post('/reprompt', (request, response) => {
         }
 
         // Играем музыку
-        twiml.play({ loop: 1 }, HOLD_MUSIC_URL); 
-        
+        twiml.play({ loop: 1 }, HOLD_MUSIC_URL);
+
         // Снова слушаем
-        twiml.gather({ 
-            input: 'speech', 
-            action: '/respond', 
-            speechTimeout: 'auto', 
-            language: botBehavior.voiceSettings.he.sttLanguage 
+        twiml.gather({
+            input: 'speech',
+            action: '/respond',
+            speechTimeout: 'auto',
+            language: botBehavior.voiceSettings.he.sttLanguage
         });
 
         // Увеличиваем счетчик
@@ -316,11 +316,33 @@ app.post('/reprompt', (request, response) => {
     response.send(twiml.toString());
 });
 
-// SERVER
+// --- SERVER STARTUP (HTTP или HTTPS) ---
 const port = process.env.PORT || 1337;
-const httpServer = http.createServer(app);
-const wss = new WebSocket.Server({ server: httpServer, path: '/ws' });
+
+// Проверяем наличие SSL сертификатов в .env
+const sslKeyPath = process.env.SSL_PRIVATE_KEY_PATH;
+const sslCertPath = process.env.SSL_CERTIFICATE_PATH;
+
+let server;
+
+if (sslKeyPath && sslCertPath && fs.existsSync(sslKeyPath) && fs.existsSync(sslCertPath)) {
+    console.log('[SSL] ✅ Найдены сертификаты. Запускаем HTTPS сервер...');
+    const httpsOptions = {
+        key: fs.readFileSync(sslKeyPath),
+        cert: fs.readFileSync(sslCertPath)
+    };
+    server = https.createServer(httpsOptions, app);
+} else {
+    console.log('[SSL] ⚠️ Сертификаты не найдены. Запускаем HTTP сервер (небезопасно для продакшена!)');
+    server = http.createServer(app);
+}
+
+const wss = new WebSocket.Server({ server: server, path: '/ws' });
 const mediaStreamHandler = new TwilioMediaStreamHandler(wss);
 
-httpServer.listen(port, () => console.log(`✅ Server running on ${port}`));
+server.listen(port, () => {
+    const protocol = sslKeyPath && sslCertPath ? 'HTTPS' : 'HTTP';
+    console.log(`✅ ${protocol} Server running on port ${port}`);
+});
+
 module.exports.mediaStreamHandler = mediaStreamHandler;
