@@ -166,7 +166,10 @@ const botBehavior = {
         markdownSymbols: /[*_#`~]/g,
         punctuation: /[.,!?;:"""''()[\]{}]/g,
         multipleSpaces: /\s+/g,
-        urlPattern: /https?:\/\/\S+/g,
+        // Более мощная регулярка: ищет http, https, www и даже просто домены с .com/.co.il
+        urlPattern: /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([^\s]+\.(com|co\.il|org|net|info|biz)\b)/gi,
+        // Специальная чистка для зачатков ссылок при стриминге
+        partialUrlPattern: /\b(https?|www)\b/gi,
     },
 
     // ============================================
@@ -176,21 +179,36 @@ const botBehavior = {
     detectLanguage(text) {
         if (!text) return 'he';
         const lower = text.toLowerCase();
-        const russianKeywords = ['russian', 'rusit', 'ברוסית', 'רוסית', 'אפשר לדבר ברוסית','по-русски', 'на русском', 'פרוסקי', 'פארוסקי', 'paruski'];
+        const russianKeywords = ['russian', 'rusit', 'ברוסית', 'רוסית', 'אפשר לדבר ברוסית', 'по-русски', 'на русском', 'פרוסקי', 'פארוסקי', 'paruski'];
         if (/[\u0400-\u04FF]/.test(text) || russianKeywords.some(k => lower.includes(k))) return 'ru';
         return 'he';
     },
 
     cleanTextForTTS(text) {
-        // 1. Убираем ссылки
+        if (!text) return '';
+
+        // 1. Убираем теги в квадратных скобках [GENDER: ...]
+        text = text.replace(/\[GENDER:.*?\]/gi, '');
+
+        // 2. Убираем ссылки (полные)
         text = text.replace(this.textCleanupRules.urlPattern, '');
-        // 2. Убираем ЗВЕЗДОЧКИ
+
+        // 3. Убираем "хвосты" ссылок или зачатки (http, www) - чтобы не читал по буквам
+        text = text.replace(this.textCleanupRules.partialUrlPattern, '');
+
+        // 4. Убираем содержимое круглых скобок, если там осталось что-то похожее на ссылку или точку
+        text = text.replace(/\([^\)]*?(\.|\/)[^\)]*?\)/g, '');
+
+        // 5. Убираем ЗВЕЗДОЧКИ и markdown
         text = text.replace(/\*/g, '');
-        // 3. Остальной мусор
         text = text.replace(this.textCleanupRules.markdownSymbols, '');
+        // 6. Убираем HTML-подобные теги
         text = text.replace(/<[^>]*>/g, '');
+
+        // 7. Очистка пробелов
         text = text.replace(this.textCleanupRules.multipleSpaces, ' ').trim();
 
+        // 8. Фонетические замены
         Object.keys(transcriptions).forEach(word => {
             if (text.includes(word)) {
                 const replacement = transcriptions[word];

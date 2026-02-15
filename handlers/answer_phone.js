@@ -156,13 +156,18 @@ app.post('/check_ai', (request, response) => {
         let combinedText = "";
         while (task.queue.length > 0) combinedText += task.queue.shift() + " ";
 
-        // --- ИСПРАВЛЕНИЕ: Определяем язык из текста и выбираем правильный голос ---
-        const detectedLang = botBehavior.detectLanguage(combinedText);
-        const correctVoice = botBehavior.voiceSettings[detectedLang].ttsVoice;
-        console.log(`🗣️ [TTS] Detected language: ${detectedLang}, using voice: ${correctVoice}`);
-        // ---------------------------------------------------------------------------
+        // --- ОЧИСТКА ТЕКСТА ПЕРЕД ГОВОРИЛКОЙ ---
+        const cleanText = botBehavior.cleanTextForTTS(combinedText);
+        if (!cleanText || cleanText.trim().length === 0) {
+            // Если после очистки ничего не осталось, просто редиректим дальше
+            twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
+            return response.send(twiml.toString());
+        }
 
-        twiml.say({ voice: correctVoice }, combinedText);
+        const detectedLang = botBehavior.detectLanguage(cleanText);
+        const correctVoice = botBehavior.voiceSettings[detectedLang].ttsVoice;
+
+        twiml.say({ voice: correctVoice }, cleanText);
         twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
         return response.send(twiml.toString());
     }

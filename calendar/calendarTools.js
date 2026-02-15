@@ -6,7 +6,7 @@ const { getNextOrderNumber } = require('../utils/orderCounter');
 
 const DEFAULT_PAYMENT_LINK = "https://secure.cardcom.solutions/EA/EA5/5a2HEfT6E6KH1aSdcinQ/PaymentSP";
 const WA_NUMBER = (process.env.TWILIO_NUMBER || '972533883507').replace(/[^\d]/g, '');
-const OWNER_PHONE_NUMBER = '+972533403449'; 
+const OWNER_PHONE_NUMBER = '+972533403449';
 
 // --- ВЕРНУЛ РЕКВИЗИТЫ НА МЕСТО ---
 const PAYBOX_PHONE = "053-340-3449";
@@ -126,7 +126,7 @@ const calendarTools = [
                 startTime: { type: 'STRING' },
                 duration: { type: 'NUMBER' },
                 yachtName: { type: 'STRING' },
-                participants: { type: 'STRING' }, 
+                participants: { type: 'STRING' },
                 locationLink: { type: 'STRING' },
                 locationDesc: { type: 'STRING' },
                 totalPrice: { type: 'NUMBER' },
@@ -148,28 +148,24 @@ function forceYear2026(dateStr) {
     return cleanDate.replace(/^\d{4}/, '2026');
 }
 
+
 /**
- * Умная отправка: WhatsApp + SMS-страховка с правильным текстом
+ * Отправка WhatsApp с проверкой на SMS (для одиночных сообщений)
  */
 async function trySendWithFallback(phone, text) {
-    // 1. Пробуем отправить WhatsApp
-    await sendWhatsAppMessage(phone, text);
+    const waResult = await sendWhatsAppMessage(phone, text);
     
-    // 2. ОТПРАВЛЯЕМ SMS ВСЕГДА (СТРАХОВКА)
-    console.log(`📨 Sending Safety SMS to ${phone}...`);
+    // Если WhatsApp не прошел (например, при запросе фото) -> шлем SMS
+    if (!waResult.success) {
+        console.log(`⚠️ WhatsApp failed. Sending SMS fallback.`);
+        const preFilledText = "היי, דיברנו עכשיו בטלפון. אשמח לקבל את הפרטים."; 
+        const waLink = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(preFilledText)}`;
+        const smsBody = `Leader: שלחנו לך פרטים בוואטסאפ. אם לא קיבלת, לחץ כאן: ${waLink}`;
+        
+        await sendSms(phone, smsBody);
+    }
     
-    // Текст, который появится у клиента в WhatsApp автоматически
-    const preFilledText = "שלום, אשמח לקבל פרטים ותמונות"; 
-    // Кодируем иврит для ссылки
-    const waLink = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(preFilledText)}`;
-    
-    // Текст самого SMS
-    // "Leader: Чтобы мы могли выслать фото и детали в WhatsApp, нажмите на ссылку и отправьте сообщение:"
-    const smsBody = `Leader: כדי שנוכל לשלוח לך תמונות ופרטים לווטסאפ, לחץ על הקישור ושלח את ההודעה: ${waLink}`;
-    
-    await sendSms(phone, smsBody);
-
-    return { result: "Message sent (with SMS backup)." };
+    return { result: "Message sent." };
 }
 
 async function handleFunctionCall(name, args) {
@@ -196,7 +192,7 @@ async function handleFunctionCall(name, args) {
 
             case 'send_booking_confirmation':
                 return await handleBookingConfirmation(args);
-            
+
             case 'request_cancellation':
                 const cancelMsg = `🚫 בקשה לביטול הזמנה ${args.orderId} התקבלה.`;
                 await trySendWithFallback(args.clientPhone, cancelMsg);
@@ -234,7 +230,7 @@ async function handleBookingConfirmation(args) {
         return { result: "שגיאה: הזמן הזה נתפס הרגע על ידי לקוח אחר. אנא נסה שעה אחרת." };
     }
 
-    const orderId = getNextOrderNumber(); 
+    const orderId = getNextOrderNumber();
     const deposit = 500;
     const balance = totalPrice - deposit;
 
@@ -303,24 +299,44 @@ ${locationDesc || 'מרינה'}
 ${locationLink || ''}
     `.trim();
 
-    await trySendWithFallback(clientPhone, msgBooking);
-    await new Promise(r => setTimeout(r, 1000));
-    await trySendWithFallback(clientPhone, msgPayment);
-    await new Promise(r => setTimeout(r, 1000));
-    if (locationLink) {
-        await trySendWithFallback(clientPhone, msgLocation);
-        await new Promise(r => setTimeout(r, 1000));
+    // --- ЛОГИКА ОТПРАВКИ (ИЗМЕНЕНА!) ---
+    console.log(`📤 Sending Booking Sequence to ${clientPhone}`);
+
+    // А) Отправляем первое, самое важное сообщение (Детали)
+    const firstResult = await sendWhatsAppMessage(clientPhone, msgBooking);
+
+    // Б) ЕСЛИ WHATSAPP ЗАКРЫТ -> ШЛЕМ ОДНУ СПАСАТЕЛЬНУЮ СМС
+    if (!firstResult.success) {
+        console.log(`⚠️ WhatsApp closed. Sending ONE rescue SMS.`);
+        const preFilledText = "היי, דיברנו עכשיו בטלפון. אשמח לקבל את אישור ההזמנה.";
+        const waLink = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(preFilledText)}`;
+        const smsBody = `Leader: הזמנה #${orderId} נוצרה! לא הצלחנו לשלוח וואטסאפ. לקבלת הפרטים לחץ כאן: ${waLink}`;
+
+        await sendSms(clientPhone, smsBody);
     }
-    await trySendWithFallback(clientPhone, TERMS_PART_1);
+
+    // В) Отправляем остальные сообщения "вдогонку"
+    // (Если WhatsApp был закрыт, они не дойдут, пока клиент не нажмет на ссылку в SMS)
     await new Promise(r => setTimeout(r, 1000));
-    await trySendWithFallback(clientPhone, TERMS_PART_2);
+    await sendWhatsAppMessage(clientPhone, msgPayment);
+
+    await new Promise(r => setTimeout(r, 1000));
+    if (locationLink) await sendWhatsAppMessage(clientPhone, msgLocation);
+
+    await new Promise(r => setTimeout(r, 1000));
+    await sendWhatsAppMessage(clientPhone, TERMS_PART_1);
+
+    await new Promise(r => setTimeout(r, 1000));
+    await sendWhatsAppMessage(clientPhone, TERMS_PART_2);
+
+    // ----------------------------------------------------
 
     const ownerMsg = `💰 *הזמנה חדשה #${orderId}*
 ${clientName}, ${yachtName}, ${isoDate}`;
     await sendWhatsAppMessage(OWNER_PHONE_NUMBER, ownerMsg);
-    
+
     await sendOrderEmail({ ...args, orderId: orderId });
-    
+
     return { result: `הזמנה #${orderId} נוצרה בהצלחה.` };
 }
 
