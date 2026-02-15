@@ -61,7 +61,15 @@ app.post('/respond', (request, response) => {
     // --- УСКОРЕНИЕ: МОМЕНТАЛЬНЫЙ ОТВЕТ ---
     if (speechResult) {
         const twiml = new VoiceResponse();
-        twiml.play({ loop: 10 }, HOLD_MUSIC_URL);
+
+        // --- ИСПРАВЛЕНИЕ: Оборачиваем музыку в Gather, чтобы бот СЛЫШАЛ во время музыки ---
+        const gather = twiml.gather({
+            input: 'speech',
+            action: '/respond',
+            speechTimeout: 'auto',
+            language: botBehavior.voiceSettings.he.sttLanguage,
+        });
+        gather.play({ loop: 10 }, HOLD_MUSIC_URL);
 
         response.type('text/xml');
         response.send(twiml.toString());
@@ -310,16 +318,16 @@ app.post('/reprompt', (request, response) => {
             twiml.say({ voice: voice }, "אני עדיין כאן. קיבלת את ההודעה? יש עוד משהו שאוכל לעזור בו?");
         }
 
-        // Играем музыку
-        twiml.play({ loop: 1 }, HOLD_MUSIC_URL);
-
         // Снова слушаем
-        twiml.gather({
+        const gather = twiml.gather({
             input: 'speech',
             action: '/respond',
             speechTimeout: 'auto',
             language: botBehavior.voiceSettings.he.sttLanguage
         });
+
+        // Играем музыку ВНУТРИ Gather
+        gather.play({ loop: 1 }, HOLD_MUSIC_URL);
 
         // Увеличиваем счетчик
         twiml.redirect({ method: 'POST' }, `/reprompt?retry=${retryCount + 1}`);
