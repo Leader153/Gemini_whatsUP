@@ -248,8 +248,6 @@ if (process.env.SSL_PRIVATE_KEY_PATH && process.env.SSL_CERTIFICATE_PATH) {
     server = http.createServer(app);
 }
 
-const WebSocket = require('ws');
-const TwilioMediaStreamHandler = require('./utils/twilioMediaStreamHandler');
 const wss = new WebSocket.Server({ server: server, path: '/ws' });
 const mediaStreamHandler = new TwilioMediaStreamHandler(wss);
 
