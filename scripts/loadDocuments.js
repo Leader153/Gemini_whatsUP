@@ -60,37 +60,30 @@ async function main() {
         try {
             await chromaClient.deleteCollection({ name: COLLECTION_NAME });
             console.log('✅ Старая коллекция удалена.');
-        } catch (e) {}
-        
+        } catch (e) { }
+
         await new Promise(r => setTimeout(r, 1000));
 
         if (!fs.existsSync(CSV_PATH)) throw new Error(`Файл не найден!`);
         const parsedData = parseCSV(fs.readFileSync(CSV_PATH, 'utf-8'));
 
-    const docs = parsedData.map(row => {
+        const docs = parsedData.map(row => {
             // Формируем красивую строку цены
             let prices = [];
             if (row.Price_1h && row.Price_1h !== 'N/A') prices.push(`שעה 1: ${row.Price_1h}`);
             if (row.Price_2h && row.Price_2h !== 'N/A') prices.push(`שעתיים: ${row.Price_2h}`);
             if (row.Price_3h && row.Price_3h !== 'N/A') prices.push(`3 שעות: ${row.Price_3h}`);
-            
+
             let priceString = prices.join('; ');
             if (row.Price_Note && row.Price_Note !== 'N/A') priceString += ` (${row.Price_Note})`;
 
             // ВАЖНО: Добавляем Search_Keywords в начало для поиска
             const pageContent = `
-<<<<<<< HEAD
 === KEYWORDS FOR SEARCH ===
 ${row.Search_Keywords || ''}
 ${row.Product_Name}
 ${row.City !== 'N/A' ? row.City : ''}
 ${row.Model_Type}
-=======
-=== SEARCH KEYWORDS (HIDDEN) ===
-${row.Search_Keywords}
-${row.Product_Name}
-${row.City !== 'N/A' ? row.City : ''}
->>>>>>> b710c831e18f4cca5e1b69f253dba911941c7bb0
 
 === PRODUCT DETAILS (FOR USER) ===
 Name: ${row.Product_Name}
@@ -127,11 +120,11 @@ Guide: ${row.Payment_Guide_URL || 'None'}
             };
 
             return new Document({ pageContent, metadata });
-        });   
+        });
 
         console.log(`✅ Подготовлено ${docs.length} документов.`);
         console.log(`🔄 Генерация векторов...`);
-        
+
         await Chroma.fromDocuments(docs, embeddings, {
             collectionName: COLLECTION_NAME,
             url: CHROMA_URL,
