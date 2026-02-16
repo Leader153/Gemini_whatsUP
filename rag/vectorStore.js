@@ -31,8 +31,8 @@ async function getVectorStore() {
         console.log(`🔌 Подключение к ChromaDB [${CHROMA_URL}]...`);
 
         // Инициализируем клиент через LangChain.
-        // Важно: передаем 'embeddings' первым аргументом, чтобы LangChain знал, как векторизовать запросы.
-        cachedVectorStore = new Chroma(embeddings, {
+        // ВАЖНО: В новой версии embeddings передается внутри объекта конфигурации
+        cachedVectorStore = await Chroma.fromExistingCollection(embeddings, {
             collectionName: COLLECTION_NAME,
             url: CHROMA_URL,
         });
