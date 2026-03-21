@@ -1,50 +1,56 @@
-const express = require('express');
+// ============================================================
+// answer_phone.js — Nayax Smart IVR (PoC)
+// Рефакторинг: вся логика яхт/бронирований удалена.
+// Добавлена обработка onRedirect → TwiML <Dial>.
+// ============================================================
+
+const express       = require('express');
 const VoiceResponse = require('twilio').twiml.VoiceResponse;
-const conversationEngine = require('../utils/conversationEngine');
-const sessionManager = require('../memory/sessionManager');
-const botBehavior = require('../data/botBehavior');
+const sessionManager  = require('../memory/sessionManager');
+const botBehavior     = require('../data/botBehavior');
 const messageFormatter = require('../utils/messageFormatter');
-const messagingRoutes = require('./messaging_handler');
+const messagingRoutes  = require('./messaging_handler');
 const path = require('path');
-const fs = require('fs');
-const http = require('http');
+const fs   = require('fs');
+const http  = require('http');
 const https = require('https');
 const WebSocket = require('ws');
 const TwilioMediaStreamHandler = require('./mediaStreamHandler');
 
-const app = express();
+const app    = express();
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
-// Ссылка на музыку
 const HOLD_MUSIC_URL = process.env.HOLD_MUSIC_URL || 'https://mabotmusik-2585.twil.io/mb.mp3';
 
-console.log('[STARTUP] Answer Phone Handler Loaded (Production Ready)');
+console.log('[STARTUP] Nayax Smart IVR Handler Loaded');
 
 app.use(express.urlencoded({ extended: true }));
 app.use('/music', express.static(path.join(__dirname, '../public/music')));
 
-// Подключение WhatsApp/SMS маршрутов
+// WhatsApp/SMS маршруты
 if (messagingRoutes && typeof messagingRoutes === 'function') {
     app.use('/', messagingRoutes);
 } else {
     console.error('[CRITICAL_ERROR] messagingRoutes failed to load.');
 }
 
+// Хранилище асинхронных задач AI (ключ — CallSid)
 const pendingAITasks = new Map();
 
-// 1. ВХОДЯЩИЙ ЗВОНОК
+// ============================================================
+// 1. ВХОДЯЩИЙ ЗВОНОК — приветствие и старт распознавания
+// ============================================================
 app.post('/voice', (request, response) => {
     const twiml = new VoiceResponse();
     const initialGreeting = messageFormatter.getGreeting('voice');
 
-    // Оптимизация: Сразу говорим и слушаем
     twiml.say({ voice: botBehavior.voiceSettings.he.ttsVoice }, initialGreeting);
 
     twiml.gather({
-        input: 'speech',
-        action: '/respond',
+        input:         'speech',
+        action:        '/respond',
         speechTimeout: 'auto',
-        language: botBehavior.voiceSettings.he.sttLanguage,
+        language:      botBehavior.voiceSettings.he.sttLanguage,
     });
 
     twiml.redirect({ method: 'POST' }, '/reprompt');
@@ -53,67 +59,98 @@ app.post('/voice', (request, response) => {
     response.send(twiml.toString());
 });
 
-// 2. ОБРАБОТКА (ОПТИМИЗИРОВАНО ДЛЯ СКОРОСТИ)
+// ============================================================
+// 2. ОБРАБОТКА РЕЧИ — запускаем AI асинхронно, играем музыку
+// ============================================================
 app.post('/respond', (request, response) => {
     const speechResult = request.body.SpeechResult;
-    const callSid = request.body.CallSid;
+    const callSid      = request.body.CallSid;
 
-    // --- УСКОРЕНИЕ: МОМЕНТАЛЬНЫЙ ОТВЕТ ---
     if (speechResult) {
+        // Моментальный ответ Twilio — играем музыку пока AI думает
         const twiml = new VoiceResponse();
         twiml.play({ loop: 10 }, HOLD_MUSIC_URL);
-
         response.type('text/xml');
         response.send(twiml.toString());
 
-        // --- АСИНХРОННАЯ ЛОГИКА ---
         const clientPhone = request.body.From;
-        const domain = process.env.DOMAIN_NAME || request.headers.host;
-        const protocol = process.env.DOMAIN_NAME ? 'https' : 'http';
-        const baseUrl = `${protocol}://${domain}`;
+        const domain      = process.env.DOMAIN_NAME || request.headers.host;
+        const protocol    = process.env.DOMAIN_NAME ? 'https' : 'http';
+        const baseUrl     = `${protocol}://${domain}`;
 
         console.log(`🎙️ [VOICE] Распознано: "${speechResult}"`);
         sessionManager.setUserPhone(callSid, clientPhone);
 
+        // Создаём задачу для этого звонка
         const task = {
-            status: 'processing',
-            queue: [],
-            result: null,
+            status:      'processing',
+            queue:       [],        // чанки текста для TTS
+            result:      null,
             interrupted: false,
-            startTime: Date.now()
+            redirect:    null,      // { routeKey, phoneNumber } если Interceptor сработал
+            startTime:   Date.now()
         };
         pendingAITasks.set(callSid, task);
 
         const streamingEngine = require('../utils/streamingEngine');
 
+        /**
+         * interruptMusic — прерывает hold-музыку и отправляет звонок
+         * на /check_ai для дальнейшей обработки.
+         */
+        const interruptMusic = () => {
+            if (!task.interrupted) {
+                task.interrupted = true;
+                const elapsed     = Date.now() - task.startTime;
+                const minDuration = 2000; // минимум 2с музыки
+                const delay       = Math.max(0, minDuration - elapsed);
+
+                console.log(`⚡ [INTERRUPT] Прерывание через ${delay}мс...`);
+
+                setTimeout(() => {
+                    const updateTwiml = new VoiceResponse();
+                    updateTwiml.redirect({ method: 'POST' }, `${baseUrl}/check_ai?CallSid=${callSid}`);
+
+                    client.calls(callSid)
+                        .update({ twiml: updateTwiml.toString() })
+                        .then(()  => console.log(`✅ [INTERRUPT] Редирект выполнен.`))
+                        .catch(err => console.error(`❌ [INTERRUPT] Ошибка:`, err));
+                }, delay);
+            }
+        };
+
         setImmediate(async () => {
-            const interruptMusic = () => {
-                if (!task.interrupted) {
-                    task.interrupted = true;
-                    const elapsed = Date.now() - task.startTime;
-                    const minDuration = 2000;
-                    const delay = Math.max(0, minDuration - elapsed);
-
-                    console.log(`⚡ [INTERRUPT] Ответ готов. Прерывание через ${delay}мс...`);
-
-                    setTimeout(() => {
-                        const updateTwiml = new VoiceResponse();
-                        updateTwiml.redirect({ method: 'POST' }, `${baseUrl}/check_ai?CallSid=${callSid}`);
-
-                        client.calls(callSid)
-                            .update({ twiml: updateTwiml.toString() })
-                            .then(() => console.log(`✅ [INTERRUPT] Успешный редирект.`))
-                            .catch(err => console.error(`❌ Ошибка прерывания:`, err));
-                    }, delay);
-                }
-            };
-
             await streamingEngine.processMessageStream(
-                speechResult, clientPhone,
+                speechResult,
+                callSid,
                 clientPhone,
-                (chunk) => { if (task.queue) task.queue.push(chunk); interruptMusic(); },
-                (res) => { task.status = 'completed'; task.result = res; interruptMusic(); },
-                (err) => { console.error('Streaming error:', err); task.status = 'error'; interruptMusic(); }
+                // onChunk — кусок текста готов для TTS
+                (chunk) => {
+                    if (task.queue) task.queue.push(chunk);
+                    interruptMusic();
+                },
+                // onComplete — AI закончил (нормальный путь)
+                (res) => {
+                    task.status = 'completed';
+                    task.result = res;
+                    interruptMusic();
+                },
+                // onError
+                (err) => {
+                    console.error('[STREAM] Ошибка:', err);
+                    task.status = 'error';
+                    interruptMusic();
+                },
+                // ── onRedirect (INTERCEPTOR) ──────────────────────────────
+                // Вызывается когда Gemini выдал [REDIRECT_TECH] или [REDIRECT_FINANCE]
+                (routeKey) => {
+                    const phoneNumber = botBehavior.getRoutePhone(routeKey);
+                    console.log(`🔀 [REDIRECT] routeKey=${routeKey}, phone=${phoneNumber}`);
+                    task.status   = 'redirect';
+                    task.redirect = { routeKey, phoneNumber };
+                    interruptMusic();
+                }
+                // ─────────────────────────────────────────────────────────
             );
         });
 
@@ -125,190 +162,165 @@ app.post('/respond', (request, response) => {
     }
 });
 
-// 3. ЧТЕНИЕ ОТВЕТА
+// ============================================================
+// 3. ПРОВЕРКА РЕЗУЛЬТАТА AI — чтение из очереди чанков
+// ============================================================
 app.post('/check_ai', (request, response) => {
     const callSid = request.query.CallSid || request.body.CallSid;
-    const task = pendingAITasks.get(callSid);
-    const twiml = new VoiceResponse();
-    const voice = botBehavior.voiceSettings.he.ttsVoice;
+    const task    = pendingAITasks.get(callSid);
+    const twiml   = new VoiceResponse();
 
     if (!task) {
-        twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
-        return response.send(twiml.toString());
+        // Задача не найдена — возвращаемся к слушанию клиента
+        twiml.gather({
+            input:         'speech',
+            action:        '/respond',
+            speechTimeout: 'auto',
+            language:      botBehavior.voiceSettings.he.sttLanguage
+        });
+        return response.type('text/xml').send(twiml.toString());
     }
 
+    // ── ОШИБКА ──────────────────────────────────────────────
     if (task.status === 'error') {
         pendingAITasks.delete(callSid);
-        twiml.say({ voice: voice }, messageFormatter.getMessage('apiError', 'voice'));
+        twiml.say(
+            { voice: botBehavior.voiceSettings.he.ttsVoice },
+            messageFormatter.getMessage('apiError', 'voice')
+        );
         twiml.redirect({ method: 'POST' }, '/reprompt');
-        return response.send(twiml.toString());
+        return response.type('text/xml').send(twiml.toString());
     }
 
+    // ── РЕДИРЕКТ (INTERCEPTOR сработал) ─────────────────────
+    if (task.status === 'redirect') {
+        const { routeKey, phoneNumber } = task.redirect;
+        pendingAITasks.delete(callSid);
+        console.log(`📞 [DIAL] Переводим звонок: [${routeKey}] → ${phoneNumber}`);
+
+        if (phoneNumber) {
+            // Если в очереди ещё есть необозвученные чанки — произносим их
+            let prefixText = '';
+            while (task.queue && task.queue.length > 0) {
+                prefixText += task.queue.shift() + ' ';
+            }
+            if (prefixText.trim()) {
+                const lang  = botBehavior.detectLanguage(prefixText);
+                const voice = botBehavior.voiceSettings[lang].ttsVoice;
+                twiml.say({ voice }, botBehavior.cleanTextForTTS(prefixText));
+            }
+
+            // Физический перевод звонка через <Dial>
+            twiml.dial(
+                {
+                    timeout: botBehavior.operatorSettings.timeout,
+                    action:  '/handle-dial-status', // fallback если не ответили
+                },
+                phoneNumber
+            );
+        } else {
+            // Номер не настроен — сообщаем об ошибке маршрутизации
+            console.error(`❌ [DIAL] Номер для [${routeKey}] не настроен!`);
+            twiml.say(
+                { voice: botBehavior.voiceSettings.he.ttsVoice },
+                'מצטערים, אין אפשרות להעביר את השיחה כרגע. אנא נסה שוב מאוחר יותר.'
+            );
+            twiml.hangup();
+        }
+
+        return response.type('text/xml').send(twiml.toString());
+    }
+
+    // ── ЧАНКИ — произносим накопленный текст ─────────────────
     if (task.queue && task.queue.length > 0) {
-        let combinedText = "";
-        while (task.queue.length > 0) combinedText += task.queue.shift() + " ";
+        let combinedText = '';
+        while (task.queue.length > 0) combinedText += task.queue.shift() + ' ';
 
-        // --- ИСПРАВЛЕНИЕ: Определяем язык из текста и выбираем правильный голос ---
-        const detectedLang = botBehavior.detectLanguage(combinedText);
-        const correctVoice = botBehavior.voiceSettings[detectedLang].ttsVoice;
-        console.log(`🗣️ [TTS] Detected language: ${detectedLang}, using voice: ${correctVoice}`);
-        // ---------------------------------------------------------------------------
+        const lang  = botBehavior.detectLanguage(combinedText);
+        const voice = botBehavior.voiceSettings[lang].ttsVoice;
+        console.log(`🗣️ [TTS] lang=${lang}, voice=${voice}`);
 
-        twiml.say({ voice: correctVoice }, combinedText);
+        twiml.say({ voice }, botBehavior.cleanTextForTTS(combinedText));
         twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
-        return response.send(twiml.toString());
+        return response.type('text/xml').send(twiml.toString());
     }
 
+    // ── AI ЕЩЁ ДУМАЕТ — ждём ────────────────────────────────
     if (task.status === 'processing') {
         twiml.pause({ length: 1 });
         twiml.redirect({ method: 'POST' }, `/check_ai?CallSid=${callSid}`);
-        return response.send(twiml.toString());
+        return response.type('text/xml').send(twiml.toString());
     }
 
+    // ── ЗАВЕРШЕНО (нормальный путь — без редиректа) ──────────
     if (task.status === 'completed') {
-        const result = task.result;
         pendingAITasks.delete(callSid);
-
-        if (result && result.requiresToolCall) {
-            sessionManager.setPendingFunctionCalls(callSid, result.functionCalls);
-            twiml.redirect({ method: 'POST' }, `/process_tool?CallSid=${callSid}`);
-        } else {
-            twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
-            twiml.redirect({ method: 'POST' }, '/reprompt');
-        }
-        return response.send(twiml.toString());
+        // Слушаем следующий вопрос клиента
+        twiml.gather({
+            input:         'speech',
+            action:        '/respond',
+            speechTimeout: 'auto',
+            language:      botBehavior.voiceSettings.he.sttLanguage
+        });
+        twiml.redirect({ method: 'POST' }, '/reprompt');
     }
 
     response.type('text/xml');
     response.send(twiml.toString());
 });
 
-// 4. ИНСТРУМЕНТЫ (Перевод на оператора)
-app.post('/process_tool', async (request, response) => {
-    const callSid = request.body.CallSid || request.query.CallSid;
-    try {
-        const pendingData = sessionManager.getAndClearPendingFunctionCalls(callSid);
-        if (!pendingData) throw new Error('No pending calls');
-
-        const { functionCalls, context } = pendingData;
-        const userPhone = sessionManager.getUserPhone(callSid);
-
-        const toolResult = await conversationEngine.handleToolCalls(
-            functionCalls, callSid, 'voice', userPhone, context, true
-        );
-
-        const twiml = new VoiceResponse();
-        const voice = botBehavior.voiceSettings.he.ttsVoice;
-
-        if (toolResult.transferToOperator) {
-            console.log(`📞 Попытка перевода на оператора: ${botBehavior.operatorSettings.phoneNumber}`);
-            twiml.say({ voice: voice }, toolResult.text);
-
-            // ВАЖНО: Указываем action, чтобы вернуть звонок, если не ответят
-            twiml.dial({
-                timeout: botBehavior.operatorSettings.timeout,
-                action: '/handle-dial-status'
-            }, botBehavior.operatorSettings.phoneNumber);
-        } else {
-            // --- ЗАЩИТА ОТ ПУСТОГО ТЕКСТА ---
-            if (toolResult.text) {
-                const cleanText = botBehavior.cleanTextForTTS(toolResult.text);
-                // Говорим только если текст не пустой
-                if (cleanText && cleanText.trim().length > 0) {
-                    // --- ИСПРАВЛЕНИЕ: Определяем язык и выбираем правильный голос ---
-                    const detectedLang = botBehavior.detectLanguage(cleanText);
-                    const correctVoice = botBehavior.voiceSettings[detectedLang].ttsVoice;
-                    console.log(`🗣️ [TTS-TOOL] Detected language: ${detectedLang}, using voice: ${correctVoice}`);
-                    // ---------------------------------------------------------------------------
-
-                    twiml.say({ voice: correctVoice }, cleanText);
-                }
-            }
-            // --------------------------------
-
-            twiml.gather({ input: 'speech', action: '/respond', speechTimeout: 'auto', language: botBehavior.voiceSettings.he.sttLanguage });
-            twiml.redirect({ method: 'POST' }, '/reprompt');
-        }
-        response.type('text/xml');
-        response.send(twiml.toString());
-    } catch (error) {
-        const twiml = new VoiceResponse();
-        twiml.say(messageFormatter.getMessage('apiError', 'voice'));
-        twiml.redirect('/reprompt');
-        response.type('text/xml').send(twiml.toString());
-    }
-});
-
-// --- НОВЫЙ МАРШРУТ: ВОЗВРАТ ЗВОНКА ОТ ОПЕРАТОРА ---
-// Именно это сохраняет память и возвращает бота
+// ============================================================
+// 4. FALLBACK: Что делать если оператор не ответил на <Dial>
+// ============================================================
 app.post('/handle-dial-status', (request, response) => {
     const dialStatus = request.body.DialCallStatus;
-    const voice = botBehavior.voiceSettings.he.ttsVoice;
+    const voice      = botBehavior.voiceSettings.he.ttsVoice;
 
-    console.log(`🔄 Статус звонка оператору: ${dialStatus}`);
+    console.log(`🔄 [DIAL STATUS] ${dialStatus}`);
 
     const twiml = new VoiceResponse();
 
     if (dialStatus === 'completed' || dialStatus === 'answered') {
-        // Успех, кладем трубку
+        // Оператор ответил и поговорил — кладём трубку
         twiml.hangup();
     } else {
-        // Не дозвонились (busy, no-answer, failed)
-        // Говорим сообщение и снова слушаем клиента
-        // Память (sessionManager) жива, так как CallSid тот же!
-
-        twiml.say({ voice: voice }, "מצטערת, הנציג אינו זמין כרגע. איך אוכל לעזור לך בנושא אחר?");
-        // (Извините, представитель сейчас недоступен. Чем еще могу помочь?)
-
-        twiml.gather({
-            input: 'speech',
-            action: '/respond',
-            speechTimeout: 'auto',
-            language: botBehavior.voiceSettings.he.sttLanguage
-        });
-
-        twiml.redirect({ method: 'POST' }, '/reprompt');
+        // Не дозвонились (busy / no-answer / failed)
+        twiml.say(
+            { voice },
+            'מצטערים, הנציג אינו זמין כרגע. אנא התקשר שוב מאוחר יותר. תודה.'
+        );
+        twiml.hangup();
     }
 
     response.type('text/xml');
     response.send(twiml.toString());
 });
 
-
-// 6. ПЕРЕСПРОС (УЛУЧШЕННЫЙ: НАПОМИНАНИЕ + 3 ПОПЫТКИ)
+// ============================================================
+// 5. ПЕРЕСПРОС — тишина в трубке
+// ============================================================
 app.post('/reprompt', (request, response) => {
-    const twiml = new VoiceResponse();
+    const twiml      = new VoiceResponse();
     const retryCount = parseInt(request.query.retry || '0');
-    // Важно: берем голос динамически, если вдруг переключились на русский, 
-    // но по умолчанию будет иврит
-    const voice = botBehavior.voiceSettings.he.ttsVoice;
+    const voice      = botBehavior.voiceSettings.he.ttsVoice;
 
     console.log(`🎵 [REPROMPT] Тишина. Попытка №${retryCount + 1}`);
 
-    // Если прошло 3 попытки (0, 1, 2) -> Вешаем трубку
     if (retryCount >= 3) {
-        console.log('🛑 [HANGUP] Клиент долго молчит. Завершаем.');
-        twiml.say({ voice: voice }, "תודה, נתראה!"); // "Спасибо, увидимся!"
+        console.log('🛑 [HANGUP] 3 попытки без ответа. Завершаем.');
+        twiml.say({ voice }, 'תודה, שיהיה לך יום טוב!');
         twiml.hangup();
     } else {
-        // Если это не самый первый раз (клиент молчит уже какое-то время)
         if (retryCount > 0) {
-            // ГОЛОСОВОЕ НАПОМИНАНИЕ (Чтобы не казалось, что завис)
-            twiml.say({ voice: voice }, "אני עדיין כאן. קיבלת את ההודעה? יש עוד משהו שאוכל לעזור בו?");
+            twiml.say({ voice }, 'אני עדיין כאן. איך אוכל לעזור לך?');
         }
-
-        // Играем музыку
         twiml.play({ loop: 1 }, HOLD_MUSIC_URL);
-
-        // Снова слушаем
         twiml.gather({
-            input: 'speech',
-            action: '/respond',
+            input:         'speech',
+            action:        '/respond',
             speechTimeout: 'auto',
-            language: botBehavior.voiceSettings.he.sttLanguage
+            language:      botBehavior.voiceSettings.he.sttLanguage
         });
-
-        // Увеличиваем счетчик
         twiml.redirect({ method: 'POST' }, `/reprompt?retry=${retryCount + 1}`);
     }
 
@@ -316,33 +328,32 @@ app.post('/reprompt', (request, response) => {
     response.send(twiml.toString());
 });
 
-// --- SERVER STARTUP (HTTP или HTTPS) ---
-const port = process.env.PORT || 1337;
-
-// Проверяем наличие SSL сертификатов в .env
-const sslKeyPath = process.env.SSL_PRIVATE_KEY_PATH;
+// ============================================================
+// ЗАПУСК СЕРВЕРА (HTTP / HTTPS)
+// ============================================================
+const port       = process.env.PORT || 1337;
+const sslKeyPath  = process.env.SSL_PRIVATE_KEY_PATH;
 const sslCertPath = process.env.SSL_CERTIFICATE_PATH;
 
 let server;
 
 if (sslKeyPath && sslCertPath && fs.existsSync(sslKeyPath) && fs.existsSync(sslCertPath)) {
-    console.log('[SSL] ✅ Найдены сертификаты. Запускаем HTTPS сервер...');
-    const httpsOptions = {
-        key: fs.readFileSync(sslKeyPath),
-        cert: fs.readFileSync(sslCertPath)
-    };
-    server = https.createServer(httpsOptions, app);
+    console.log('[SSL] ✅ HTTPS сервер...');
+    server = https.createServer({
+        key:  fs.readFileSync(sslKeyPath),
+        cert: fs.readFileSync(sslCertPath),
+    }, app);
 } else {
-    console.log('[SSL] ⚠️ Сертификаты не найдены. Запускаем HTTP сервер (небезопасно для продакшена!)');
+    console.log('[SSL] ⚠️ HTTP сервер (нет сертификатов).');
     server = http.createServer(app);
 }
 
-const wss = new WebSocket.Server({ server: server, path: '/ws' });
+const wss = new WebSocket.Server({ server, path: '/ws' });
 const mediaStreamHandler = new TwilioMediaStreamHandler(wss);
 
 server.listen(port, () => {
-    const protocol = sslKeyPath && sslCertPath ? 'HTTPS' : 'HTTP';
-    console.log(`✅ ${protocol} Server running on port ${port}`);
+    const proto = sslKeyPath && sslCertPath ? 'HTTPS' : 'HTTP';
+    console.log(`✅ [Nayax IVR] ${proto} Server on port ${port}`);
 });
 
 module.exports.mediaStreamHandler = mediaStreamHandler;

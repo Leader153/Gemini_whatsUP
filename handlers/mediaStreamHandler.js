@@ -41,7 +41,7 @@ class TwilioMediaStreamHandler {
                             this.activeStreams.set(callSid, { ws, streamSid, userPhone });
 
                             // Отправляем приветствие
-                            this.sendTTS(ws, streamSid, botBehavior.messages.greeting.he);
+                            this.sendTTS(ws, streamSid, botBehavior.getGreeting());
                             break;
 
                         case 'media':

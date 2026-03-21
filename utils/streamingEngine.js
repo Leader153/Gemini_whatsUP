@@ -1,91 +1,58 @@
+// ============================================================
+// streamingEngine.js — Nayax Smart IVR (PoC)
+// Рефакторинг: убраны RAG, Calendar Tools, detectDomain.
+// Добавлен Interceptor меток [REDIRECT_*].
+// ============================================================
+
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { getContextForPrompt } = require('../rag/retriever');
-const { calendarTools } = require('../calendar/calendarTools');
 const sessionManager = require('../memory/sessionManager');
-const botBehavior = require('../data/botBehavior');
-const crmService = require('./crmService');
+const botBehavior    = require('../data/botBehavior');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// --- УМНОЕ ОПРЕДЕЛЕНИЕ ДОМЕНА (ИСПРАВЛЕНО) ---
-function detectDomain(text) {
-    const lower = text.toLowerCase();
-    
-    // 1. ТЕРМИНАЛЫ (Приоритет)
-    const terminalKeywords = [
-        'מסוף', 'אשראי', 'terminal', 'קופה',
-        'חנות', 'עסק', 'לגבות', 'תשלום',
-        'סליקה', 'מכשיר', 'pos'
-    ];
-    
-    if (terminalKeywords.some(word => lower.includes(word))) {
-        return 'Terminals';
-    }
-
-    // 2. ЯХТЫ
-    const yachtKeywords = [
-        'יאכטה', 'שיט', 'הפלגה', 'yacht', 'סירה', 
-        'שייט', 'ים ', ' ים' // Только с пробелами!
-    ];
-
-    if (yachtKeywords.some(word => lower.includes(word))) {
-        return 'Yachts';
-    }
-    
-    return null;
-}
-// --------------------------------
+// Регулярное выражение для поиска любой метки маршрутизации
+const REDIRECT_PATTERN = /\[(REDIRECT_TECH|REDIRECT_FINANCE)\]/i;
 
 const streamingEngine = {
-    async processMessageStream(userMessage, sessionId, userPhone, onChunk, onComplete, onError) {
+
+    /**
+     * Основной метод обработки голосового сообщения (стриминг).
+     *
+     * @param {string}   userMessage  — распознанная речь клиента
+     * @param {string}   sessionId    — ID сессии (обычно CallSid)
+     * @param {string}   userPhone    — номер телефона клиента
+     * @param {Function} onChunk      — callback(text) — кусок текста для TTS
+     * @param {Function} onComplete   — callback(result) — финальный результат
+     * @param {Function} onError      — callback(error)
+     * @param {Function} onRedirect   — callback(routeKey, cleanPrefix) — ПЕРЕВОД ЗВОНКА
+     *                                  routeKey: 'REDIRECT_TECH' | 'REDIRECT_FINANCE'
+     *                                  cleanPrefix: текст до метки (уже озвученный или нет)
+     */
+    async processMessageStream(userMessage, sessionId, userPhone, onChunk, onComplete, onError, onRedirect) {
         console.log(`📨 [STREAM] Start: "${userMessage}"`);
         const startTime = performance.now();
 
         try {
             sessionManager.initSession(sessionId, 'voice');
 
-            let currentDomain = detectDomain(userMessage);
-            if (!currentDomain) {
-                currentDomain = sessionManager.getDomain(sessionId);
-            } else {
-                const oldDomain = sessionManager.getDomain(sessionId);
-                if (oldDomain !== currentDomain) {
-                    console.log(`🔍 [STREAM] Смена домена: ${oldDomain} -> ${currentDomain}`);
-                    sessionManager.setDomain(sessionId, currentDomain);
-                }
-            }
-
-            let searchQuery = userMessage;
-            if (currentDomain) searchQuery += ` (Domain: ${currentDomain})`;
-
-            console.time('⏱️ RAG + CRM Task');
-            const [context, customerData] = await Promise.all([
-                getContextForPrompt(searchQuery, 3),
-                !sessionManager.getGender(sessionId) ? crmService.getCustomerData(userPhone) : Promise.resolve(null)
-            ]);
-            console.timeEnd('⏱️ RAG + CRM Task');
-
-            if (customerData?.gender) sessionManager.setGender(sessionId, customerData.gender);
-
-            const systemPrompt = botBehavior.getSystemPrompt(context, sessionManager.getGender(sessionId), new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' }), userPhone);
+            const systemPrompt = botBehavior.getSystemPrompt();
 
             const model = genAI.getGenerativeModel({
-                model: botBehavior.geminiSettings.model,
+                model:             botBehavior.geminiSettings.model,
                 systemInstruction: { parts: [{ text: systemPrompt }] },
-                tools: [{
-                    functionDeclarations: calendarTools.map(t => ({
-                        name: t.name, description: t.description, parameters: t.parameters
-                    }))
-                }]
+                // Нет tools — IVR не использует Function Calling
             });
 
-            const history = sessionManager.getHistory(sessionId);
+            const history  = sessionManager.getHistory(sessionId);
             const contents = [...history, { role: 'user', parts: [{ text: userMessage }] }];
 
-            console.log('📤 [STREAM] Gemini Request...');
+            console.log('📤 [STREAM] Запрос к Gemini...');
             const result = await model.generateContentStream({ contents });
 
-            await this._handleStreamResult(result, startTime, sessionId, userMessage, onChunk, onComplete);
+            await this._handleStreamResult(
+                result, startTime, sessionId, userMessage,
+                onChunk, onComplete, onError, onRedirect
+            );
 
         } catch (error) {
             console.error('❌ [STREAM] Error:', error);
@@ -93,56 +60,105 @@ const streamingEngine = {
         }
     },
 
-    async continueConversationStream(sessionId, userPhone, onChunk, onComplete, onError) {
+    /**
+     * Продолжение разговора (после инструмента или переспроса).
+     * В IVR-режиме используется редко, но оставляем для совместимости.
+     */
+    async continueConversationStream(sessionId, userPhone, onChunk, onComplete, onError, onRedirect) {
         console.log(`📨 [STREAM] Continue...`);
         const startTime = performance.now();
         try {
-            const systemPrompt = botBehavior.getSystemPrompt('', sessionManager.getGender(sessionId), new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Jerusalem' }), userPhone);
+            const systemPrompt = botBehavior.getSystemPrompt();
             const model = genAI.getGenerativeModel({
-                model: botBehavior.geminiSettings.model,
+                model:             botBehavior.geminiSettings.model,
                 systemInstruction: { parts: [{ text: systemPrompt }] },
-                tools: [{
-                    functionDeclarations: calendarTools.map(t => ({ name: t.name, description: t.description, parameters: t.parameters }))
-                }]
             });
             const history = sessionManager.getHistory(sessionId);
-            const result = await model.generateContentStream({ contents: history });
-            await this._handleStreamResult(result, startTime, sessionId, null, onChunk, onComplete);
+            const result  = await model.generateContentStream({ contents: history });
+            await this._handleStreamResult(
+                result, startTime, sessionId, null,
+                onChunk, onComplete, onError, onRedirect
+            );
         } catch (error) {
             console.error('❌ [STREAM] Continue Error:', error);
             if (onError) onError(error);
         }
     },
 
-    async _handleStreamResult(result, startTime, sessionId, userMessageToSave, onChunk, onComplete) {
-        let fullText = '';
+    /**
+     * Внутренний обработчик стрима Gemini.
+     * 
+     * INTERCEPTOR логика:
+     *   - Накапливаем текст в wordBuffer.
+     *   - После каждого чанка проверяем наличие [REDIRECT_*].
+     *   - Если нашли — вырезаем метку, озвучиваем текст ДО неё,
+     *     останавливаем стрим, вызываем onRedirect(routeKey).
+     */
+    async _handleStreamResult(result, startTime, sessionId, userMessageToSave, onChunk, onComplete, onError, onRedirect) {
+        let fullText   = '';
         let wordBuffer = '';
-        let functionCalls = [];
+        let redirectTriggered = false;
 
+        /**
+         * Безопасная отправка текста в TTS.
+         * Фильтрует пустые строки и остаточные маркеры.
+         */
         const sendSafe = (text) => {
-            const clean = text.replace(/\[GENDER:.*?\]/gi, '').trim();
-            if (clean.length > 0 && onChunk) onChunk(clean);
+            // Очищаем от любых REDIRECT-меток (страховка)
+            const clean = text
+                .replace(/\[REDIRECT_TECH\]/gi, '')
+                .replace(/\[REDIRECT_FINANCE\]/gi, '')
+                .trim();
+            if (clean.length > 0 && onChunk) {
+                onChunk(clean);
+            }
         };
 
         try {
             for await (const chunk of result.stream) {
-                const fc = chunk.functionCalls();
-                if (fc && fc.length > 0) { functionCalls.push(...fc); continue; }
+                // Если редирект уже сработал — прекращаем читать стрим
+                if (redirectTriggered) break;
 
                 let text = '';
-                try { text = chunk.text(); } catch (e) {}
+                try { text = chunk.text(); } catch (e) { continue; }
                 if (!text) continue;
 
-                if (text.match(/\[GENDER:/)) {
-                    fullText += text;
-                    text = text.replace(/\[GENDER:.*?\]/gi, '');
-                }
-                if (!text) continue;
-
-                fullText += text;
+                fullText   += text;
                 wordBuffer += text;
 
-                const match = wordBuffer.match(/[,\.\?!;\n]/);
+                // ── INTERCEPTOR ───────────────────────────────────────────
+                const redirectMatch = REDIRECT_PATTERN.exec(wordBuffer);
+                if (redirectMatch) {
+                    redirectTriggered = true;
+                    const routeKey    = redirectMatch[1].toUpperCase(); // 'REDIRECT_TECH' | 'REDIRECT_FINANCE'
+                    const prefixText  = wordBuffer.substring(0, redirectMatch.index);
+
+                    console.log(`🔀 [INTERCEPTOR] Метка найдена: [${routeKey}]. Прерываем стрим.`);
+                    console.log(`   Текст до метки: "${prefixText.trim()}"`);
+
+                    // Озвучиваем текст объявления (до метки), если он есть
+                    if (prefixText.trim()) {
+                        sendSafe(prefixText);
+                    }
+
+                    // Сохраняем в историю то что успел сказать бот
+                    if (userMessageToSave) sessionManager.addToHistory(sessionId, 'user', userMessageToSave);
+                    sessionManager.addToHistory(sessionId, 'model', fullText.replace(REDIRECT_PATTERN, '').trim());
+
+                    // Вызываем callback перевода звонка
+                    if (onRedirect) {
+                        onRedirect(routeKey, prefixText.trim());
+                    } else {
+                        // Fallback если onRedirect не передан
+                        console.warn(`⚠️ [INTERCEPTOR] onRedirect не задан! Маршрут [${routeKey}] потерян.`);
+                        if (onComplete) onComplete({ text: prefixText.trim(), requiresToolCall: false, redirect: routeKey });
+                    }
+                    return; // Выходим из функции — редирект обрабатывает answer_phone.js
+                }
+                // ─────────────────────────────────────────────────────────
+
+                // Стандартная логика отправки чанков по пунктуации
+                const match = wordBuffer.match(/[,\.?!;\n]/);
                 if (match) {
                     sendSafe(wordBuffer.substring(0, match.index + 1));
                     wordBuffer = wordBuffer.substring(match.index + 1);
@@ -151,22 +167,26 @@ const streamingEngine = {
                     wordBuffer = '';
                 }
             }
-            if (wordBuffer) sendSafe(wordBuffer);
 
-            if (functionCalls.length > 0) {
-                if (onComplete) onComplete({ text: fullText, requiresToolCall: true, functionCalls });
-            } else {
+            // Отправляем хвост буфера если стрим закончился без редиректа
+            if (!redirectTriggered && wordBuffer) {
+                sendSafe(wordBuffer);
+            }
+
+            // Финальное завершение (нормальный путь — без редиректа)
+            if (!redirectTriggered) {
+                const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+                console.log(`✅ [STREAM] Завершён за ${elapsed}с.`);
                 if (userMessageToSave) sessionManager.addToHistory(sessionId, 'user', userMessageToSave);
-                const genderMatch = fullText.match(/\[GENDER:\s*(male|female)\]/i);
-                if (genderMatch) sessionManager.setGender(sessionId, genderMatch[1].toLowerCase());
                 sessionManager.addToHistory(sessionId, 'model', fullText);
                 if (onComplete) onComplete({ text: fullText, requiresToolCall: false, functionCalls: null });
             }
+
         } catch (error) {
             console.error('❌ [STREAM] Chunk Error:', error);
-            throw error;
+            if (onError) onError(error);
         }
-    }
+    },
 };
 
 module.exports = streamingEngine;
